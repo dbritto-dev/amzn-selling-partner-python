@@ -1,11 +1,12 @@
 import gzip
+import json
 import pathlib
 import time
 import typing
 
 import requests
 
-from amzn_selling_partner import client
+from amzn_selling_partner import client, utils
 from amzn_selling_partner.reports import models
 
 
@@ -33,9 +34,8 @@ class Client(client.BaseClient):
             models.CreateVendorInventoryReportSpecification,
             models.CreateVendorSalesReportSpecification,
         ],
-    ) -> str:
-        data = self._create_report_response(data)
-        return data.reportId
+    ) -> models.Report:
+        return self.get_report(self._create_report_response(data).reportId)
 
     def _get_reports_response(
         self,
@@ -46,15 +46,12 @@ class Client(client.BaseClient):
             self.get_operation_endpoint("reports"),
             params=query and query.dict(exclude_none=True),
         )
-        _time_to_wait = float(_response.headers.get("x-amzn-RateLimit-Limit", 0)) * 100
+        _time_to_wait = float(_response.headers.get("x-amzn-RateLimit-Limit", 0.03)) * 100
         time.sleep(_time_to_wait)
         _response.raise_for_status()
         return models.GetReportsResponse(**_response.json())
 
-    # This method could trigger 429
-    def get_reports(
-        self, *, query: typing.Optional[models.GetReportsQuery] = None, pages_limit: int = 3
-    ):
+    def get_reports(self, *, query: typing.Optional[models.GetReportsQuery], pages_limit: int = 3):
         data = self._get_reports_response(
             query=query,
         )
@@ -101,17 +98,27 @@ class Client(client.BaseClient):
 
         return self._get_report_document_response(report_document_id)
 
-    def _get_report_document_content(self, report_document_url: str) -> bytes:
+    def _get_report_document_raw_content(self, report_document_id: str) -> bytes:
         _download_session = requests.Session()
-        _download_response = _download_session.get(report_document_url)
+        _download_response = _download_session.get(
+            self.get_report_document(report_document_id).url
+        )
         _download_response.raise_for_status()
         return gzip.decompress(_download_response.content)
 
-    def _write_binary_file(self, file_path: str, content: bytes) -> None:
-        with open(file_path, "bw") as f:
-            f.write(content)
+    def _get_report_document_content(self, report_document_id: str) -> typing.Dict:
+        _report_document_raw_content = self._get_report_document_raw_content(report_document_id)
+        return json.loads(_report_document_raw_content)
 
-    def download_report_document(
+    def get_report_document_content(self, report_document_id: str) -> typing.Dict:
+        if not report_document_id or not isinstance(report_document_id, str):
+            raise ValueError(
+                f"report_document_id must be a string present but found `{report_document_id}`"
+            )
+
+        return self._get_report_document_content(report_document_id)
+
+    def download_report_document_content(
         self,
         report_document_id: str,
         file_path: pathlib.Path,
@@ -124,7 +131,7 @@ class Client(client.BaseClient):
         if not file_path or not isinstance(file_path, str):
             raise ValueError(f"file_path must be a string present but found `{file_path}`")
 
-        data = self._get_report_document_response(report_document_id)
-        report_document_url = data.url
-        report_document_content = self._get_report_document_content(report_document_url)
-        self._write_binary_file(file_path, report_document_content)
+        report_document_content = self._get_report_document_raw_content(
+            self._get_report_document_response(report_document_id).url
+        )
+        utils.write_binary_file(file_path, report_document_content)

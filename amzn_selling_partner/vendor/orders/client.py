@@ -8,7 +8,9 @@ class Client(client.BaseClient):
     def get_resource_path(self) -> str:
         return "vendor/orders/v1"
 
-    def _get_purchase_orders_response(self, *, query: models.GetPurchaseOrdersQuery = None):
+    def _get_purchase_orders_response(
+        self, *, query: models.GetPurchaseOrdersQuery = None
+    ) -> models.GetPurchaseOrdersResponse:
         _response = self.http_session.get(
             self.get_operation_endpoint("purchaseOrders"),
             params=query and query.dict(exclude_none=True),
@@ -18,7 +20,7 @@ class Client(client.BaseClient):
 
     def get_purchase_orders(
         self, *, query: models.GetPurchaseOrdersQuery = None
-    ) -> models.GetPurchaseOrdersResponse:
+    ) -> typing.List[models.Order]:
         data = self._get_purchase_orders_response(query=query)
         if data.payload is None or data.payload.orders is None:
             return []

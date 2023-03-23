@@ -102,7 +102,7 @@ class CreateVendorInventoryReportSpecification(CreateReportSpecification):
     marketplaceIds: typing.List[MarketPlaceId]
     reportOptions: VendorInventoryReportOptions
     dataStartTime: str
-    dataEndTime: str
+    dataEndTime: typing.Optional[str]
 
 
 class CreateReportResponse(pydantic.BaseModel):
