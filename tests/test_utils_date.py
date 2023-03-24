@@ -6,7 +6,7 @@ import amzn_selling_partner.utils.date as sp_date_utils
 
 
 @pytest.fixture(autouse=True)
-def mock_datetime_utcnow(monkeypatch: pytest.MonkeyPatch) -> datetime.datetime:
+def mock_datetime_utcnow(monkeypatch: pytest.MonkeyPatch) -> None:
     mock_datetime = type(
         "mockdatetime",
         (datetime.datetime,),
