@@ -1,0 +1,28 @@
+{
+  // Misc
+  "window.title": "${rootName}${separator}${activeEditorMedium}",
+  "editor.renderWhitespace": "all",
+  "files.exclude": {
+    "**/*.pyc": {
+      "when": "$(basename).py"
+    },
+    "**/__pycache__": true,
+    ".pytest_cache": true,
+    ".ruff_cache": true,
+    ".coverage": true,
+    ".nox": true
+  },
+  "editor.foldingHighlight": true,
+  "editor.folding": true,
+  // Formatting
+  "editor.formatOnSave": true,
+  "python.formatting.provider": "black",
+  // Linting
+  "python.linting.enabled": true,
+  "python.linting.pylintEnabled": false,
+  "python.linting.flake8Enabled": false,
+  "python.analysis.typeCheckingMode": "basic",
+  // Testing
+  "python.testing.unittestEnabled": false,
+  "python.testing.pytestEnabled": true
+}
