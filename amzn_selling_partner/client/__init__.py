@@ -1,6 +1,5 @@
 import enum
 import os
-import typing
 
 import requests
 
@@ -42,20 +41,18 @@ class BaseClient:
         self,
         *,
         selling_partner_region: SellingPartnerRegion = SellingPartnerRegion.NORTH_AMERICA,
-        selling_partner_app_client_id: typing.Optional[str] = os.getenv(
-            "SELLING_PARTNER_APP_CLIENT_ID"
+        selling_partner_app_client_id: str = os.getenv("SELLING_PARTNER_APP_CLIENT_ID", ""),
+        selling_partner_app_client_secret: str = os.getenv(
+            "SELLING_PARTNER_APP_CLIENT_SECRET", ""
         ),
-        selling_partner_app_client_secret: typing.Optional[str] = os.getenv(
-            "SELLING_PARTNER_APP_CLIENT_SECRET"
+        selling_partner_app_refresh_token: str = os.getenv(
+            "SELLING_PARTNER_APP_REFRESH_TOKEN", ""
         ),
-        selling_partner_app_refresh_token: typing.Optional[str] = os.getenv(
-            "SELLING_PARTNER_APP_REFRESH_TOKEN"
-        ),
-        aws_access_key_id: typing.Optional[str] = os.getenv("AWS_ACCESS_KEY_ID"),
-        aws_secret_access_key: typing.Optional[str] = os.getenv("AWS_SECRET_ACCESS_KEY"),
-        aws_selling_partner_role: typing.Optional[str] = os.getenv("AWS_SELLING_PARTNER_ROLE"),
-        aws_selling_partner_role_session_name: typing.Optional[str] = os.getenv(
-            "AWS_SELLING_PARTNER_ROLE_SESSION_NAME"
+        aws_access_key_id: str = os.getenv("AWS_ACCESS_KEY_ID", ""),
+        aws_secret_access_key: str = os.getenv("AWS_SECRET_ACCESS_KEY", ""),
+        aws_selling_partner_role: str = os.getenv("AWS_SELLING_PARTNER_ROLE", ""),
+        aws_selling_partner_role_session_name: str = os.getenv(
+            "AWS_SELLING_PARTNER_ROLE_SESSION_NAME", ""
         ),
         sandbox: bool = False,
     ) -> None:
