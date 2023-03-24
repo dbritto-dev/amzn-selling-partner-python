@@ -47,10 +47,10 @@ For Windows
 python -m pip install --upgrade pip
 ```
 
-### Install from GitHub
+### Install from a GitHub private repo
 
 ```sh
-pip install git+https://github.com/dbritto-dev/amzn-selling-partner-python.git
+TOKEN="personal_access_token" pip install git+https://$TOKEN@github.com/dbritto-dev/amzn-selling-partner-python.git
 ```
 
 ### Install from source
