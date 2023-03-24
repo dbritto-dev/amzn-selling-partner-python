@@ -97,9 +97,9 @@ AWS_SELLING_PARTNER_ROLE_SESSION_NAME=
 ```
 
 ```python
-from amzn_selling_partner.vendor import orders as sp_vendor_orders
+import amzn_selling_partner.vendor as sp
 
-sp_vendor_orders_client = sp_vendor_orders.Client()
+sp_vendor_orders_client = sp.vendor.orders.Client()
 
 purchase_orders = sp_vendor_orders_client.get_purchase_orders()
 print(purchase_orders)
@@ -120,17 +120,17 @@ specific [selling partner region](https://developer-docs.amazon.com/sp-api/docs/
 use sandbox.
 
 ```python
-from amzn_selling_partner.vendor import orders as sp_vendor_orders
+import amzn_selling_partner.vendor as sp
 
-na_sp_vendor_orders_client = sp_vendor_orders.Client(
+na_sp_vendor_orders_client = sp.vendor.orders.Client(
     selling_partner_region=client.SellingPartnerRegion.NORTH_AMERICA
 )
 
-eu_sp_vendor_orders_client = sp_vendor_orders.Client(
+eu_sp_vendor_orders_client = sp.vendor.orders.Client(
     selling_partner_region=client.SellingPartnerRegion.EUROPE
 )
 
-fe_sp_vendor_orders_client = sp_vendor_orders.Client(
+fe_sp_vendor_orders_client = sp.vendor.orders.Client(
     selling_partner_region=client.SellingPartnerRegion.FAR_EAST
 )
 ```
@@ -138,9 +138,9 @@ fe_sp_vendor_orders_client = sp_vendor_orders.Client(
 ### Enable Sandbox
 
 ```python
-from amzn_selling_partner.vendor import orders as sp_vendor_orders
+import amzn_selling_partner.vendor as sp
 
-sp_vendor_orders_client = sp_vendor_orders.Client(sandbox=True)
+sp_vendor_orders_client = sp.vendor.orders.Client(sandbox=True)
 ```
 
 > **Note:** some endpoints are not available on sandbox. To read more about that: https://developer-docs.amazon.com/sp-api/docs/the-selling-partner-api-sandbox
