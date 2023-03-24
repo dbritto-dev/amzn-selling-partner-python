@@ -54,9 +54,9 @@ class ClientSessionAuthTemporaryCredentials:
                 "access_key": _result["Credentials"]["AccessKeyId"],
                 "secret_key": _result["Credentials"]["SecretAccessKey"],
                 "token": _result["Credentials"]["SessionToken"],
-                "expiry_time": _result["Credentials"]["Expiration"].isoformat(),
+                "expiry_time": _result["Credentials"]["Expiration"].isoformat(),  # type: ignore
             }
-            return _data
+            return _data  # type: ignore
         except Exception as error:
             raise ClientSessionAuthTemporaryCredentialsError(cause=error)
 
@@ -109,13 +109,13 @@ class ClientSessionAuthAccessToken:
                 "access_token": _result["access_token"],
                 "expires_at": self.current_time() + int(_result["expires_in"]),
             }
-            return _data
+            return _data  # type: ignore
         except Exception as error:
             raise ClientSessionAuthAccessTokenError(cause=error)
 
     def get_access_token(self) -> str:
-        if self.data is None or not self.current_time() < self.data.get("expires_at"):
-            self.data = self._get_access_token_data()
+        if self.data is None or not self.current_time() < self.data.get("expires_at", 0):
+            self.data = self._get_access_token_data()  # type: ignore
 
         return self.data["access_token"]
 
