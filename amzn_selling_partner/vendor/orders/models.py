@@ -73,44 +73,44 @@ DateTimeInterval = typing.NewType("DateTimeInterval", str)
 
 class Money(pydantic.BaseModel):
     currencyCode: str
-    amount: typing.Optional[float]
+    amount: typing.Optional[float] = None
 
 
 class ItemQuantity(pydantic.BaseModel):
-    amount: typing.Optional[int]
-    unitOfMeasure: typing.Optional[str]
-    unitSize: typing.Optional[int]
+    amount: typing.Optional[int] = None
+    unitOfMeasure: typing.Optional[str] = None
+    unitSize: typing.Optional[int] = None
 
 
 class OrderItem(pydantic.BaseModel):
     itemSequenceNumber: str
     orderedQuantity: ItemQuantity
     isBackOrderAllowed: bool
-    netCost: typing.Optional[Money]
-    listPrice: typing.Optional[Money]
-    amazonProductIdentifier: typing.Optional[str]
-    vendorProductIdentifier: typing.Optional[str]
+    netCost: typing.Optional[Money] = None
+    listPrice: typing.Optional[Money] = None
+    amazonProductIdentifier: typing.Optional[str] = None
+    vendorProductIdentifier: typing.Optional[str] = None
 
 
 class ImportDetails(pydantic.BaseModel):
-    methodOfPayment: typing.Optional[MethodOfPayment]
-    internationalCommercialTerms: typing.Optional[InternationalCommercialTerms]
-    portOfDelivery: typing.Optional[str]
-    importContainers: typing.Optional[str]
-    shippingInstructions: typing.Optional[str]
+    methodOfPayment: typing.Optional[MethodOfPayment] = None
+    internationalCommercialTerms: typing.Optional[InternationalCommercialTerms] = None
+    portOfDelivery: typing.Optional[str] = None
+    importContainers: typing.Optional[str] = None
+    shippingInstructions: typing.Optional[str] = None
 
 
 class Address(pydantic.BaseModel):
     name: str
     addressLine1: str
     countryCode: str
-    addressLine2: typing.Optional[str]
-    addressLine3: typing.Optional[str]
-    city: typing.Optional[str]
-    country: typing.Optional[str]
-    stateOrRegion: typing.Optional[str]
-    postalCode: typing.Optional[str]
-    phone: typing.Optional[str]
+    addressLine2: typing.Optional[str] = None
+    addressLine3: typing.Optional[str] = None
+    city: typing.Optional[str] = None
+    country: typing.Optional[str] = None
+    stateOrRegion: typing.Optional[str] = None
+    postalCode: typing.Optional[str] = None
+    phone: typing.Optional[str] = None
 
 
 class TaxRegistrationDetails(pydantic.BaseModel):
@@ -120,8 +120,8 @@ class TaxRegistrationDetails(pydantic.BaseModel):
 
 class PartyIdentification(pydantic.BaseModel):
     partyId: str
-    address: typing.Optional[Address]
-    taxInfo: typing.Optional[TaxRegistrationDetails]
+    address: typing.Optional[Address] = None
+    taxInfo: typing.Optional[TaxRegistrationDetails] = None
 
 
 class OrderDetails(pydantic.BaseModel):
@@ -129,63 +129,63 @@ class OrderDetails(pydantic.BaseModel):
     purchaseOrderStateChangedDate: str
     purchaseOrderType: PurchaseOrderType
     items: typing.List[OrderItem]
-    purchaseOrderChangedDate: typing.Optional[str]
-    importDetails: typing.Optional[ImportDetails]
-    dealCode: typing.Optional[str]
-    paymentMethod: typing.Optional[PaymentMethod]
-    buyingParty: typing.Optional[PartyIdentification]
-    sellingParty: typing.Optional[PartyIdentification]
-    shipToParty: typing.Optional[PartyIdentification]
-    billToParty: typing.Optional[PartyIdentification]
-    shipWindow: typing.Optional[DateTimeInterval]
-    deliveryWindow: typing.Optional[DateTimeInterval]
+    purchaseOrderChangedDate: typing.Optional[str] = None
+    importDetails: typing.Optional[ImportDetails] = None
+    dealCode: typing.Optional[str] = None
+    paymentMethod: typing.Optional[PaymentMethod] = None
+    buyingParty: typing.Optional[PartyIdentification] = None
+    sellingParty: typing.Optional[PartyIdentification] = None
+    shipToParty: typing.Optional[PartyIdentification] = None
+    billToParty: typing.Optional[PartyIdentification] = None
+    shipWindow: typing.Optional[DateTimeInterval] = None
+    deliveryWindow: typing.Optional[DateTimeInterval] = None
 
 
 class Order(pydantic.BaseModel):
     purchaseOrderNumber: str
     purchaseOrderState: PurchaseOrderState
-    orderDetails: typing.Optional[OrderDetails]
+    orderDetails: typing.Optional[OrderDetails] = None
 
 
 class Pagination(pydantic.BaseModel):
-    nextToken: typing.Optional[str]
+    nextToken: typing.Optional[str] = None
 
 
 class OrderList(pydantic.BaseModel):
-    pagination: typing.Optional[Pagination]
-    orders: typing.Optional[typing.List[Order]]
+    pagination: typing.Optional[Pagination] = None
+    orders: typing.Optional[typing.List[Order]] = None
 
 
 class TransactionId(pydantic.BaseModel):
-    transactionId: typing.Optional[str]
+    transactionId: typing.Optional[str] = None
 
 
 class Error(pydantic.BaseModel):
     code: str
     message: str
-    details: typing.Optional[str]
+    details: typing.Optional[str] = None
 
 
 class GetPurchaseOrdersResponse(pydantic.BaseModel):
-    payload: typing.Optional[OrderList]
-    errors: typing.Optional[typing.List[Error]]
+    payload: typing.Optional[OrderList] = None
+    errors: typing.Optional[typing.List[Error]] = None
 
 
 class GetPurchaseOrdersQuery(pydantic.BaseModel):
-    limit: typing.Optional[int]
-    createdAfter: typing.Optional[str]
-    createdBefore: typing.Optional[str]
-    sortOrder: typing.Optional[SortOrder]
-    nextToken: typing.Optional[str]
-    includeDetails: typing.Optional[bool]
-    changedAfter: typing.Optional[str]
-    changedBefore: typing.Optional[str]
-    poItemState: typing.Optional[PoItemState]
-    isPOChanged: typing.Optional[bool]
-    purchaseOrderState: typing.Optional[PurchaseOrderState]
-    orderingVendorCode: typing.Optional[str]
+    limit: typing.Optional[int] = None
+    createdAfter: typing.Optional[str] = None
+    createdBefore: typing.Optional[str] = None
+    sortOrder: typing.Optional[SortOrder] = None
+    nextToken: typing.Optional[str] = None
+    includeDetails: typing.Optional[bool] = None
+    changedAfter: typing.Optional[str] = None
+    changedBefore: typing.Optional[str] = None
+    poItemState: typing.Optional[PoItemState] = None
+    isPOChanged: typing.Optional[bool] = None
+    purchaseOrderState: typing.Optional[PurchaseOrderState] = None
+    orderingVendorCode: typing.Optional[str] = None
 
 
 class GetPurchaseOrderResponse(pydantic.BaseModel):
-    payload: typing.Optional[Order]
-    errors: typing.Optional[typing.List[Error]]
+    payload: typing.Optional[Order] = None
+    errors: typing.Optional[typing.List[Error]] = None

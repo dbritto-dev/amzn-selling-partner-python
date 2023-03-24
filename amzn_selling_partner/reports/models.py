@@ -66,9 +66,9 @@ class SellingProgram(str, enum.Enum):
 
 
 class ReportOptions(pydantic.BaseModel):
-    reportPeriod: typing.Optional[ReportPeriod]
-    distributorView: typing.Optional[DistributorView]
-    sellingProgram: typing.Optional[SellingProgram]
+    reportPeriod: typing.Optional[ReportPeriod] = None
+    distributorView: typing.Optional[DistributorView] = None
+    sellingProgram: typing.Optional[SellingProgram] = None
 
 
 class VendorSalesReportOptions(ReportOptions):
@@ -86,9 +86,9 @@ class VendorInventoryReportOptions(ReportOptions):
 class CreateReportSpecification(pydantic.BaseModel):
     reportType: ReportType
     marketplaceIds: typing.List[MarketPlaceId]
-    reportOptions: typing.Optional[ReportOptions]
-    dataStartTime: typing.Optional[str]
-    dataEndTime: typing.Optional[str]
+    reportOptions: typing.Optional[ReportOptions] = None
+    dataStartTime: typing.Optional[str] = None
+    dataEndTime: typing.Optional[str] = None
 
 
 class CreateVendorSalesReportSpecification(CreateReportSpecification):
@@ -102,7 +102,7 @@ class CreateVendorInventoryReportSpecification(CreateReportSpecification):
     marketplaceIds: typing.List[MarketPlaceId]
     reportOptions: VendorInventoryReportOptions
     dataStartTime: str
-    dataEndTime: typing.Optional[str]
+    dataEndTime: typing.Optional[str] = None
 
 
 class CreateReportResponse(pydantic.BaseModel):
@@ -110,13 +110,13 @@ class CreateReportResponse(pydantic.BaseModel):
 
 
 class GetReportsQuery(pydantic.BaseModel):
-    reportTypes: typing.Optional[typing.List[ReportType]]
-    processingStatuses: typing.Optional[typing.List[ProcessingStatus]]
-    marketplaceIds: typing.Optional[typing.List[MarketPlaceId]]
-    pageSize: typing.Optional[int]
-    createdSince: typing.Optional[str]
-    createdUntil: typing.Optional[str]
-    nextToken: typing.Optional[str]
+    reportTypes: typing.Optional[typing.List[ReportType]] = None
+    processingStatuses: typing.Optional[typing.List[ProcessingStatus]] = None
+    marketplaceIds: typing.Optional[typing.List[MarketPlaceId]] = None
+    pageSize: typing.Optional[int] = None
+    createdSince: typing.Optional[str] = None
+    createdUntil: typing.Optional[str] = None
+    nextToken: typing.Optional[str] = None
 
 
 class Report(pydantic.BaseModel):
@@ -124,21 +124,21 @@ class Report(pydantic.BaseModel):
     reportType: ReportType
     createdTime: str
     processingStatus: ProcessingStatus
-    marketplaceIds: typing.Optional[typing.List[MarketPlaceId]]
-    dataStartTime: typing.Optional[str]
-    dataEndTime: typing.Optional[str]
-    reportScheduleId: typing.Optional[str]
-    processingStartTime: typing.Optional[str]
-    processingEndTime: typing.Optional[str]
-    reportDocumentId: typing.Optional[str]
+    marketplaceIds: typing.Optional[typing.List[MarketPlaceId]] = None
+    dataStartTime: typing.Optional[str] = None
+    dataEndTime: typing.Optional[str] = None
+    reportScheduleId: typing.Optional[str] = None
+    processingStartTime: typing.Optional[str] = None
+    processingEndTime: typing.Optional[str] = None
+    reportDocumentId: typing.Optional[str] = None
 
 
 class GetReportsResponse(pydantic.BaseModel):
     reports: typing.List[Report]
-    nextToken: typing.Optional[str]
+    nextToken: typing.Optional[str] = None
 
 
 class ReportDocument(pydantic.BaseModel):
     reportDocumentId: str
     url: str
-    compressionAlgorithm: typing.Optional[CompressionAlgorithm]
+    compressionAlgorithm: typing.Optional[CompressionAlgorithm] = None

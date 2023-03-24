@@ -1,6 +1,5 @@
 import gzip
 import json
-import pathlib
 import time
 import typing
 
@@ -121,7 +120,7 @@ class Client(client.BaseClient):
     def download_report_document_content(
         self,
         report_document_id: str,
-        file_path: pathlib.Path,
+        file_path: str,
     ) -> None:
         if not report_document_id or not isinstance(report_document_id, str):
             raise ValueError(
@@ -131,7 +130,6 @@ class Client(client.BaseClient):
         if not file_path or not isinstance(file_path, str):
             raise ValueError(f"file_path must be a string present but found `{file_path}`")
 
-        report_document_content = self._get_report_document_raw_content(
-            self._get_report_document_response(report_document_id).url
+        utils.file.write_binary_file(
+            file_path, self._get_report_document_raw_content(report_document_id)
         )
-        utils.write_binary_file(file_path, report_document_content)
