@@ -14,11 +14,7 @@ class Client(client.BaseClient):
         return "reports/2021-06-30"
 
     def _create_report_response(
-        self,
-        data: typing.Union[
-            models.CreateVendorInventoryReportSpecification,
-            models.CreateVendorSalesReportSpecification,
-        ],
+        self, data: models.CreateReportSpecification
     ) -> models.CreateReportResponse:
         _response = self.http_session.post(
             self.get_operation_endpoint("reports"),
@@ -27,13 +23,7 @@ class Client(client.BaseClient):
         _response.raise_for_status()
         return models.CreateReportResponse(**_response.json())
 
-    def create_report(
-        self,
-        data: typing.Union[
-            models.CreateVendorInventoryReportSpecification,
-            models.CreateVendorSalesReportSpecification,
-        ],
-    ) -> models.Report:
+    def create_report(self, data: models.CreateReportSpecification) -> models.Report:
         return self.get_report(self._create_report_response(data).reportId)
 
     def _get_reports_response(
@@ -50,7 +40,9 @@ class Client(client.BaseClient):
         _response.raise_for_status()
         return models.GetReportsResponse(**_response.json())
 
-    def get_reports(self, *, query: typing.Optional[models.GetReportsQuery], pages_limit: int = 3):
+    def get_reports(
+        self, *, query: typing.Optional[models.GetReportsQuery] = None, pages_limit: int = 3
+    ):
         data = self._get_reports_response(
             query=query,
         )

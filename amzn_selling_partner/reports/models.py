@@ -59,10 +59,13 @@ class ReportPeriod(str, enum.Enum):
 
 class DistributorView(str, enum.Enum):
     SOURCING = "SOURCING"
+    MANUFACTURING = "MANUFACTURING"
 
 
 class SellingProgram(str, enum.Enum):
     RETAIL = "RETAIL"
+    BUSINESS = "BUSINESS"
+    FRESH = "FRESH"
 
 
 class ReportOptions(pydantic.BaseModel):
@@ -71,37 +74,11 @@ class ReportOptions(pydantic.BaseModel):
     sellingProgram: typing.Optional[SellingProgram] = None
 
 
-class VendorSalesReportOptions(ReportOptions):
-    reportPeriod: ReportPeriod
-    distributorView: DistributorView
-    sellingProgram: SellingProgram
-
-
-class VendorInventoryReportOptions(ReportOptions):
-    reportPeriod: ReportPeriod
-    distributorView: DistributorView
-    sellingProgram: SellingProgram
-
-
 class CreateReportSpecification(pydantic.BaseModel):
     reportType: ReportType
     marketplaceIds: typing.List[MarketPlaceId]
     reportOptions: typing.Optional[ReportOptions] = None
     dataStartTime: typing.Optional[str] = None
-    dataEndTime: typing.Optional[str] = None
-
-
-class CreateVendorSalesReportSpecification(CreateReportSpecification):
-    reportOptions: VendorSalesReportOptions
-    dataStartTime: str
-    dataEndTime: str
-
-
-class CreateVendorInventoryReportSpecification(CreateReportSpecification):
-    reportType: str
-    marketplaceIds: typing.List[MarketPlaceId]
-    reportOptions: VendorInventoryReportOptions
-    dataStartTime: str
     dataEndTime: typing.Optional[str] = None
 
 

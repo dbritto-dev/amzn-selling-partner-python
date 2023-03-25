@@ -3,8 +3,6 @@ from amzn_selling_partner.reports.models import (
     CompressionAlgorithm,
     CreateReportResponse,
     CreateReportSpecification,
-    CreateVendorInventoryReportSpecification,
-    CreateVendorSalesReportSpecification,
     DistributorView,
     GetReportsQuery,
     GetReportsResponse,
@@ -16,8 +14,6 @@ from amzn_selling_partner.reports.models import (
     ReportPeriod,
     ReportType,
     SellingProgram,
-    VendorInventoryReportOptions,
-    VendorSalesReportOptions,
 )
 
 __all__ = [
@@ -25,8 +21,6 @@ __all__ = [
     "CompressionAlgorithm",
     "CreateReportResponse",
     "CreateReportSpecification",
-    "CreateVendorInventoryReportSpecification",
-    "CreateVendorSalesReportSpecification",
     "DistributorView",
     "GetReportsQuery",
     "GetReportsResponse",
@@ -38,6 +32,4 @@ __all__ = [
     "ReportPeriod",
     "ReportType",
     "SellingProgram",
-    "VendorInventoryReportOptions",
-    "VendorSalesReportOptions",
 ]
