@@ -1,5 +1,5 @@
-from amzn_selling_partner.vendor.orders.client import Client
-from amzn_selling_partner.vendor.orders.models import (
+from .client import Client
+from .models import (
     Address,
     DateTimeInterval,
     GetPurchaseOrderResponse,

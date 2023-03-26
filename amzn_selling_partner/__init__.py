@@ -3,7 +3,7 @@
 """
 
 
-from amzn_selling_partner import client, reports, utils, vendor
+from . import client, reports, utils, vendor
 
 __version__ = "0.1.0"
 

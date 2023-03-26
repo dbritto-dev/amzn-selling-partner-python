@@ -5,8 +5,8 @@ import typing
 
 import requests
 
-from amzn_selling_partner import client, utils
-from amzn_selling_partner.reports import models
+from .. import client, utils
+from . import models
 
 
 class Client(client.BaseClient):

@@ -1,3 +1,3 @@
-from amzn_selling_partner.vendor import orders
+from . import orders
 
 __all__ = ["orders"]

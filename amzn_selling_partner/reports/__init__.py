@@ -1,5 +1,5 @@
-from amzn_selling_partner.reports.client import Client
-from amzn_selling_partner.reports.models import (
+from .client import Client
+from .models import (
     CompressionAlgorithm,
     CreateReportResponse,
     CreateReportSpecification,

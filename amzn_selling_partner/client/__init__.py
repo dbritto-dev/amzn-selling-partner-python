@@ -3,7 +3,7 @@ import os
 
 import requests
 
-from amzn_selling_partner.client.auth import ClientSessionAuth
+from . import auth
 
 
 class SellingPartnerRegion(tuple, enum.Enum):
@@ -59,7 +59,7 @@ class BaseClient:
         self.region = selling_partner_region
         self.sandbox = sandbox
         self.http_session = requests.Session()
-        self.http_session.auth = ClientSessionAuth(
+        self.http_session.auth = auth.ClientSessionAuth(
             selling_partner_app_client_id=selling_partner_app_client_id,
             selling_partner_app_client_secret=selling_partner_app_client_secret,
             selling_partner_app_refresh_token=selling_partner_app_refresh_token,

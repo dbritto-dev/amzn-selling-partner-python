@@ -1,7 +1,7 @@
 import typing
 
-from amzn_selling_partner import client
-from amzn_selling_partner.vendor.orders import models
+from ... import client
+from . import models
 
 
 class Client(client.BaseClient):
@@ -9,7 +9,7 @@ class Client(client.BaseClient):
         return "vendor/orders/v1"
 
     def _get_purchase_orders_response(
-        self, *, query: models.GetPurchaseOrdersQuery = None
+        self, *, query: typing.Optional[models.GetPurchaseOrdersQuery] = None
     ) -> models.GetPurchaseOrdersResponse:
         _response = self.http_session.get(
             self.get_operation_endpoint("purchaseOrders"),
@@ -19,7 +19,7 @@ class Client(client.BaseClient):
         return models.GetPurchaseOrdersResponse(**_response.json())
 
     def get_purchase_orders(
-        self, *, query: models.GetPurchaseOrdersQuery = None
+        self, *, query: typing.Optional[models.GetPurchaseOrdersQuery] = None
     ) -> typing.List[models.Order]:
         data = self._get_purchase_orders_response(query=query)
         if data.payload is None or data.payload.orders is None:
