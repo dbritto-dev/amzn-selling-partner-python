@@ -1,5 +1,5 @@
 import datetime
-import random
+import gzip
 
 import pytest
 import responses
@@ -33,9 +33,25 @@ def mock_client_session_auth(monkeypatch: pytest.MonkeyPatch) -> None:
     )
 
 
+@pytest.fixture
+def mock_report_id() -> str:
+    return f"report-{int(sp.utils.date.datetime_utcnow().timestamp())}"
+
+
+@pytest.fixture
+def mock_report_document_id() -> str:
+    return f"report-document-{int(sp.utils.date.datetime_utcnow().timestamp())}"
+
+
+@pytest.fixture
+def mock_report_document_url() -> str:
+    return "https://tortuga-prod-na.s3-external-1.amazonaws.com/some/path/random-string"
+
+
 @pytest.fixture(autouse=True)
-def mock_responses():
-    mock_report_id = "1679772266"
+def mock_responses(
+    mock_report_id: str, mock_report_document_id: str, mock_report_document_url: str
+):
     responses.post(
         "https://sellingpartnerapi-na.amazon.com/reports/2021-06-30/reports",
         json={"reportId": mock_report_id},
@@ -49,6 +65,11 @@ def mock_responses():
             "processingStatus": sp.reports.ProcessingStatus.DONE,
         },
     )
+    responses.get(
+        f"https://sellingpartnerapi-na.amazon.com/reports/2021-06-30/documents/{mock_report_document_id}",
+        json={"reportDocumentId": mock_report_document_id, "url": mock_report_document_url},
+    )
+    responses.get(mock_report_document_url, body=gzip.compress(b"{}"))
 
 
 @pytest.fixture
@@ -56,18 +77,18 @@ def reports_client() -> sp.reports.Client:
     return sp.reports.Client()
 
 
-def test_reports_client_get_resource_path(reports_client: sp.reports.Client) -> None:
+def test_get_resource_path(reports_client: sp.reports.Client) -> None:
     assert "reports/2021-06-30" == reports_client.get_resource_path()
 
 
-def test_reports_client_get_resource_endpoint(reports_client: sp.reports.Client) -> None:
+def test_get_resource_endpoint(reports_client: sp.reports.Client) -> None:
     assert (
         f"{sp.client.SellingPartnerRegion.NORTH_AMERICA.api_endpoint}/reports/2021-06-30"
         == reports_client.get_resource_endpoint()
     )
 
 
-def test_reports_client_get_operation_endpoint(reports_client: sp.reports.Client) -> None:
+def test_get_operation_endpoint(reports_client: sp.reports.Client) -> None:
     assert (
         f"{sp.client.SellingPartnerRegion.NORTH_AMERICA.api_endpoint}/reports/2021-06-30/operationMethod"
         == reports_client.get_operation_endpoint("operationMethod")
@@ -75,10 +96,11 @@ def test_reports_client_get_operation_endpoint(reports_client: sp.reports.Client
 
 
 @responses.activate
-def test__(reports_client: sp.reports.Client) -> None:
+def test_create_report(mock_report_id: str) -> None:
+    reports_client = sp.reports.Client()
     assert {
         "reportType": sp.reports.ReportType.VENDOR_INVENTORY_REPORT,
-        "reportId": "1679772266",
+        "reportId": mock_report_id,
         "processingStatus": sp.reports.ProcessingStatus.DONE,
         "createdTime": "2023-01-01T00:00:00",
     } == reports_client.create_report(
@@ -90,3 +112,30 @@ def test__(reports_client: sp.reports.Client) -> None:
     ).dict(
         exclude_none=True
     )
+
+
+@responses.activate
+def test_get_report(reports_client: sp.reports.Client, mock_report_id: str) -> None:
+    assert {
+        "reportType": sp.reports.ReportType.VENDOR_INVENTORY_REPORT,
+        "reportId": mock_report_id,
+        "processingStatus": sp.reports.ProcessingStatus.DONE,
+        "createdTime": "2023-01-01T00:00:00",
+    } == reports_client.get_report(mock_report_id).dict(exclude_none=True)
+
+
+@responses.activate
+def test_get_report_document(
+    reports_client: sp.reports.Client, mock_report_document_id: str, mock_report_document_url: str
+) -> None:
+    assert {
+        "reportDocumentId": mock_report_document_id,
+        "url": mock_report_document_url,
+    } == reports_client.get_report_document(mock_report_document_id).dict(exclude_none=True)
+
+
+@responses.activate
+def test_get_report_document_content(
+    reports_client: sp.reports.Client, mock_report_document_id: str
+) -> None:
+    assert {} == reports_client.get_report_document_content(mock_report_document_id)

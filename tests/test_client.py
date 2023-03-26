@@ -6,7 +6,7 @@ import amzn_selling_partner as sp
 @pytest.fixture(autouse=True)
 def mock_client_session_auth(monkeypatch: pytest.MonkeyPatch) -> None:
     monkeypatch.setattr(
-        sp.client,
+        sp.client.auth,
         "ClientSessionAuth",
         type(
             "MockClientSessionAuth",
