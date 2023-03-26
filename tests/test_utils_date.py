@@ -11,7 +11,7 @@ def mock_datetime_utcnow(monkeypatch: pytest.MonkeyPatch) -> None:
         datetime,
         "datetime",
         type(
-            "mockdatetime",
+            "MockDatetime",
             (datetime.datetime,),
             {"utcnow": classmethod(lambda _: datetime.datetime(2023, 1, 1))},
         ),
