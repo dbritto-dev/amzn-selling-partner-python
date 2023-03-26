@@ -1,5 +1,7 @@
 import datetime
 import gzip
+import pathlib
+import uuid
 
 import pytest
 import responses
@@ -13,7 +15,7 @@ def mock_datetime_utcnow(monkeypatch: pytest.MonkeyPatch) -> None:
         datetime,
         "datetime",
         type(
-            "mockdatetime",
+            "MockDatetime",
             (datetime.datetime,),
             {"utcnow": classmethod(lambda _: datetime.datetime(2023, 1, 1))},
         ),
@@ -23,7 +25,7 @@ def mock_datetime_utcnow(monkeypatch: pytest.MonkeyPatch) -> None:
 @pytest.fixture(autouse=True)
 def mock_client_session_auth(monkeypatch: pytest.MonkeyPatch) -> None:
     monkeypatch.setattr(
-        sp.client,
+        sp.client.auth,
         "ClientSessionAuth",
         type(
             "MockClientSessionAuth",
@@ -34,42 +36,51 @@ def mock_client_session_auth(monkeypatch: pytest.MonkeyPatch) -> None:
 
 
 @pytest.fixture
-def mock_report_id() -> str:
-    return f"report-{int(sp.utils.date.datetime_utcnow().timestamp())}"
+def mock_report() -> sp.reports.Report:
+    return sp.reports.Report(
+        reportId=f"report-document-{int(sp.utils.date.datetime_utcnow().timestamp())}",
+        reportType=sp.reports.ReportType.VENDOR_INVENTORY_REPORT,
+        processingStatus=sp.reports.ProcessingStatus.DONE,
+        createdTime="2023-01-01T00:00:00",
+    )
 
 
 @pytest.fixture
-def mock_report_document_id() -> str:
-    return f"report-document-{int(sp.utils.date.datetime_utcnow().timestamp())}"
+def mock_report_document() -> sp.reports.ReportDocument:
+    return sp.reports.ReportDocument(
+        reportDocumentId=f"report-document-{int(sp.utils.date.datetime_utcnow().timestamp())}",
+        url=f"https://tortuga-prod-na.s3-external-1.amazonaws.com/{uuid.uuid4().hex}",
+    )
 
 
 @pytest.fixture
-def mock_report_document_url() -> str:
-    return "https://tortuga-prod-na.s3-external-1.amazonaws.com/some/path/random-string"
+def mock_report_document_content() -> bytes:
+    return gzip.compress(b"{}")
 
 
 @pytest.fixture(autouse=True)
 def mock_responses(
-    mock_report_id: str, mock_report_document_id: str, mock_report_document_url: str
-):
+    mock_report: sp.reports.Report,
+    mock_report_document: sp.reports.ReportDocument,
+    mock_report_document_content: bytes,
+) -> None:
     responses.post(
         "https://sellingpartnerapi-na.amazon.com/reports/2021-06-30/reports",
-        json={"reportId": mock_report_id},
+        json={"reportId": mock_report.reportId},
     )
     responses.get(
-        f"https://sellingpartnerapi-na.amazon.com/reports/2021-06-30/reports/{mock_report_id}",
-        json={
-            "reportId": mock_report_id,
-            "reportType": sp.reports.ReportType.VENDOR_INVENTORY_REPORT,
-            "createdTime": sp.utils.date.datetime_utcnow().isoformat(),
-            "processingStatus": sp.reports.ProcessingStatus.DONE,
-        },
+        "https://sellingpartnerapi-na.amazon.com/reports/2021-06-30/reports",
+        json={"reports": [mock_report.dict(exclude_none=True)]},
     )
     responses.get(
-        f"https://sellingpartnerapi-na.amazon.com/reports/2021-06-30/documents/{mock_report_document_id}",
-        json={"reportDocumentId": mock_report_document_id, "url": mock_report_document_url},
+        f"https://sellingpartnerapi-na.amazon.com/reports/2021-06-30/reports/{mock_report.reportId}",
+        json=mock_report.dict(exclude_none=True),
     )
-    responses.get(mock_report_document_url, body=gzip.compress(b"{}"))
+    responses.get(
+        f"https://sellingpartnerapi-na.amazon.com/reports/2021-06-30/documents/{mock_report_document.reportDocumentId}",
+        json=mock_report_document.dict(exclude_none=True),
+    )
+    responses.get(mock_report_document.url, body=mock_report_document_content)
 
 
 @pytest.fixture
@@ -96,46 +107,54 @@ def test_get_operation_endpoint(reports_client: sp.reports.Client) -> None:
 
 
 @responses.activate
-def test_create_report(mock_report_id: str) -> None:
+def test_create_report(mock_report: sp.reports.Report) -> None:
     reports_client = sp.reports.Client()
-    assert {
-        "reportType": sp.reports.ReportType.VENDOR_INVENTORY_REPORT,
-        "reportId": mock_report_id,
-        "processingStatus": sp.reports.ProcessingStatus.DONE,
-        "createdTime": "2023-01-01T00:00:00",
-    } == reports_client.create_report(
+    assert mock_report == reports_client.create_report(
         sp.reports.CreateReportSpecification(
             reportType=sp.reports.ReportType.VENDOR_SALES_REPORT,
             marketplaceIds=[sp.reports.MarketPlaceId.UNITED_STATES_OF_AMERICA],
             dataStartTime=sp.utils.date.amazon_isoformat(sp.utils.date.datetime_utcnow()),
         )
-    ).dict(
-        exclude_none=True
     )
 
 
 @responses.activate
-def test_get_report(reports_client: sp.reports.Client, mock_report_id: str) -> None:
-    assert {
-        "reportType": sp.reports.ReportType.VENDOR_INVENTORY_REPORT,
-        "reportId": mock_report_id,
-        "processingStatus": sp.reports.ProcessingStatus.DONE,
-        "createdTime": "2023-01-01T00:00:00",
-    } == reports_client.get_report(mock_report_id).dict(exclude_none=True)
+def test_get_reports(reports_client: sp.reports.Client, mock_report: sp.reports.Report) -> None:
+    assert [mock_report] == reports_client.get_reports()
+
+
+@responses.activate
+def test_get_report(reports_client: sp.reports.Client, mock_report: sp.reports.Report) -> None:
+    assert mock_report == reports_client.get_report(mock_report.reportId)
 
 
 @responses.activate
 def test_get_report_document(
-    reports_client: sp.reports.Client, mock_report_document_id: str, mock_report_document_url: str
+    reports_client: sp.reports.Client, mock_report_document: sp.reports.ReportDocument
 ) -> None:
-    assert {
-        "reportDocumentId": mock_report_document_id,
-        "url": mock_report_document_url,
-    } == reports_client.get_report_document(mock_report_document_id).dict(exclude_none=True)
+    assert mock_report_document == reports_client.get_report_document(
+        mock_report_document.reportDocumentId
+    )
 
 
 @responses.activate
 def test_get_report_document_content(
-    reports_client: sp.reports.Client, mock_report_document_id: str
+    reports_client: sp.reports.Client, mock_report_document: sp.reports.ReportDocument
 ) -> None:
-    assert {} == reports_client.get_report_document_content(mock_report_document_id)
+    assert {} == reports_client.get_report_document_content(mock_report_document.reportDocumentId)
+
+
+@responses.activate
+def test_download_report_document_content(
+    reports_client: sp.reports.Client,
+    mock_report_document: sp.reports.ReportDocument,
+    mock_report_document_content: bytes,
+    tmp_path: pathlib.Path,
+) -> None:
+    file_path = str(tmp_path / f"{mock_report_document.reportDocumentId}.json")
+    reports_client.download_report_document_content(
+        mock_report_document.reportDocumentId, file_path
+    )
+
+    with open(file_path) as f:
+        assert gzip.decompress(mock_report_document_content).decode() == f.read()
