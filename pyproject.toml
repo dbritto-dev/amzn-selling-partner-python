@@ -26,7 +26,9 @@ classifiers = [
   "Topic :: Internet :: WWW/HTTP",
   "Topic :: Security",
 ]
-dependencies = ["requests==2.28.2", "requests_aws4auth==1.2.2", "boto3==1.26.89"]
+dependencies = [
+  "requests==2.28.2", "requests_aws4auth==1.2.2", "boto3==1.26.89", "pydantic==1.10.7"
+]
 readme = "README.md"
 requires-python = ">=3.9"
 dynamic = ["version", "description"]
@@ -87,4 +89,4 @@ testpaths = ["tests"]
 
 [tool.coverage.run]
 branch = true
-source = ["amzn_selling_partner"]
+source = ["./amzn_selling_partner/"]
