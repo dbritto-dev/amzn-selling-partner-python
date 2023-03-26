@@ -107,8 +107,7 @@ def test_get_operation_endpoint(reports_client: sp.reports.Client) -> None:
 
 
 @responses.activate
-def test_create_report(mock_report: sp.reports.Report) -> None:
-    reports_client = sp.reports.Client()
+def test_create_report(reports_client: sp.reports.Client, mock_report: sp.reports.Report) -> None:
     assert mock_report == reports_client.create_report(
         sp.reports.CreateReportSpecification(
             reportType=sp.reports.ReportType.VENDOR_SALES_REPORT,
