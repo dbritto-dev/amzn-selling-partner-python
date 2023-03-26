@@ -1,7 +1,4 @@
 import datetime
-import gzip
-import pathlib
-import uuid
 
 import pytest
 import responses
