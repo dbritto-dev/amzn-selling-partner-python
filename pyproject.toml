@@ -89,4 +89,4 @@ testpaths = ["tests"]
 
 [tool.coverage.run]
 branch = true
-source = ["./amzn_selling_partner/"]
+source = ["amzn_selling_partner"]
