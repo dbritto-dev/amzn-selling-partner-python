@@ -46,6 +46,20 @@ def mock_purchase_order() -> sp.vendor.orders.Order:
     )
 
 
+@pytest.fixture
+def mock_next_purchase_order() -> sp.vendor.orders.Order:
+    return sp.vendor.orders.Order(
+        purchaseOrderNumber=f"purchase-order-{int(sp.utils.date.datetime_utcnow().timestamp())}",
+        orderDetails=sp.vendor.orders.OrderDetails(
+            purchaseOrderDate="",
+            purchaseOrderType=sp.vendor.orders.PurchaseOrderType.REGULAR_ORDER,
+            purchaseOrderStateChangedDate="",
+            items=[],
+        ),
+        purchaseOrderState=sp.vendor.orders.PurchaseOrderState.CLOSED,
+    )
+
+
 @pytest.fixture(autouse=True)
 def mock_responses(mock_purchase_order: sp.vendor.orders.Order) -> None:
     responses.get(
@@ -89,9 +103,78 @@ def test_get_purchase_orders(
 
 
 @responses.activate
+def test_get_purchase_orders_with_next_page(
+    vendor_orders_client: sp.vendor.orders.Client,
+    mock_purchase_order: sp.vendor.orders.Order,
+    mock_next_purchase_order: sp.vendor.orders.Order,
+):
+    mock_next_token = sp.utils.date.datetime_utcnow().timestamp().hex()
+    responses.replace(
+        responses.GET,
+        "https://sellingpartnerapi-na.amazon.com/vendor/orders/v1/purchaseOrders",
+        json={
+            "payload": {
+                "orders": [mock_purchase_order.dict(exclude_none=True)],
+                "pagination": {"nextToken": mock_next_token},
+            },
+        },
+    )
+    responses.add(
+        responses.GET,
+        "https://sellingpartnerapi-na.amazon.com/vendor/orders/v1/purchaseOrders",
+        json={"payload": {"orders": [mock_next_purchase_order.dict(exclude_none=True)]}},
+    )
+
+    assert [
+        mock_purchase_order,
+        mock_next_purchase_order,
+    ] == vendor_orders_client.get_purchase_orders()
+
+
+@responses.activate
+def test_get_purchase_orders_no_payload(vendor_orders_client: sp.vendor.orders.Client):
+    responses.replace(
+        responses.GET,
+        "https://sellingpartnerapi-na.amazon.com/vendor/orders/v1/purchaseOrders",
+        json={"payload": None},
+    )
+
+    assert [] == vendor_orders_client.get_purchase_orders()
+
+
+@responses.activate
+def test_get_purchase_orders_no_orders(vendor_orders_client: sp.vendor.orders.Client):
+    responses.replace(
+        responses.GET,
+        "https://sellingpartnerapi-na.amazon.com/vendor/orders/v1/purchaseOrders",
+        json={"payload": {"orders": None}},
+    )
+
+    assert [] == vendor_orders_client.get_purchase_orders()
+
+
+@responses.activate
 def test_get_purchase_order(
     vendor_orders_client: sp.vendor.orders.Client, mock_purchase_order: sp.vendor.orders.Order
 ):
     assert mock_purchase_order == vendor_orders_client.get_purchase_order(
         mock_purchase_order.purchaseOrderNumber
     )
+
+
+@responses.activate
+def test_get_purchase_order_none_purchase_order_number(
+    vendor_orders_client: sp.vendor.orders.Client,
+):
+    with pytest.raises(ValueError):
+        vendor_orders_client.get_purchase_order(None)  # type: ignore
+
+
+@responses.activate
+def test_get_purchase_order_non_string_purchase_order_number(
+    vendor_orders_client: sp.vendor.orders.Client,
+):
+    with pytest.raises(ValueError):
+        vendor_orders_client.get_purchase_order(
+            sp.utils.date.datetime_utcnow().timestamp()  # type: ignore
+        )
