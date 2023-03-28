@@ -46,6 +46,16 @@ def mock_report() -> sp.reports.Report:
 
 
 @pytest.fixture
+def mock_next_report() -> sp.reports.Report:
+    return sp.reports.Report(
+        reportId=f"report-document-{int(sp.utils.date.datetime_utcnow().timestamp())}",
+        reportType=sp.reports.ReportType.VENDOR_INVENTORY_REPORT,
+        processingStatus=sp.reports.ProcessingStatus.DONE,
+        createdTime="2023-01-01T00:00:00",
+    )
+
+
+@pytest.fixture
 def mock_report_document() -> sp.reports.ReportDocument:
     return sp.reports.ReportDocument(
         reportDocumentId=f"report-document-{int(sp.utils.date.datetime_utcnow().timestamp())}",
@@ -123,8 +133,42 @@ def test_get_reports(reports_client: sp.reports.Client, mock_report: sp.reports.
 
 
 @responses.activate
+def test_get_reports_with_next_page(
+    reports_client: sp.reports.Client,
+    mock_report: sp.reports.Report,
+    mock_next_report: sp.reports.Report,
+) -> None:
+    mock_next_token = sp.utils.date.datetime_utcnow().timestamp().hex()
+
+    responses.replace(
+        responses.GET,
+        "https://sellingpartnerapi-na.amazon.com/reports/2021-06-30/reports",
+        json={"reports": [mock_report.dict(exclude_none=True)], "nextToken": mock_next_token},
+    )
+    responses.add(
+        responses.GET,
+        "https://sellingpartnerapi-na.amazon.com/reports/2021-06-30/reports",
+        json={"reports": [mock_next_report.dict(exclude_none=True)]},
+    )
+
+    assert [mock_report, mock_next_report] == reports_client.get_reports()
+
+
+@responses.activate
 def test_get_report(reports_client: sp.reports.Client, mock_report: sp.reports.Report) -> None:
     assert mock_report == reports_client.get_report(mock_report.reportId)
+
+
+@responses.activate
+def test_get_report_none_report_id(reports_client: sp.reports.Client) -> None:
+    with pytest.raises(ValueError):
+        reports_client.get_report(None)  # type: ignore
+
+
+@responses.activate
+def test_get_report_non_string_report_id(reports_client: sp.reports.Client) -> None:
+    with pytest.raises(ValueError):
+        reports_client.get_report(int(sp.utils.date.datetime_utcnow().timestamp()))  # type: ignore
 
 
 @responses.activate
@@ -137,10 +181,44 @@ def test_get_report_document(
 
 
 @responses.activate
+def test_get_report_document_none_report_document_id(reports_client: sp.reports.Client) -> None:
+    with pytest.raises(ValueError):
+        reports_client.get_report_document(None)  # type: ignore
+
+
+@responses.activate
+def test_get_report_document_non_string_report_document_id(
+    reports_client: sp.reports.Client,
+) -> None:
+    with pytest.raises(ValueError):
+        reports_client.get_report_document(
+            int(sp.utils.date.datetime_utcnow().timestamp())  # type: ignore
+        )
+
+
+@responses.activate
 def test_get_report_document_content(
     reports_client: sp.reports.Client, mock_report_document: sp.reports.ReportDocument
 ) -> None:
     assert {} == reports_client.get_report_document_content(mock_report_document.reportDocumentId)
+
+
+@responses.activate
+def test_get_report_document_content_none_report_document_id(
+    reports_client: sp.reports.Client,
+) -> None:
+    with pytest.raises(ValueError):
+        reports_client.get_report_document_content(None)  # type: ignore
+
+
+@responses.activate
+def test_get_report_document_content_non_string_report_document_id(
+    reports_client: sp.reports.Client,
+) -> None:
+    with pytest.raises(ValueError):
+        reports_client.get_report_document_content(
+            int(sp.utils.date.datetime_utcnow().timestamp())  # type: ignore
+        )
 
 
 @responses.activate
@@ -157,3 +235,51 @@ def test_download_report_document_content(
 
     with open(file_path) as f:
         assert gzip.decompress(mock_report_document_content).decode() == f.read()
+
+
+@responses.activate
+def test_download_report_document_content_none_report_document_id(
+    reports_client: sp.reports.Client,
+    mock_report_document: sp.reports.ReportDocument,
+    tmp_path: pathlib.Path,
+) -> None:
+    file_path = str(tmp_path / f"{mock_report_document.reportDocumentId}.json")
+
+    with pytest.raises(ValueError):
+        reports_client.download_report_document_content(None, file_path)  # type: ignore
+
+
+@responses.activate
+def test_download_report_document_content_non_string_report_document_id(
+    reports_client: sp.reports.Client,
+    mock_report_document: sp.reports.ReportDocument,
+    tmp_path: pathlib.Path,
+) -> None:
+    file_path = str(tmp_path / f"{mock_report_document.reportDocumentId}.json")
+
+    with pytest.raises(ValueError):
+        reports_client.download_report_document_content(
+            int(sp.utils.date.datetime_utcnow().timestamp()), file_path  # type: ignore
+        )
+
+
+@responses.activate
+def test_download_report_document_content_none_file_path(
+    reports_client: sp.reports.Client,
+    mock_report_document: sp.reports.ReportDocument,
+) -> None:
+    with pytest.raises(ValueError):
+        reports_client.download_report_document_content(
+            mock_report_document.reportDocumentId, None  # type: ignore
+        )
+
+
+@responses.activate
+def test_download_report_document_content_non_string_file_path(
+    reports_client: sp.reports.Client,
+    mock_report_document: sp.reports.ReportDocument,
+) -> None:
+    with pytest.raises(ValueError):
+        reports_client.download_report_document_content(
+            mock_report_document.reportDocumentId, int(sp.utils.date.datetime_utcnow().timestamp())  # type: ignore
+        )
