@@ -1,9 +1,8 @@
+import copy
 import gzip
 import json
 import time
 import typing
-import copy
-
 
 from .. import client, utils
 from . import models
@@ -91,6 +90,7 @@ class Client(client.BaseClient):
 
     def _get_report_document_raw_content(self, report_document_id: str) -> bytes:
         _download_session = copy.copy(self.http_session)
+        _download_session.auth = None
         _download_response = _download_session.get(
             self.get_report_document(report_document_id).url
         )
