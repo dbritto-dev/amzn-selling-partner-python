@@ -44,12 +44,7 @@ def test(session: nox.Session) -> None:
 @nox.session
 def coverage(session: nox.Session) -> None:
     session.install(".[test]")
-    session.run(
-        "pytest",
-        "--cov",
-        "--cov-report=term",
-        "--cov-report=html"
-    )
+    session.run("pytest", "--cov", "--cov-report=html")
 
 
 @nox.session
