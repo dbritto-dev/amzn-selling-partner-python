@@ -14,7 +14,7 @@ API resources and it is compatible with the latest versions of the Amazon Sellin
 - AWS Lambda Demo: https://github.com/aws-quickstart/quickstart-amazon-selling-partner-api/blob/main/functions/source/ExampleLambda/lambda_function.py
 - Get AWS secret keys: https://docs.aws.amazon.com/powershell/latest/userguide/pstools-appendix-sign-up.html
 - Reports Tutorial: https://developer-docs.amazon.com/sp-api/docs/reports-api-v2021-06-30-tutorial-request-a-report
-- Report Types for Vendor: https://developer-docs.amazon.com/sp-api/docs/report-type-values#vendor-retail-analytics-reports
+- Report Types for Vendor: https://developer-docs.amazon.com/sp-api/docs/report-type-values-analytics#vendor-retail-analytics-reports
 - Market Place Ids: https://developer-docs.amazon.com/sp-api/docs/marketplace-ids
 - API Endpoints and Regions: https://developer-docs.amazon.com/sp-api/docs/sp-api-endpoints
 - API Endpoints and Regions (Sandbox): https://developer-docs.amazon.com/sp-api/docs/the-selling-partner-api-sandbox
