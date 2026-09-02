@@ -22,11 +22,14 @@ classifiers = [
   "License :: OSI Approved :: MIT License",
   "Programming Language :: Python :: 3 :: Only",
   "Programming Language :: Python :: 3.10",
+  "Programming Language :: Python :: 3.11",
+  "Programming Language :: Python :: 3.12",
+  "Programming Language :: Python :: 3.13",
   "Topic :: Internet :: WWW/HTTP",
   "Topic :: Security",
 ]
 dependencies = [
-  "requests==2.34.2", "requests_aws4auth==1.2.2", "boto3==1.26.89",
+  "requests==2.34.2", "requests_aws4auth==1.2.2", "boto3==1.43.86",
   "pydantic==1.10.13"
 ]
 readme = "README.md"
@@ -38,20 +41,25 @@ name = "amzn_selling_partner"
 
 [project.optional-dependencies]
 dev = [
-  "ruff==0.0.254", "black==26.3.1", "pytest==9.1.1", "coverage==7.10.6",
+  "ruff==0.16.5", "pytest==9.1.1", "coverage==7.10.6",
   "pytest-cov==7.1.0", "nox==2022.11.21", "bandit==1.9.4", "safety==2.3.4",
   "responses==0.26.3", "ty==0.0.77"
 ]
-lint = ["ruff==0.0.254", "black==26.3.1"]
+lint = ["ruff==0.16.5"]
 test = [
   "pytest==9.1.1", "coverage==7.10.6", "pytest-cov==7.1.0", "nox==2022.11.21",
   "responses==0.26.3"
 ]
-security-test = ["bandit==1.9.4", "safety==2.3.4"]
+security-test = ["bandit==1.9.4", "safety==2.3.4", "setuptools<81"]
 
 [tool.ruff]
 line-length = 99
 target-version = "py310"
+exclude = [
+  "build", "configs", "*.egg-info", ".github", ".githooks", ".vscode", ".nox"
+]
+
+[tool.ruff.lint]
 select = [
   # flake8-bugbear
   "B",
@@ -71,20 +79,19 @@ select = [
   "PLE", "PLR", "PLW"
 ]
 ignore = ["E501", "B904", "B008"]
-exclude = [
-  "build", "configs", "*.egg-info", ".github", ".githooks", ".vscode", ".nox"
-]
 
-[tool.ruff.pydocstyle]
+[tool.ruff.lint.pydocstyle]
 convention = "google"
 
-[tool.ruff.per-file-ignores]
-"tests/*.py" = ["S101"]
+[tool.ruff.lint.per-file-ignores]
+"tests/*.py" = ["S101", "S106"]
 
-[tool.black]
-line-length = 99
-target-version = ["py310"]
-preview = true
+[tool.ruff.lint.pylint]
+max-args = 10
+
+[tool.ruff.format]
+quote-style = "double"
+indent-style = "space"
 
 [tool.ty.rules]
 deprecated = "ignore"

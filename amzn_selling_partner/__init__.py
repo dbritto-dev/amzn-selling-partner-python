@@ -1,7 +1,6 @@
 """
-  Amazon Selling Partner API for Python
+Amazon Selling Partner API for Python
 """
-
 
 from . import client, reports, utils, vendor
 

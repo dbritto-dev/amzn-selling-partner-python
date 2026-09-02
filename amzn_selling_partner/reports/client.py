@@ -77,9 +77,9 @@ class Client(client.BaseClient):
             self.get_operation_endpoint(f"documents/{report_document_id}"),
             params=(
                 {
-                    "enableContentEncodingUrlHeader": str(
-                        enable_content_encoding_url_header
-                    ).lower(),
+                    "enableContentEncodingUrlHeader": (
+                        str(enable_content_encoding_url_header).lower()
+                    ),
                 }
                 if enable_content_encoding_url_header is not None
                 else None

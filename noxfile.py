@@ -52,8 +52,8 @@ def lint(session: nox.Session) -> None:
     lint_files = get_lint_files(session)
 
     session.install(".[lint]")
-    session.run("ruff", *lint_files)
-    session.run("black", "--check", *lint_files)
+    session.run("ruff", "check", *lint_files)
+    session.run("ruff", "format", "--check", *lint_files)
 
 
 @nox.session
@@ -62,8 +62,8 @@ def lint_staged(session: nox.Session) -> None:
 
     if lint_staged_files:
         session.install(".[lint]")
-        session.run("ruff", *lint_staged_files)
-        session.run("black", "--check", *lint_staged_files)
+        session.run("ruff", "check", *lint_staged_files)
+        session.run("ruff", "format", "--check", *lint_staged_files)
 
 
 @nox.session
@@ -75,5 +75,9 @@ def type_check(session: nox.Session) -> None:
 @nox.session
 def security_test(session: nox.Session) -> None:
     session.install(".[security-test]")
-    session.run("bandit", "-r", "app/")
-    session.run("safety", "check")
+    session.run("bandit", "-r", "amzn_selling_partner/")
+    # SFTY-20260721-58460 flags every setuptools release below 83.0.0, but 83+ removed
+    # `pkg_resources`, which safety==2.3.4 itself still requires to run. setuptools is a
+    # dev-only build tool here (not a runtime dependency of the published package), so the
+    # finding is ignored until safety can run without pkg_resources.
+    session.run("safety", "check", "--ignore", "SFTY-20260721-58460")

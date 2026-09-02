@@ -81,7 +81,10 @@ def test_client_session_auth_reuses_single_access_token_instance(
         type(
             "DummyTemporaryCredentials",
             (),
-            {"__init__": lambda _, *args, **kwargs: None, "get_refreshable_credentials": lambda _: object()},
+            {
+                "__init__": lambda _, *args, **kwargs: None,
+                "get_refreshable_credentials": lambda _: object(),
+            },
         ),
     )
     monkeypatch.setattr(requests_aws4auth.AWS4Auth, "__init__", lambda self, *args, **kwargs: None)
