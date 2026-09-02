@@ -21,30 +21,16 @@ API resources and it is compatible with the latest versions of the Amazon Sellin
 
 ## Installation
 
-### Create Virtual Environment
+### Install with uv
 
 ```sh
-python3 -m pip install virtualenv
+uv sync
 ```
 
-### Enable Virtual Environment
-
-For Linux and OS X
+Install the development tools with:
 
 ```sh
-. ./venv/bin/activate
-```
-
-For Windows
-
-```sh
-. ./venv/Scripts/activate
-```
-
-### Upgrade PIP
-
-```sh
-python -m pip install --upgrade pip
+uv sync --extra dev
 ```
 
 ### Install from a GitHub private repo
@@ -56,12 +42,12 @@ TOKEN="<token>" pip install git+https://dbritto-dev:$TOKEN@github.com/dbritto-de
 ### Install from source
 
 ```sh
-pip install .
+uv pip install .
 ```
 
 ## Requirements
 
-- Python 3.9 (PyPy supported)
+- Python 3.10 or later (PyPy supported)
 
 ## Usage
 
@@ -150,5 +136,11 @@ sp_vendor_orders_client = sp.vendor.orders.Client(sandbox=True)
 ### Install from source
 
 ```sh
-pip install .[dev]
+uv sync --extra dev
+```
+
+### Type checking
+
+```sh
+uv run ty check amzn_selling_partner
 ```
