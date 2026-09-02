@@ -28,7 +28,7 @@ classifiers = [
 ]
 dependencies = [
   "requests==2.34.2", "requests_aws4auth==1.2.2", "boto3==1.26.89",
-  "pydantic==1.10.7"
+  "pydantic==1.10.13"
 ]
 readme = "README.md"
 requires-python = ">=3.9"
@@ -39,11 +39,11 @@ name = "amzn_selling_partner"
 
 [project.optional-dependencies]
 dev = [
-  "ruff==0.0.254", "black==23.1.0", "pytest==9.1.1", "coverage==7.2.3",
+  "ruff==0.0.254", "black==26.3.1", "pytest==9.1.1", "coverage==7.2.3",
   "pytest-cov==7.1.0", "nox==2022.11.21", "bandit==1.9.4", "safety==2.3.4",
   "responses==0.26.3"
 ]
-lint = ["ruff==0.0.254", "black==23.1.0"]
+lint = ["ruff==0.0.254", "black==26.3.1"]
 test = [
   "pytest==9.1.1", "coverage==7.2.3", "pytest-cov==7.1.0", "nox==2022.11.21",
   "responses==0.26.3"
