@@ -60,7 +60,7 @@ def test_base_client_get_operation_endpoint(base_client: sp.client.BaseClient) -
 def test_client_session_auth_reuses_single_access_token_instance(
     monkeypatch: pytest.MonkeyPatch,
 ) -> None:
-    auth_module = importlib.import_module("amzn_selling_partner.client.auth")
+    auth_module = sp.client.auth
     importlib.reload(auth_module)
 
     created_token_instances = []
