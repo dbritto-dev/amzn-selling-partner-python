@@ -1,4 +1,5 @@
 import datetime
+from decimal import Decimal
 
 import pytest
 import responses
@@ -79,6 +80,28 @@ def vendor_orders_client() -> sp.vendor.orders.Client:
 
 def test_get_resource_path(vendor_orders_client: sp.vendor.orders.Client) -> None:
     assert "vendor/orders/v1" == vendor_orders_client.get_resource_path()
+
+
+def test_vendor_order_models_match_sp_api_types() -> None:
+    money = sp.vendor.orders.Money(
+        currencyCode="USD",
+        amount="12.34",
+        unitOfMeasure=sp.vendor.orders.MoneyUnitOfMeasure.POUNDS,
+    )
+    quantity = sp.vendor.orders.ItemQuantity(unitOfMeasure=sp.vendor.orders.UnitOfMeasure.CASES)
+    address = sp.vendor.orders.Address(
+        name="Name",
+        addressLine1="Street",
+        countryCode="US",
+        county="County",
+        district="District",
+    )
+
+    assert money.amount == Decimal("12.34")
+    assert money.unitOfMeasure == sp.vendor.orders.MoneyUnitOfMeasure.POUNDS
+    assert quantity.unitOfMeasure == sp.vendor.orders.UnitOfMeasure.CASES
+    assert address.county == "County"
+    assert address.district == "District"
 
 
 def test_get_resource_endpoint(vendor_orders_client: sp.vendor.orders.Client) -> None:

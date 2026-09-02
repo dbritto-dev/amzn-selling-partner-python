@@ -60,6 +60,7 @@ def mock_report_document() -> sp.reports.ReportDocument:
     return sp.reports.ReportDocument(
         reportDocumentId=f"report-document-{int(sp.utils.date.datetime_utcnow().timestamp())}",
         url=f"https://tortuga-prod-na.s3-external-1.amazonaws.com/{uuid.uuid4().hex}",
+        compressionAlgorithm=sp.reports.CompressionAlgorithm.GZIP,
     )
 
 
@@ -127,6 +128,31 @@ def test_create_report(reports_client: sp.reports.Client, mock_report: sp.report
     )
 
 
+def test_report_models_accept_current_sp_api_values() -> None:
+    report_options = sp.reports.ReportOptions(reportPeriod="DAY", customOption="value")
+    specification = sp.reports.CreateReportSpecification(
+        reportType="FEE_DISCOUNTS_REPORT",
+        marketplaceIds=["new-marketplace-id"],
+        reportOptions=report_options,
+    )
+    query = sp.reports.GetReportsQuery(
+        reportTypes=["GET_MERCHANT_LISTINGS_ALL_DATA"],
+        marketplaceIds=["new-marketplace-id"],
+    )
+
+    assert specification.dict()["reportOptions"] == {
+        "reportPeriod": sp.reports.ReportPeriod.DAY,
+        "distributorView": None,
+        "sellingProgram": None,
+        "customOption": "value",
+    }
+    assert query.reportTypes == ["GET_MERCHANT_LISTINGS_ALL_DATA"]
+
+
+def test_marketplace_id_spain_alias_is_backwards_compatible() -> None:
+    assert sp.reports.MarketPlaceId.SPAIN == sp.reports.MarketPlaceId.PAIN
+
+
 @responses.activate
 def test_get_reports(reports_client: sp.reports.Client, mock_report: sp.reports.Report) -> None:
     assert [mock_report] == reports_client.get_reports()
@@ -177,6 +203,34 @@ def test_get_report_document(
 ) -> None:
     assert mock_report_document == reports_client.get_report_document(
         mock_report_document.reportDocumentId
+    )
+
+
+@responses.activate
+def test_get_report_document_with_content_encoding_header(
+    reports_client: sp.reports.Client, mock_report_document: sp.reports.ReportDocument
+) -> None:
+    assert mock_report_document == reports_client.get_report_document(
+        mock_report_document.reportDocumentId,
+        enable_content_encoding_url_header=True,
+    )
+    assert "enableContentEncodingUrlHeader=true" in responses.calls[-1].request.url
+
+
+@responses.activate
+def test_get_report_document_content_with_content_encoding_header(
+    reports_client: sp.reports.Client, mock_report_document: sp.reports.ReportDocument
+) -> None:
+    responses.replace(
+        responses.GET,
+        mock_report_document.url,
+        body=gzip.compress(b"{}"),
+        headers={"Content-Encoding": "gzip"},
+    )
+
+    assert {} == reports_client.get_report_document_content(
+        mock_report_document.reportDocumentId,
+        enable_content_encoding_url_header=True,
     )
 
 

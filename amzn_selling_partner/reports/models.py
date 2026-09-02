@@ -22,7 +22,8 @@ class MarketPlaceId(str, enum.Enum):
     UNITED_STATES_OF_AMERICA = "ATVPDKIKX0DER"
     MEXICO = "A1AM78C64UM0Y8"
     BRAZIL = "A2Q3Y263D00KWC"
-    PAIN = "A1RKKUPIHCS9HS"
+    SPAIN = "A1RKKUPIHCS9HS"
+    PAIN = SPAIN
     UNITED_KINGDOM = "A1F83G8C2ARO7P"
     FRANCE = "A13V1IB3VIYZZH"
     BELGIUM = "AMEN7PMS3EDWL"
@@ -77,10 +78,13 @@ class ReportOptions(pydantic.BaseModel):
     distributorView: typing.Optional[DistributorView] = None
     sellingProgram: typing.Optional[SellingProgram] = None
 
+    class Config:
+        extra = "allow"
+
 
 class CreateReportSpecification(pydantic.BaseModel):
-    reportType: ReportType
-    marketplaceIds: typing.List[MarketPlaceId]
+    reportType: str
+    marketplaceIds: typing.List[str]
     reportOptions: typing.Optional[ReportOptions] = None
     dataStartTime: typing.Optional[str] = None
     dataEndTime: typing.Optional[str] = None
@@ -91,9 +95,9 @@ class CreateReportResponse(pydantic.BaseModel):
 
 
 class GetReportsQuery(pydantic.BaseModel):
-    reportTypes: typing.Optional[typing.List[ReportType]] = None
+    reportTypes: typing.Optional[typing.List[str]] = None
     processingStatuses: typing.Optional[typing.List[ProcessingStatus]] = None
-    marketplaceIds: typing.Optional[typing.List[MarketPlaceId]] = None
+    marketplaceIds: typing.Optional[typing.List[str]] = None
     pageSize: typing.Optional[int] = None
     createdSince: typing.Optional[str] = None
     createdUntil: typing.Optional[str] = None
@@ -102,10 +106,10 @@ class GetReportsQuery(pydantic.BaseModel):
 
 class Report(pydantic.BaseModel):
     reportId: str
-    reportType: ReportType
+    reportType: str
     createdTime: str
     processingStatus: ProcessingStatus
-    marketplaceIds: typing.Optional[typing.List[MarketPlaceId]] = None
+    marketplaceIds: typing.Optional[typing.List[str]] = None
     dataStartTime: typing.Optional[str] = None
     dataEndTime: typing.Optional[str] = None
     reportScheduleId: typing.Optional[str] = None

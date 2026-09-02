@@ -1,6 +1,7 @@
 # Built-in packages
 import enum
 import typing
+from decimal import Decimal
 
 # Third-party packages
 import pydantic
@@ -22,6 +23,13 @@ class PurchaseOrderState(str, enum.Enum):
 class UnitOfMeasure(str, enum.Enum):
     CASES = "Cases"
     EACHES = "Eaches"
+
+
+class MoneyUnitOfMeasure(str, enum.Enum):
+    POUNDS = "POUNDS"
+    OUNCES = "OUNCES"
+    GRAMS = "GRAMS"
+    KILOGRAMS = "KILOGRAMS"
 
 
 class MethodOfPayment(str, enum.Enum):
@@ -73,12 +81,13 @@ DateTimeInterval = typing.NewType("DateTimeInterval", str)
 
 class Money(pydantic.BaseModel):
     currencyCode: str
-    amount: typing.Optional[float] = None
+    amount: typing.Optional[Decimal] = None
+    unitOfMeasure: typing.Optional[MoneyUnitOfMeasure] = None
 
 
 class ItemQuantity(pydantic.BaseModel):
     amount: typing.Optional[int] = None
-    unitOfMeasure: typing.Optional[str] = None
+    unitOfMeasure: typing.Optional[UnitOfMeasure] = None
     unitSize: typing.Optional[int] = None
 
 
@@ -108,6 +117,8 @@ class Address(pydantic.BaseModel):
     addressLine3: typing.Optional[str] = None
     city: typing.Optional[str] = None
     country: typing.Optional[str] = None
+    county: typing.Optional[str] = None
+    district: typing.Optional[str] = None
     stateOrRegion: typing.Optional[str] = None
     postalCode: typing.Optional[str] = None
     phone: typing.Optional[str] = None

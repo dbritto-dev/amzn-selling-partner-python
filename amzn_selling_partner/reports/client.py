@@ -70,9 +70,20 @@ class Client(client.BaseClient):
     def _get_report_document_response(
         self,
         report_document_id: str,
+        *,
+        enable_content_encoding_url_header: typing.Optional[bool] = None,
     ) -> models.ReportDocument:
         _response = self.http_session.get(
-            self.get_operation_endpoint(f"documents/{report_document_id}")
+            self.get_operation_endpoint(f"documents/{report_document_id}"),
+            params=(
+                {
+                    "enableContentEncodingUrlHeader": str(
+                        enable_content_encoding_url_header
+                    ).lower(),
+                }
+                if enable_content_encoding_url_header is not None
+                else None
+            ),
         )
         _response.raise_for_status()
         return models.ReportDocument(**_response.json())
@@ -80,39 +91,74 @@ class Client(client.BaseClient):
     def get_report_document(
         self,
         report_document_id: str,
+        *,
+        enable_content_encoding_url_header: typing.Optional[bool] = None,
     ) -> models.ReportDocument:
         if not report_document_id or not isinstance(report_document_id, str):
             raise ValueError(
                 f"report_document_id must be a string present but found `{report_document_id}`"
             )
 
-        return self._get_report_document_response(report_document_id)
+        return self._get_report_document_response(
+            report_document_id,
+            enable_content_encoding_url_header=enable_content_encoding_url_header,
+        )
 
-    def _get_report_document_raw_content(self, report_document_id: str) -> bytes:
+    def _get_report_document_raw_content(
+        self,
+        report_document_id: str,
+        *,
+        enable_content_encoding_url_header: typing.Optional[bool] = None,
+    ) -> bytes:
+        _report_document = self.get_report_document(
+            report_document_id,
+            enable_content_encoding_url_header=enable_content_encoding_url_header,
+        )
         _download_session = copy.copy(self.http_session)
         _download_session.auth = None
-        _download_response = _download_session.get(
-            self.get_report_document(report_document_id).url
-        )
+        _download_response = _download_session.get(_report_document.url)
         _download_response.raise_for_status()
-        return gzip.decompress(_download_response.content)
+        if (
+            _report_document.compressionAlgorithm == models.CompressionAlgorithm.GZIP
+            and _download_response.headers.get("Content-Encoding", "").lower() != "gzip"
+        ):
+            return gzip.decompress(_download_response.content)
+        return _download_response.content
 
-    def _get_report_document_content(self, report_document_id: str) -> typing.Dict:
-        _report_document_raw_content = self._get_report_document_raw_content(report_document_id)
+    def _get_report_document_content(
+        self,
+        report_document_id: str,
+        *,
+        enable_content_encoding_url_header: typing.Optional[bool] = None,
+    ) -> typing.Dict:
+        _report_document_raw_content = self._get_report_document_raw_content(
+            report_document_id,
+            enable_content_encoding_url_header=enable_content_encoding_url_header,
+        )
         return json.loads(_report_document_raw_content)
 
-    def get_report_document_content(self, report_document_id: str) -> typing.Dict:
+    def get_report_document_content(
+        self,
+        report_document_id: str,
+        *,
+        enable_content_encoding_url_header: typing.Optional[bool] = None,
+    ) -> typing.Dict:
         if not report_document_id or not isinstance(report_document_id, str):
             raise ValueError(
                 f"report_document_id must be a string present but found `{report_document_id}`"
             )
 
-        return self._get_report_document_content(report_document_id)
+        return self._get_report_document_content(
+            report_document_id,
+            enable_content_encoding_url_header=enable_content_encoding_url_header,
+        )
 
     def download_report_document_content(
         self,
         report_document_id: str,
         file_path: str,
+        *,
+        enable_content_encoding_url_header: typing.Optional[bool] = None,
     ) -> None:
         if not report_document_id or not isinstance(report_document_id, str):
             raise ValueError(
@@ -123,5 +169,9 @@ class Client(client.BaseClient):
             raise ValueError(f"file_path must be a string present but found `{file_path}`")
 
         utils.file.write_binary_file(
-            file_path, self._get_report_document_raw_content(report_document_id)
+            file_path,
+            self._get_report_document_raw_content(
+                report_document_id,
+                enable_content_encoding_url_header=enable_content_encoding_url_header,
+            ),
         )
