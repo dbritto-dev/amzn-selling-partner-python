@@ -43,7 +43,7 @@ name = "amzn_selling_partner"
 dev = [
   "ruff==0.16.5", "pytest==9.1.1", "coverage==7.10.6",
   "pytest-cov==7.1.0", "nox==2022.11.21", "bandit==1.9.4", "safety==2.3.4",
-  "responses==0.26.3"
+  "responses==0.26.3", "ty==0.0.77"
 ]
 lint = ["ruff==0.16.5"]
 test = [
@@ -92,6 +92,9 @@ max-args = 10
 [tool.ruff.format]
 quote-style = "double"
 indent-style = "space"
+
+[tool.ty.rules]
+deprecated = "ignore"
 
 [tool.pytest.ini_options]
 minversion = "6.0"

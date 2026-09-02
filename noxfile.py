@@ -4,7 +4,7 @@ import typing as t
 # Third-party packages
 import nox
 
-nox.options.sessions = ["lint", "test", "security_test"]
+nox.options.sessions = ["lint", "type_check", "test", "security_test"]
 
 
 def get_test_files(session: nox.Session) -> t.List[str]:
@@ -64,6 +64,12 @@ def lint_staged(session: nox.Session) -> None:
         session.install(".[lint]")
         session.run("ruff", "check", *lint_staged_files)
         session.run("ruff", "format", "--check", *lint_staged_files)
+
+
+@nox.session
+def type_check(session: nox.Session) -> None:
+    session.install(".[dev]")
+    session.run("ty", "check", "amzn_selling_partner")
 
 
 @nox.session
