@@ -80,7 +80,7 @@ class ClientSessionAuthAccessTokenData(typing.TypedDict):
 
 
 class ClientSessionAuthAccessToken:
-    data: typing.Optional[typing.Dict] = None
+    data: typing.Optional[ClientSessionAuthAccessTokenData] = None
 
     def __init__(self, *, client_id: str, client_secret: str, refresh_token: str) -> None:
         self.client_id = client_id
@@ -115,9 +115,12 @@ class ClientSessionAuthAccessToken:
 
     def get_access_token(self) -> str:
         if self.data is None or not self.current_time() < self.data.get("expires_at", 0):
-            self.data = self._get_access_token_data()  # type: ignore
+            self.data = self._get_access_token_data()
 
-        return self.data["access_token"]
+        data = self.data
+        if data is None:
+            raise RuntimeError("Access token data was not initialized")
+        return data["access_token"]
 
 
 class ClientSessionAuth(requests_aws4auth.AWS4Auth):
@@ -167,9 +170,9 @@ class ClientSessionAuth(requests_aws4auth.AWS4Auth):
             refresh_token=self.selling_partner_app_refresh_token,
         ).get_access_token()
 
-    def __call__(self, request):
-        request.headers["User-agent"] = self._get_user_agent()
-        request.headers["Content-Type"] = "application/json; charset=utf-8"
-        request.headers["Accept"] = "application/json"
-        request.headers["x-amz-access-token"] = self._get_access_token()
-        return super().__call__(request)
+    def __call__(self, req):
+        req.headers["User-agent"] = self._get_user_agent()
+        req.headers["Content-Type"] = "application/json; charset=utf-8"
+        req.headers["Accept"] = "application/json"
+        req.headers["x-amz-access-token"] = self._get_access_token()
+        return super().__call__(req)
