@@ -61,7 +61,7 @@ pip install .
 
 ## Requirements
 
-- Python 3.9 (PyPy supported)
+- Python 3.10 (PyPy supported)
 
 ## Usage
 

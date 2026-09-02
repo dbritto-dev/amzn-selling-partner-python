@@ -21,7 +21,6 @@ classifiers = [
   "Intended Audience :: Developers",
   "License :: OSI Approved :: MIT License",
   "Programming Language :: Python :: 3 :: Only",
-  "Programming Language :: Python :: 3.9",
   "Programming Language :: Python :: 3.10",
   "Programming Language :: Python :: 3.11",
   "Programming Language :: Python :: 3.12",
@@ -30,11 +29,11 @@ classifiers = [
   "Topic :: Security",
 ]
 dependencies = [
-  "requests==2.32.5", "requests_aws4auth==1.2.2", "boto3==1.43.86",
+  "requests==2.34.2", "requests_aws4auth==1.2.2", "boto3==1.43.86",
   "pydantic==1.10.13"
 ]
 readme = "README.md"
-requires-python = ">=3.9"
+requires-python = ">=3.10"
 dynamic = ["version", "description"]
 
 [tool.flit.module]
@@ -55,7 +54,7 @@ security-test = ["bandit==1.9.4", "safety==2.3.4", "setuptools<81"]
 
 [tool.ruff]
 line-length = 99
-target-version = "py39"
+target-version = "py310"
 exclude = [
   "build", "configs", "*.egg-info", ".github", ".githooks", ".vscode", ".nox"
 ]
