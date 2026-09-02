@@ -80,12 +80,11 @@ class ClientSessionAuthAccessTokenData(typing.TypedDict):
 
 
 class ClientSessionAuthAccessToken:
-    data: typing.Optional[ClientSessionAuthAccessTokenData] = None
-
     def __init__(self, *, client_id: str, client_secret: str, refresh_token: str) -> None:
         self.client_id = client_id
         self.client_secret = client_secret
         self.refresh_token = refresh_token
+        self.data: typing.Optional[ClientSessionAuthAccessTokenData] = None
 
     def current_time(self):
         return int(datetime.datetime.now().timestamp())
@@ -145,6 +144,11 @@ class ClientSessionAuth(requests_aws4auth.AWS4Auth):
         self.aws_selling_partner_role_session_name = aws_selling_partner_role_session_name
         self.aws_region = aws_region
         self.aws_service = "execute-api"
+        self.access_token = ClientSessionAuthAccessToken(
+            client_id=self.selling_partner_app_client_id,
+            client_secret=self.selling_partner_app_client_secret,
+            refresh_token=self.selling_partner_app_refresh_token,
+        )
 
         super().__init__(
             refreshable_credentials=ClientSessionAuthTemporaryCredentials(
@@ -164,11 +168,7 @@ class ClientSessionAuth(requests_aws4auth.AWS4Auth):
         return f"danilo-poc/0.0.1 (Language={language_info}; Platform={platform_info})"
 
     def _get_access_token(self):
-        return ClientSessionAuthAccessToken(
-            client_id=self.selling_partner_app_client_id,
-            client_secret=self.selling_partner_app_client_secret,
-            refresh_token=self.selling_partner_app_refresh_token,
-        ).get_access_token()
+        return self.access_token.get_access_token()
 
     def __call__(self, req):
         req.headers["User-agent"] = self._get_user_agent()
