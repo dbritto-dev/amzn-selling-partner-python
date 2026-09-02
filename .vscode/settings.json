@@ -16,7 +16,10 @@
   "editor.folding": true,
   // Formatting
   "editor.formatOnSave": true,
-  "python.formatting.provider": "black",
+  "python.formatting.provider": "none",
+  "[python]": {
+    "editor.defaultFormatter": "charliermarsh.ruff"
+  },
   // Linting
   "python.linting.enabled": true,
   "python.linting.pylintEnabled": false,

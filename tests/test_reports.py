@@ -339,7 +339,8 @@ def test_download_report_document_content_non_string_report_document_id(
 
     with pytest.raises(ValueError):
         reports_client.download_report_document_content(
-            int(sp.utils.date.datetime_utcnow().timestamp()), file_path  # type: ignore
+            int(sp.utils.date.datetime_utcnow().timestamp()),
+            file_path,  # type: ignore
         )
 
 
@@ -350,7 +351,8 @@ def test_download_report_document_content_none_file_path(
 ) -> None:
     with pytest.raises(ValueError):
         reports_client.download_report_document_content(
-            mock_report_document.reportDocumentId, None  # type: ignore
+            mock_report_document.reportDocumentId,
+            None,  # type: ignore
         )
 
 
@@ -361,5 +363,6 @@ def test_download_report_document_content_non_string_file_path(
 ) -> None:
     with pytest.raises(ValueError):
         reports_client.download_report_document_content(
-            mock_report_document.reportDocumentId, int(sp.utils.date.datetime_utcnow().timestamp())  # type: ignore
+            mock_report_document.reportDocumentId,
+            int(sp.utils.date.datetime_utcnow().timestamp()),  # type: ignore
         )

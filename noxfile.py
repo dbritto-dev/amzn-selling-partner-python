@@ -52,8 +52,8 @@ def lint(session: nox.Session) -> None:
     lint_files = get_lint_files(session)
 
     session.install(".[lint]")
-    session.run("ruff", *lint_files)
-    session.run("black", "--check", *lint_files)
+    session.run("ruff", "check", *lint_files)
+    session.run("ruff", "format", "--check", *lint_files)
 
 
 @nox.session
@@ -62,8 +62,8 @@ def lint_staged(session: nox.Session) -> None:
 
     if lint_staged_files:
         session.install(".[lint]")
-        session.run("ruff", *lint_staged_files)
-        session.run("black", "--check", *lint_staged_files)
+        session.run("ruff", "check", *lint_staged_files)
+        session.run("ruff", "format", "--check", *lint_staged_files)
 
 
 @nox.session

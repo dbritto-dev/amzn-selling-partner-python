@@ -9,7 +9,6 @@ trim_trailing_whitespace = true
 end_of_line = lf
 
 [*.py]
-profile = black
 indent_size = 4
 max_line_length = 99
 
