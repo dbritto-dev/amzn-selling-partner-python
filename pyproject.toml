@@ -41,12 +41,12 @@ name = "amzn_selling_partner"
 dev = [
   "ruff==0.0.254", "black==23.1.0", "pytest==9.1.1", "coverage==7.2.3",
   "pytest-cov==4.0.0", "nox==2022.11.21", "bandit==1.7.5", "safety==2.3.4",
-  "responses==0.23.1"
+  "responses==0.26.3"
 ]
 lint = ["ruff==0.0.254", "black==23.1.0"]
 test = [
   "pytest==9.1.1", "coverage==7.2.3", "pytest-cov==4.0.0", "nox==2022.11.21",
-  "responses==0.23.1"
+  "responses==0.26.3"
 ]
 security-test = ["bandit==1.7.5", "safety==2.3.4"]
 
