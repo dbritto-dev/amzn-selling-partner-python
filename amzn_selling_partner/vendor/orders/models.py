@@ -1,6 +1,7 @@
 # Built-in packages
 import enum
 import typing
+from decimal import Decimal
 
 # Third-party packages
 import pydantic
@@ -22,6 +23,13 @@ class PurchaseOrderState(str, enum.Enum):
 class UnitOfMeasure(str, enum.Enum):
     CASES = "Cases"
     EACHES = "Eaches"
+
+
+class MoneyUnitOfMeasure(str, enum.Enum):
+    POUNDS = "POUNDS"
+    OUNCES = "OUNCES"
+    GRAMS = "GRAMS"
+    KILOGRAMS = "KILOGRAMS"
 
 
 class MethodOfPayment(str, enum.Enum):
@@ -64,21 +72,52 @@ class SortOrder(str, enum.Enum):
     DESCENDING = "DESC"
 
 
-class PoItemState(enum.Enum):
+class PoItemState(str, enum.Enum):
     CANCELLED = "Cancelled"
+
+
+class AcknowledgementCode(str, enum.Enum):
+    ACCEPTED = "Accepted"
+    BACKORDERED = "Backordered"
+    REJECTED = "Rejected"
+
+
+class RejectionReason(str, enum.Enum):
+    TEMPORARILY_UNAVAILABLE = "TemporarilyUnavailable"
+    INVALID_PRODUCT_IDENTIFIER = "InvalidProductIdentifier"
+    OBSOLETE_PRODUCT = "ObsoleteProduct"
+
+
+class PurchaseOrderStatus(str, enum.Enum):
+    OPEN = "OPEN"
+    CLOSED = "CLOSED"
+
+
+class ItemConfirmationStatus(str, enum.Enum):
+    ACCEPTED = "ACCEPTED"
+    PARTIALLY_ACCEPTED = "PARTIALLY_ACCEPTED"
+    REJECTED = "REJECTED"
+    UNCONFIRMED = "UNCONFIRMED"
+
+
+class ItemReceiveStatus(str, enum.Enum):
+    NOT_RECEIVED = "NOT_RECEIVED"
+    PARTIALLY_RECEIVED = "PARTIALLY_RECEIVED"
+    RECEIVED = "RECEIVED"
 
 
 DateTimeInterval = typing.NewType("DateTimeInterval", str)
 
 
 class Money(pydantic.BaseModel):
-    currencyCode: str
-    amount: typing.Optional[float] = None
+    currencyCode: typing.Optional[str] = None
+    amount: typing.Optional[Decimal] = None
+    unitOfMeasure: typing.Optional[MoneyUnitOfMeasure] = None
 
 
 class ItemQuantity(pydantic.BaseModel):
     amount: typing.Optional[int] = None
-    unitOfMeasure: typing.Optional[str] = None
+    unitOfMeasure: typing.Optional[UnitOfMeasure] = None
     unitSize: typing.Optional[int] = None
 
 
@@ -108,6 +147,8 @@ class Address(pydantic.BaseModel):
     addressLine3: typing.Optional[str] = None
     city: typing.Optional[str] = None
     country: typing.Optional[str] = None
+    county: typing.Optional[str] = None
+    district: typing.Optional[str] = None
     stateOrRegion: typing.Optional[str] = None
     postalCode: typing.Optional[str] = None
     phone: typing.Optional[str] = None
@@ -127,8 +168,8 @@ class PartyIdentification(pydantic.BaseModel):
 class OrderDetails(pydantic.BaseModel):
     purchaseOrderDate: str
     purchaseOrderStateChangedDate: str
-    purchaseOrderType: PurchaseOrderType
     items: typing.List[OrderItem]
+    purchaseOrderType: typing.Optional[PurchaseOrderType] = None
     purchaseOrderChangedDate: typing.Optional[str] = None
     importDetails: typing.Optional[ImportDetails] = None
     dealCode: typing.Optional[str] = None
@@ -189,3 +230,115 @@ class GetPurchaseOrdersQuery(pydantic.BaseModel):
 class GetPurchaseOrderResponse(pydantic.BaseModel):
     payload: typing.Optional[Order] = None
     errors: typing.Optional[typing.List[Error]] = None
+
+
+class OrderItemAcknowledgement(pydantic.BaseModel):
+    acknowledgementCode: AcknowledgementCode
+    acknowledgedQuantity: ItemQuantity
+    scheduledShipDate: typing.Optional[str] = None
+    scheduledDeliveryDate: typing.Optional[str] = None
+    rejectionReason: typing.Optional[RejectionReason] = None
+
+
+class OrderAcknowledgementItem(pydantic.BaseModel):
+    orderedQuantity: ItemQuantity
+    itemAcknowledgements: typing.List[OrderItemAcknowledgement]
+    itemSequenceNumber: typing.Optional[str] = None
+    amazonProductIdentifier: typing.Optional[str] = None
+    vendorProductIdentifier: typing.Optional[str] = None
+    netCost: typing.Optional[Money] = None
+    listPrice: typing.Optional[Money] = None
+    discountMultiplier: typing.Optional[str] = None
+
+
+class OrderAcknowledgement(pydantic.BaseModel):
+    purchaseOrderNumber: str
+    sellingParty: PartyIdentification
+    acknowledgementDate: str
+    items: typing.List[OrderAcknowledgementItem]
+
+
+class SubmitAcknowledgementRequest(pydantic.BaseModel):
+    acknowledgements: typing.Optional[typing.List[OrderAcknowledgement]] = None
+
+
+class SubmitAcknowledgementResponse(pydantic.BaseModel):
+    payload: typing.Optional[TransactionId] = None
+    errors: typing.Optional[typing.List[Error]] = None
+
+
+class OrderedQuantityDetails(pydantic.BaseModel):
+    updatedDate: typing.Optional[str] = None
+    orderedQuantity: typing.Optional[ItemQuantity] = None
+    cancelledQuantity: typing.Optional[ItemQuantity] = None
+
+
+class OrderedQuantityStatus(pydantic.BaseModel):
+    orderedQuantity: typing.Optional[ItemQuantity] = None
+    orderedQuantityDetails: typing.Optional[typing.List[OrderedQuantityDetails]] = None
+
+
+class AcknowledgementStatusDetails(pydantic.BaseModel):
+    acknowledgementDate: typing.Optional[str] = None
+    acceptedQuantity: typing.Optional[ItemQuantity] = None
+    rejectedQuantity: typing.Optional[ItemQuantity] = None
+
+
+class AcknowledgementStatus(pydantic.BaseModel):
+    confirmationStatus: typing.Optional[ItemConfirmationStatus] = None
+    acceptedQuantity: typing.Optional[ItemQuantity] = None
+    rejectedQuantity: typing.Optional[ItemQuantity] = None
+    acknowledgementStatusDetails: typing.Optional[typing.List[AcknowledgementStatusDetails]] = None
+
+
+class ReceivingStatus(pydantic.BaseModel):
+    receiveStatus: typing.Optional[ItemReceiveStatus] = None
+    receivedQuantity: typing.Optional[ItemQuantity] = None
+    lastReceiveDate: typing.Optional[str] = None
+
+
+class OrderItemStatus(pydantic.BaseModel):
+    itemSequenceNumber: str
+    buyerProductIdentifier: typing.Optional[str] = None
+    vendorProductIdentifier: typing.Optional[str] = None
+    netCost: typing.Optional[Money] = None
+    listPrice: typing.Optional[Money] = None
+    orderedQuantity: typing.Optional[OrderedQuantityStatus] = None
+    acknowledgementStatus: typing.Optional[AcknowledgementStatus] = None
+    receivingStatus: typing.Optional[ReceivingStatus] = None
+
+
+class OrderStatus(pydantic.BaseModel):
+    purchaseOrderNumber: str
+    purchaseOrderStatus: PurchaseOrderStatus
+    purchaseOrderDate: str
+    sellingParty: PartyIdentification
+    shipToParty: PartyIdentification
+    itemStatus: typing.List[OrderItemStatus]
+    lastUpdatedDate: typing.Optional[str] = None
+
+
+class OrderListStatus(pydantic.BaseModel):
+    pagination: typing.Optional[Pagination] = None
+    ordersStatus: typing.Optional[typing.List[OrderStatus]] = None
+
+
+class GetPurchaseOrdersStatusResponse(pydantic.BaseModel):
+    payload: typing.Optional[OrderListStatus] = None
+    errors: typing.Optional[typing.List[Error]] = None
+
+
+class GetPurchaseOrdersStatusQuery(pydantic.BaseModel):
+    limit: typing.Optional[int] = None
+    sortOrder: typing.Optional[SortOrder] = None
+    nextToken: typing.Optional[str] = None
+    createdAfter: typing.Optional[str] = None
+    createdBefore: typing.Optional[str] = None
+    updatedAfter: typing.Optional[str] = None
+    updatedBefore: typing.Optional[str] = None
+    purchaseOrderNumber: typing.Optional[str] = None
+    purchaseOrderStatus: typing.Optional[PurchaseOrderStatus] = None
+    itemConfirmationStatus: typing.Optional[ItemConfirmationStatus] = None
+    itemReceiveStatus: typing.Optional[ItemReceiveStatus] = None
+    orderingVendorCode: typing.Optional[str] = None
+    shipToPartyId: typing.Optional[str] = None
