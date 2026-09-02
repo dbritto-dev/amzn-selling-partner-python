@@ -128,25 +128,35 @@ def test_create_report(reports_client: sp.reports.Client, mock_report: sp.report
     )
 
 
-def test_report_models_accept_current_sp_api_values() -> None:
-    report_options = sp.reports.ReportOptions(reportPeriod="DAY", customOption="value")
+def test_report_models_accept_documented_values() -> None:
+    report_options = sp.reports.ReportOptions(reportPeriod="DAY")
     specification = sp.reports.CreateReportSpecification(
-        reportType="FEE_DISCOUNTS_REPORT",
-        marketplaceIds=["new-marketplace-id"],
+        reportType=sp.reports.ReportType.VENDOR_INVENTORY_REPORT,
+        marketplaceIds=[sp.reports.MarketPlaceId.UNITED_STATES_OF_AMERICA],
         reportOptions=report_options,
     )
     query = sp.reports.GetReportsQuery(
-        reportTypes=["GET_MERCHANT_LISTINGS_ALL_DATA"],
-        marketplaceIds=["new-marketplace-id"],
+        reportTypes=[sp.reports.ReportType.VENDOR_INVENTORY_REPORT],
+        marketplaceIds=[sp.reports.MarketPlaceId.UNITED_STATES_OF_AMERICA],
     )
 
     assert specification.dict()["reportOptions"] == {
         "reportPeriod": sp.reports.ReportPeriod.DAY,
         "distributorView": None,
         "sellingProgram": None,
-        "customOption": "value",
     }
-    assert query.reportTypes == ["GET_MERCHANT_LISTINGS_ALL_DATA"]
+    assert query.reportTypes == [sp.reports.ReportType.VENDOR_INVENTORY_REPORT]
+
+
+def test_report_models_reject_undocumented_values() -> None:
+    with pytest.raises(ValueError):
+        sp.reports.CreateReportSpecification(
+            reportType="FEE_DISCOUNTS_REPORT",
+            marketplaceIds=[sp.reports.MarketPlaceId.UNITED_STATES_OF_AMERICA],
+        )
+
+    with pytest.raises(ValueError):
+        sp.reports.ReportOptions(customOption="value")
 
 
 def test_marketplace_id_spain_alias_is_backwards_compatible() -> None:

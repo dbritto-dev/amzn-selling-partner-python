@@ -79,12 +79,12 @@ class ReportOptions(pydantic.BaseModel):
     sellingProgram: typing.Optional[SellingProgram] = None
 
     class Config:
-        extra = "allow"
+        extra = "forbid"
 
 
 class CreateReportSpecification(pydantic.BaseModel):
-    reportType: str
-    marketplaceIds: typing.List[str]
+    reportType: ReportType
+    marketplaceIds: typing.List[MarketPlaceId]
     reportOptions: typing.Optional[ReportOptions] = None
     dataStartTime: typing.Optional[str] = None
     dataEndTime: typing.Optional[str] = None
@@ -95,9 +95,9 @@ class CreateReportResponse(pydantic.BaseModel):
 
 
 class GetReportsQuery(pydantic.BaseModel):
-    reportTypes: typing.Optional[typing.List[str]] = None
+    reportTypes: typing.Optional[typing.List[ReportType]] = None
     processingStatuses: typing.Optional[typing.List[ProcessingStatus]] = None
-    marketplaceIds: typing.Optional[typing.List[str]] = None
+    marketplaceIds: typing.Optional[typing.List[MarketPlaceId]] = None
     pageSize: typing.Optional[int] = None
     createdSince: typing.Optional[str] = None
     createdUntil: typing.Optional[str] = None
@@ -106,10 +106,10 @@ class GetReportsQuery(pydantic.BaseModel):
 
 class Report(pydantic.BaseModel):
     reportId: str
-    reportType: str
+    reportType: ReportType
     createdTime: str
     processingStatus: ProcessingStatus
-    marketplaceIds: typing.Optional[typing.List[str]] = None
+    marketplaceIds: typing.Optional[typing.List[MarketPlaceId]] = None
     dataStartTime: typing.Optional[str] = None
     dataEndTime: typing.Optional[str] = None
     reportScheduleId: typing.Optional[str] = None
