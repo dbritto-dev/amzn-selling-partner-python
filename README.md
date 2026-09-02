@@ -144,3 +144,26 @@ uv sync --extra dev
 ```sh
 uv run ty check amzn_selling_partner
 ```
+
+### Lint and format
+
+```sh
+uv run nox -s lint
+```
+
+### Test
+
+```sh
+uv run nox -s test
+```
+
+### Security checks
+
+```sh
+uv run nox -s security_test
+```
+
+### CI
+
+Lint, tests, type checking, and security checks run automatically on every push and pull request
+via [GitHub Actions](.github/workflows/ci.yml), across Python 3.10 through 3.13.
