@@ -27,7 +27,7 @@ classifiers = [
   "Topic :: Security",
 ]
 dependencies = [
-  "requests==2.28.2", "requests_aws4auth==1.2.2", "boto3==1.26.89",
+  "requests==2.34.2", "requests_aws4auth==1.2.2", "boto3==1.26.89",
   "pydantic==1.10.7"
 ]
 readme = "README.md"
