@@ -53,6 +53,27 @@ class CompressionAlgorithm(str, enum.Enum):
     GZIP = "GZIP"
 
 
+class SchedulePeriod(str, enum.Enum):
+    FIVE_MINUTES = "PT5M"
+    FIFTEEN_MINUTES = "PT15M"
+    THIRTY_MINUTES = "PT30M"
+    ONE_HOUR = "PT1H"
+    TWO_HOURS = "PT2H"
+    FOUR_HOURS = "PT4H"
+    EIGHT_HOURS = "PT8H"
+    TWELVE_HOURS = "PT12H"
+    ONE_DAY = "P1D"
+    TWO_DAYS = "P2D"
+    THREE_DAYS = "P3D"
+    EIGHTY_FOUR_HOURS = "PT84H"
+    ONE_WEEK = "P7D"
+    TWO_WEEKS = "P14D"
+    FIFTEEN_DAYS = "P15D"
+    EIGHTEEN_DAYS = "P18D"
+    THIRTY_DAYS = "P30D"
+    ONE_MONTH = "P1M"
+
+
 class ReportPeriod(str, enum.Enum):
     DAY = "DAY"
     WEEK = "WEEK"
@@ -93,6 +114,18 @@ class CreateReportResponse(pydantic.BaseModel):
     reportId: str
 
 
+class CreateReportScheduleSpecification(pydantic.BaseModel):
+    reportType: ReportType
+    marketplaceIds: typing.List[MarketPlaceId]
+    period: SchedulePeriod
+    reportOptions: typing.Optional[ReportOptions] = None
+    nextReportCreationTime: typing.Optional[str] = None
+
+
+class CreateReportScheduleResponse(pydantic.BaseModel):
+    reportScheduleId: str
+
+
 class GetReportsQuery(pydantic.BaseModel):
     reportTypes: typing.Optional[typing.List[ReportType]] = None
     processingStatuses: typing.Optional[typing.List[ProcessingStatus]] = None
@@ -120,6 +153,19 @@ class Report(pydantic.BaseModel):
 class GetReportsResponse(pydantic.BaseModel):
     reports: typing.List[Report]
     nextToken: typing.Optional[str] = None
+
+
+class ReportSchedule(pydantic.BaseModel):
+    reportScheduleId: str
+    reportType: ReportType
+    period: str
+    marketplaceIds: typing.Optional[typing.List[MarketPlaceId]] = None
+    reportOptions: typing.Optional[ReportOptions] = None
+    nextReportCreationTime: typing.Optional[str] = None
+
+
+class ReportScheduleList(pydantic.BaseModel):
+    reportSchedules: typing.List[ReportSchedule]
 
 
 class ReportDocument(pydantic.BaseModel):

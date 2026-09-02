@@ -2,6 +2,8 @@ from .client import Client
 from .models import (
     CompressionAlgorithm,
     CreateReportResponse,
+    CreateReportScheduleResponse,
+    CreateReportScheduleSpecification,
     CreateReportSpecification,
     DistributorView,
     GetReportsQuery,
@@ -12,7 +14,10 @@ from .models import (
     ReportDocument,
     ReportOptions,
     ReportPeriod,
+    ReportSchedule,
+    ReportScheduleList,
     ReportType,
+    SchedulePeriod,
     SellingProgram,
 )
 
@@ -20,6 +25,8 @@ __all__ = [
     "Client",
     "CompressionAlgorithm",
     "CreateReportResponse",
+    "CreateReportScheduleResponse",
+    "CreateReportScheduleSpecification",
     "CreateReportSpecification",
     "DistributorView",
     "GetReportsQuery",
@@ -30,6 +37,9 @@ __all__ = [
     "ReportDocument",
     "ReportOptions",
     "ReportPeriod",
+    "ReportSchedule",
+    "ReportScheduleList",
     "ReportType",
+    "SchedulePeriod",
     "SellingProgram",
 ]

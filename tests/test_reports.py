@@ -159,8 +159,24 @@ def test_report_models_reject_undocumented_values() -> None:
         sp.reports.ReportOptions(customOption="value")
 
 
-def test_marketplace_id_spain_alias_is_backwards_compatible() -> None:
-    assert sp.reports.MarketPlaceId.SPAIN == sp.reports.MarketPlaceId.PAIN
+def test_marketplace_id_spain_is_available() -> None:
+    assert sp.reports.MarketPlaceId.SPAIN.value == "A1RKKUPIHCS9HS"
+
+
+def test_report_schedule_models_validate_current_values() -> None:
+    specification = sp.reports.CreateReportScheduleSpecification(
+        reportType=sp.reports.ReportType.VENDOR_SALES_REPORT,
+        marketplaceIds=[sp.reports.MarketPlaceId.UNITED_STATES_OF_AMERICA],
+        period=sp.reports.SchedulePeriod.ONE_DAY,
+    )
+    schedule = sp.reports.ReportSchedule(
+        reportScheduleId="schedule-id",
+        reportType=sp.reports.ReportType.VENDOR_SALES_REPORT,
+        period=sp.reports.SchedulePeriod.ONE_DAY,
+    )
+
+    assert specification.period == sp.reports.SchedulePeriod.ONE_DAY
+    assert sp.reports.ReportScheduleList(reportSchedules=[schedule]).reportSchedules == [schedule]
 
 
 @responses.activate
