@@ -69,5 +69,5 @@ def lint_staged(session: nox.Session) -> None:
 @nox.session
 def security_test(session: nox.Session) -> None:
     session.install(".[security-test]")
-    session.run("bandit", "-r", "app/")
+    session.run("bandit", "-r", "amzn_selling_partner/")
     session.run("safety", "check")
