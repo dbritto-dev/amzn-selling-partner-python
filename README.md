@@ -142,7 +142,7 @@ uv sync --extra dev
 ### Type checking
 
 ```sh
-uv run ty check amzn_selling_partner
+uv run ty check src/amzn_selling_partner
 ```
 
 ### Lint and format

@@ -1,9 +1,7 @@
-[build-system]
-requires = ["flit"]
-build-backend = "flit.buildapi"
-
 [project]
 name = "amzn-selling-partner"
+version = "0.1.7"
+description = "Amazon Selling Partner API for Python"
 authors = [
   { name = "Danilo Britto", email = "dbritto.dev@gmail.com" },
 ]
@@ -34,23 +32,23 @@ dependencies = [
 ]
 readme = "README.md"
 requires-python = ">=3.10"
-dynamic = ["version", "description"]
-
-[tool.flit.module]
-name = "amzn_selling_partner"
 
 [project.optional-dependencies]
 dev = [
   "ruff==0.16.5", "pytest==9.1.1", "coverage==7.10.6",
-  "pytest-cov==7.1.0", "nox==2022.11.21", "bandit==1.9.4", "safety==2.3.4",
+  "pytest-cov==7.1.0", "nox>=2024.4.15", "bandit==1.9.4", "safety==2.3.4",
   "responses==0.26.3", "ty==0.0.77"
 ]
 lint = ["ruff==0.16.5"]
 test = [
-  "pytest==9.1.1", "coverage==7.10.6", "pytest-cov==7.1.0", "nox==2022.11.21",
+  "pytest==9.1.1", "coverage==7.10.6", "pytest-cov==7.1.0", "nox>=2024.4.15",
   "responses==0.26.3"
 ]
 security-test = ["bandit==1.9.4", "safety==2.3.4", "setuptools<81"]
+
+[build-system]
+requires = ["uv_build>=0.12.10,<0.13.0"]
+build-backend = "uv_build"
 
 [tool.ruff]
 line-length = 99
@@ -104,7 +102,7 @@ testpaths = ["tests"]
 [tool.coverage.run]
 branch = true
 source = ["amzn_selling_partner"]
-omit = ["amzn_selling_partner/client/auth.py"]
+omit = ["src/amzn_selling_partner/client/auth.py"]
 
 [tool.coverage.report]
 fail_under = 90
