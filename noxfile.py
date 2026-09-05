@@ -4,6 +4,7 @@ import typing as t
 # Third-party packages
 import nox
 
+nox.options.default_venv_backend = "uv"
 nox.options.sessions = ["lint", "type_check", "test", "security_test"]
 
 

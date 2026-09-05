@@ -28,15 +28,23 @@ jobs:
         run: |
           set -euo pipefail
           init_file="amzn_selling_partner/__init__.py"
+          pyproject_file="pyproject.toml"
           current=$(grep -oP '(?<=__version__ = ")[^"]+' "$init_file")
           IFS='.' read -r major minor patch <<< "$current"
           new="$major.$minor.$((patch + 1))"
           sed -i "s/__version__ = \"$current\"/__version__ = \"$new\"/" "$init_file"
+          sed -i "s/^version = \"$current\"/version = \"$new\"/" "$pyproject_file"
           echo "version=$new" >> "$GITHUB_OUTPUT"
+
+      - name: Set up uv
+        uses: astral-sh/setup-uv@v7
+
+      - name: Update lockfile
+        run: uv lock
 
       - name: Commit version bump
         run: |
-          git add amzn_selling_partner/__init__.py
+          git add amzn_selling_partner/__init__.py pyproject.toml uv.lock
           git commit -m "chore(release): v${{ steps.bump.outputs.version }} [skip ci]"
           git push origin HEAD:main
 
