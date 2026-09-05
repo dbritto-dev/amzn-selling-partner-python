@@ -102,7 +102,7 @@ testpaths = ["tests"]
 [tool.coverage.run]
 branch = true
 source = ["amzn_selling_partner"]
-omit = ["amzn_selling_partner/client/auth.py"]
+omit = ["src/amzn_selling_partner/client/auth.py"]
 
 [tool.coverage.report]
 fail_under = 90
