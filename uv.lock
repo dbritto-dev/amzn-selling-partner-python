@@ -9,7 +9,7 @@ resolution-markers = [
 
 [[package]]
 name = "amzn-selling-partner"
-version = "0.1.8"
+version = "0.1.9"
 source = { editable = "." }
 dependencies = [
     { name = "boto3" },
