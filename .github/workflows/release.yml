@@ -23,28 +23,19 @@ jobs:
           git config user.name "github-actions[bot]"
           git config user.email "github-actions[bot]@users.noreply.github.com"
 
+      - name: Set up uv
+        uses: astral-sh/setup-uv@v7
+
       - name: Bump patch version
         id: bump
         run: |
           set -euo pipefail
-          init_file="amzn_selling_partner/__init__.py"
-          pyproject_file="pyproject.toml"
-          current=$(grep -oP '(?<=__version__ = ")[^"]+' "$init_file")
-          IFS='.' read -r major minor patch <<< "$current"
-          new="$major.$minor.$((patch + 1))"
-          sed -i "s/__version__ = \"$current\"/__version__ = \"$new\"/" "$init_file"
-          sed -i "s/^version = \"$current\"/version = \"$new\"/" "$pyproject_file"
-          echo "version=$new" >> "$GITHUB_OUTPUT"
-
-      - name: Set up uv
-        uses: astral-sh/setup-uv@v7
-
-      - name: Update lockfile
-        run: uv lock
+          uv version --bump patch --no-sync
+          echo "version=$(uv version --short)" >> "$GITHUB_OUTPUT"
 
       - name: Commit version bump
         run: |
-          git add amzn_selling_partner/__init__.py pyproject.toml uv.lock
+          git add pyproject.toml uv.lock
           git commit -m "chore(release): v${{ steps.bump.outputs.version }} [skip ci]"
           git push origin HEAD:main
 
@@ -70,16 +61,13 @@ jobs:
         with:
           ref: "v${{ needs.release.outputs.version }}"
 
-      - name: Set up Python
-        uses: actions/setup-python@v5
+      - name: Set up uv
+        uses: astral-sh/setup-uv@v7
         with:
           python-version: "3.10"
 
-      - name: Set up uv
-        uses: astral-sh/setup-uv@v7
-
       - name: Build package
-        run: uv build
+        run: uv build --no-sources
 
       - name: Upload distribution artifacts
         uses: actions/upload-artifact@v4
@@ -103,5 +91,8 @@ jobs:
           name: dist
           path: dist/
 
+      - name: Set up uv
+        uses: astral-sh/setup-uv@v7
+
       - name: Publish package to PyPI
-        uses: pypa/gh-action-pypi-publish@release/v1
+        run: uv publish
