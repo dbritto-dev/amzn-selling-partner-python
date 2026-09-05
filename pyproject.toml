@@ -50,9 +50,6 @@ security-test = ["bandit==1.9.4", "safety==2.3.4", "setuptools<81"]
 requires = ["uv_build>=0.12.10,<0.13.0"]
 build-backend = "uv_build"
 
-[tool.uv.build-backend]
-module-root = ""
-
 [tool.ruff]
 line-length = 99
 target-version = "py310"

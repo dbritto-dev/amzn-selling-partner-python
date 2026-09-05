@@ -70,13 +70,13 @@ def lint_staged(session: nox.Session) -> None:
 @nox.session
 def type_check(session: nox.Session) -> None:
     session.install(".[dev]")
-    session.run("ty", "check", "amzn_selling_partner")
+    session.run("ty", "check", "src/amzn_selling_partner")
 
 
 @nox.session
 def security_test(session: nox.Session) -> None:
     session.install(".[security-test]")
-    session.run("bandit", "-r", "amzn_selling_partner/")
+    session.run("bandit", "-r", "src/amzn_selling_partner/")
     # SFTY-20260721-58460 flags every setuptools release below 83.0.0, but 83+ removed
     # `pkg_resources`, which safety==2.3.4 itself still requires to run. setuptools is a
     # dev-only build tool here (not a runtime dependency of the published package), so the
