@@ -31,14 +31,14 @@ jobs:
         run: |
           set -euo pipefail
           # Self-limiting 0.x -> 1.0.0 transition: while still pre-1.0, a "bump" means
-          # graduating to 1.0.0 (a real major bump), not another 0.x patch release. Once
-          # the major version is 1 or higher this always falls through to a normal patch
-          # bump, so no manual revert is needed after the 1.0.0 release.
+          # graduating to 1.0.0 (a real major bump), not another 0.x release. Once the
+          # major version is 1 or higher this always falls through to a minor bump, so no
+          # manual revert is needed after the 1.0.0 release.
           current_major="$(uv version --short | cut -d. -f1)"
           if [ "$current_major" = "0" ]; then
             uv version --bump major --no-sync
           else
-            uv version --bump patch --no-sync
+            uv version --bump minor --no-sync
           fi
           echo "version=$(uv version --short)" >> "$GITHUB_OUTPUT"
 
