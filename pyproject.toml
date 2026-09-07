@@ -47,7 +47,10 @@ dev = [
 lint = ["ruff==0.16.5"]
 test = [
   "pytest==9.1.1", "pytest-asyncio==1.4.0", "coverage==7.10.6", "pytest-cov==7.1.0",
-  "nox>=2024.4.15"
+  "nox>=2024.4.15",
+  # Exercises DefaultAioHttpClient (see tests/test_http_client.py) across the full CI
+  # Python matrix, not just the `dev` environment.
+  "aiohttp[speedups]>=3.10", "httpx_aiohttp[httpx2]>=0.2"
 ]
 security-test = ["bandit==1.9.4", "safety==2.3.4", "setuptools<81"]
 

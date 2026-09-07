@@ -20,11 +20,19 @@ __all__ = [
     "AsyncAPIClient",
 ]
 
-# Sentinel meaning "use the httpx2.Client's/AsyncClient's own configured auth" (our SPAPIAuth),
-# as opposed to `auth=None` which explicitly disables auth for a single request (S3 downloads).
-NOT_GIVEN: typing.Any = httpx2.USE_CLIENT_DEFAULT
 
-DEFAULT_TIMEOUT = 60.0
+class _NotGiven:
+    """Sentinel distinguishing "the caller didn't specify an auth override" (use this
+    client's own SPAPIAuth) from `auth=None` (explicitly send unauthenticated, used for
+    S3 pre-signed document downloads)."""
+
+    def __repr__(self) -> str:
+        return "NOT_GIVEN"
+
+
+NOT_GIVEN: typing.Any = _NotGiven()
+
+DEFAULT_TIMEOUT = _transports.DEFAULT_TIMEOUT
 DEFAULT_MAX_RETRIES = 2
 _INITIAL_RETRY_DELAY = 0.5
 _MAX_RETRY_DELAY = 8.0
@@ -80,6 +88,17 @@ class BaseClient:
         self.max_retries = max_retries
         self._auth = auth
 
+    def _resolve_auth(self, options: RequestOptions) -> typing.Optional[httpx2.Auth]:
+        # Resolved here (not left to the underlying httpx2 client's own `auth=` default)
+        # so this SDK's auth is applied correctly even when the caller injected their own
+        # `http_client=` (e.g. `DefaultAioHttpClient()`) that never configured one.
+        return self._auth if options.auth is NOT_GIVEN else options.auth
+
+    def _full_url(self, url: str) -> str:
+        if url.startswith("http://") or url.startswith("https://"):
+            return url
+        return f"{self.base_url.rstrip('/')}/{url.lstrip('/')}"
+
     def _should_retry_response(self, response: httpx2.Response) -> bool:
         return response.status_code in _RETRYABLE_STATUS_CODES
 
@@ -106,7 +125,7 @@ class BaseClient:
     ) -> httpx2.Request:
         return httpx_client.build_request(
             options.method,
-            options.url,
+            self._full_url(options.url),
             params=options.params,
             content=options.content,
             headers=options.headers,
@@ -154,9 +173,7 @@ class SyncAPIClient(BaseClient):
     @property
     def _httpx_client(self) -> httpx2.Client:
         if self.__httpx_client is None:
-            self.__httpx_client = self._provided_http_client or httpx2.Client(
-                base_url=self.base_url,
-                auth=self._auth,
+            self.__httpx_client = self._provided_http_client or _transports.DefaultHttpxClient(
                 timeout=httpx2.Timeout(self.timeout),
                 transport=self._transport,
                 limits=self._limits,
@@ -165,11 +182,12 @@ class SyncAPIClient(BaseClient):
 
     def _request(self, options: RequestOptions) -> httpx2.Response:
         request = self._build_request(self._httpx_client, options)
+        auth = self._resolve_auth(options)
         remaining_retries = self.max_retries
 
         while True:
             try:
-                response = self._httpx_client.send(request, auth=options.auth)
+                response = self._httpx_client.send(request, auth=auth)
             except httpx2.HTTPError as exc:
                 if remaining_retries > 0 and self._should_retry_exception(exc):
                     time.sleep(self._retry_delay(remaining_retries, None))
@@ -228,24 +246,25 @@ class AsyncAPIClient(BaseClient):
         if self.__httpx_client is None:
             async with self.__client_lock:
                 if self.__httpx_client is None:
-                    self.__httpx_client = self._provided_http_client or httpx2.AsyncClient(
-                        base_url=self.base_url,
-                        auth=self._auth,
-                        timeout=httpx2.Timeout(self.timeout),
-                        transport=self._transport
-                        or _transports.default_async_transport(limits=self._limits),
-                        limits=self._limits,
+                    self.__httpx_client = (
+                        self._provided_http_client
+                        or _transports.DefaultAsyncHttpxClient(
+                            timeout=httpx2.Timeout(self.timeout),
+                            transport=self._transport,
+                            limits=self._limits,
+                        )
                     )
         return self.__httpx_client
 
     async def _request(self, options: RequestOptions) -> httpx2.Response:
         httpx_client = await self._get_httpx_client()
         request = self._build_request(httpx_client, options)
+        auth = self._resolve_auth(options)
         remaining_retries = self.max_retries
 
         while True:
             try:
-                response = await httpx_client.send(request, auth=options.auth)
+                response = await httpx_client.send(request, auth=auth)
             except httpx2.HTTPError as exc:
                 if remaining_retries > 0 and self._should_retry_exception(exc):
                     await asyncio.sleep(self._retry_delay(remaining_retries, None))

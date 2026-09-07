@@ -147,13 +147,36 @@ tuned_client = sp.Client(timeout=30.0, max_retries=0)
 
 > **Note:** some endpoints are not available on sandbox. To read more about that: https://developer-docs.amazon.com/sp-api/docs/the-selling-partner-api-sandbox
 
+### Custom HTTP clients
+
+Pass a pre-built `httpx2.Client`/`httpx2.AsyncClient` as `http_client=` to fully control the
+underlying transport (proxies, custom mounts, connection limits, etc.) — it's used as-is, with
+`Client`/`AsyncClient` still applying SP-API auth and endpoint resolution on top:
+
+```python
+import amzn_selling_partner as sp
+
+client = sp.Client(http_client=sp.DefaultHttpxClient(proxy="http://localhost:8030"))
+```
+
+`DefaultHttpxClient`/`DefaultAsyncHttpxClient` are thin `httpx2.Client`/`httpx2.AsyncClient`
+subclasses carrying this SDK's own timeout/connection-pool defaults — build on top of them
+instead of a bare `httpx2.Client()` so you don't lose those defaults.
+
 ### Optional aiohttp transport
 
-`AsyncClient` uses httpx2's default async transport unless the `aiohttp` extra is installed, in
-which case it automatically uses an aiohttp-backed transport instead:
+`AsyncClient` uses httpx2's default transport unless you explicitly opt into aiohttp — it is
+never selected automatically, even if the `aiohttp` extra happens to be installed:
 
 ```sh
 uv sync --extra aiohttp
+```
+
+```python
+import amzn_selling_partner as sp
+
+async with sp.AsyncClient(http_client=sp.DefaultAioHttpClient()) as client:
+    ...
 ```
 
 ## Development

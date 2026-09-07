@@ -228,7 +228,9 @@ security-test = [
     { name = "setuptools" },
 ]
 test = [
+    { name = "aiohttp", extra = ["speedups"] },
     { name = "coverage" },
+    { name = "httpx-aiohttp", extra = ["httpx2"] },
     { name = "nox" },
     { name = "pytest" },
     { name = "pytest-asyncio" },
@@ -239,6 +241,7 @@ test = [
 requires-dist = [
     { name = "aiohttp", extras = ["speedups"], marker = "extra == 'aiohttp'", specifier = ">=3.10" },
     { name = "aiohttp", extras = ["speedups"], marker = "extra == 'dev'", specifier = ">=3.10" },
+    { name = "aiohttp", extras = ["speedups"], marker = "extra == 'test'", specifier = ">=3.10" },
     { name = "bandit", marker = "extra == 'dev'", specifier = "==1.9.4" },
     { name = "bandit", marker = "extra == 'security-test'", specifier = "==1.9.4" },
     { name = "boto3", specifier = "==1.43.86" },
@@ -246,6 +249,7 @@ requires-dist = [
     { name = "coverage", marker = "extra == 'test'", specifier = "==7.10.6" },
     { name = "httpx-aiohttp", extras = ["httpx2"], marker = "extra == 'aiohttp'", specifier = ">=0.2" },
     { name = "httpx-aiohttp", extras = ["httpx2"], marker = "extra == 'dev'", specifier = ">=0.2" },
+    { name = "httpx-aiohttp", extras = ["httpx2"], marker = "extra == 'test'", specifier = ">=0.2" },
     { name = "httpx2", specifier = "==2.12.0" },
     { name = "nox", marker = "extra == 'dev'", specifier = ">=2024.4.15" },
     { name = "nox", marker = "extra == 'test'", specifier = ">=2024.4.15" },

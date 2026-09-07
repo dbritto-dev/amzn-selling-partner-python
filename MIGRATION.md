@@ -20,12 +20,25 @@ Both accept the same constructor kwargs as before (`selling_partner_region`, all
 credential kwargs, `sandbox`), plus new options: `timeout` (seconds, default `60.0`),
 `max_retries` (default `2`), `http_client=`/`transport=` (inject or mock the underlying
 httpx2 client), and `limits=` (connection pool limits, default `max_connections=100,
-max_keepalive_connections=50`).
+max_keepalive_connections=50`). A caller-supplied `http_client=` is used as-is for the
+actual HTTP transport, but `Client`/`AsyncClient` still resolve the SP-API base URL and
+apply SigV4/LWA auth on top of it — you don't need (and can't) pre-configure those on the
+client you pass in.
 
 **Both must be closed** to release their connection pool — use them as a context manager
 (`with sp.Client() as client:` / `async with sp.AsyncClient() as client:`) or call
 `client.close()` / `await client.aclose()` explicitly. The old `requests.Session`-backed
 clients didn't require this.
+
+## New: `DefaultHttpxClient` / `DefaultAsyncHttpxClient` / `DefaultAioHttpClient`
+
+Matching the OpenAI Python SDK's convention: `DefaultHttpxClient`/`DefaultAsyncHttpxClient`
+are `httpx2.Client`/`httpx2.AsyncClient` subclasses carrying this SDK's own timeout and
+connection-pool defaults, meant to be built on top of (via `http_client=`) instead of a bare
+`httpx2.Client()`, which would otherwise silently drop those defaults. `DefaultAioHttpClient`
+is the async one wired to an aiohttp-backed transport (requires the `aiohttp` extra; raises a
+clear `RuntimeError` on construction if it isn't installed). None of these are selected
+automatically — you always opt in explicitly via `http_client=`.
 
 ## Deprecated (still works, now warns): per-resource `Client()`
 
@@ -92,9 +105,10 @@ v2 `BaseModel`s. User-visible effects:
 
 - Removed: `requests`, `requests_aws4auth`.
 - Added: `httpx2` (runtime dependency).
-- New optional extra `aiohttp` (`aiohttp[speedups]`, `httpx_aiohttp[httpx2]`): when installed,
-  `AsyncClient` automatically uses an aiohttp-backed transport instead of httpx2's default.
-  Install with `uv sync --extra aiohttp` (or `pip install amzn-selling-partner[aiohttp]`).
+- New optional extra `aiohttp` (`aiohttp[speedups]`, `httpx_aiohttp[httpx2]`): install with
+  `uv sync --extra aiohttp` (or `pip install amzn-selling-partner[aiohttp]`), then opt into
+  the aiohttp-backed transport explicitly with `AsyncClient(http_client=sp.DefaultAioHttpClient())`.
+  It is never selected automatically just because the extra is installed.
 - New dev-only dependency: `pytest-asyncio` (async test support). Not shipped to end users.
 
 ## Testing: `responses` → `httpx2.MockTransport`
