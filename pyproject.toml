@@ -39,7 +39,7 @@ aiohttp = ["aiohttp[speedups]>=3.10", "httpx_aiohttp[httpx2]>=0.2"]
 dev = [
   "ruff==0.16.5", "pytest==9.1.1", "pytest-asyncio==1.4.0", "coverage==7.10.6",
   "pytest-cov==7.1.0", "nox>=2024.4.15", "bandit==1.9.4", "safety==2.3.4",
-  "unasync==0.6.0", "ty==0.0.77",
+  "ty==0.0.77",
   # Also declared in the `aiohttp` extra; included here so lint/type-check/test tooling can
   # resolve and exercise the optional aiohttp-backed transport code path.
   "aiohttp[speedups]>=3.10", "httpx_aiohttp[httpx2]>=0.2"

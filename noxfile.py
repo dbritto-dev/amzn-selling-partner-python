@@ -5,7 +5,7 @@ import typing as t
 import nox
 
 nox.options.default_venv_backend = "uv"
-nox.options.sessions = ["lint", "type_check", "test", "unasync_check", "security_test"]
+nox.options.sessions = ["lint", "type_check", "test", "security_test"]
 
 
 def get_test_files(session: nox.Session) -> t.List[str]:
@@ -71,21 +71,6 @@ def lint_staged(session: nox.Session) -> None:
 def type_check(session: nox.Session) -> None:
     session.install(".[dev]")
     session.run("ty", "check", "src/amzn_selling_partner")
-
-
-@nox.session
-def unasync_check(session: nox.Session) -> None:
-    session.install(".[dev]")
-    session.run("python", "scripts/generate_sync.py")
-    session.run(
-        "git",
-        "diff",
-        "--exit-code",
-        "--",
-        "src/amzn_selling_partner/reports/_sync.py",
-        "src/amzn_selling_partner/vendor/orders/_sync.py",
-        external=True,
-    )
 
 
 @nox.session

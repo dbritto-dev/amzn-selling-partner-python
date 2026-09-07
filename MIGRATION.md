@@ -95,9 +95,7 @@ v2 `BaseModel`s. User-visible effects:
 - New optional extra `aiohttp` (`aiohttp[speedups]`, `httpx_aiohttp[httpx2]`): when installed,
   `AsyncClient` automatically uses an aiohttp-backed transport instead of httpx2's default.
   Install with `uv sync --extra aiohttp` (or `pip install amzn-selling-partner[aiohttp]`).
-- New dev-only dependencies: `unasync` (generates the sync resource classes from their async
-  source — see `scripts/generate_sync.py`) and `pytest-asyncio` (async test support). Neither
-  ships to end users.
+- New dev-only dependency: `pytest-asyncio` (async test support). Not shipped to end users.
 
 ## Testing: `responses` → `httpx2.MockTransport`
 
