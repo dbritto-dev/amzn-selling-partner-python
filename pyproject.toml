@@ -1,6 +1,6 @@
 [project]
 name = "amzn-selling-partner"
-version = "1.0.0"
+version = "0.1.9"
 description = "Amazon Selling Partner API for Python"
 authors = [
   { name = "Danilo Britto", email = "dbritto.dev@gmail.com" },
