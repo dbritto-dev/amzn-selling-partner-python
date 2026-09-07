@@ -27,22 +27,27 @@ classifiers = [
   "Topic :: Security",
 ]
 dependencies = [
-  "requests==2.34.2", "requests_aws4auth==1.2.2", "boto3==1.43.86",
-  "pydantic==1.10.13"
+  "httpx2==2.12.0", "boto3==1.43.86",
+  "pydantic>=2,<3"
 ]
 readme = "README.md"
 requires-python = ">=3.10"
 
 [project.optional-dependencies]
+# Aiohttp-backed async transport (httpx2's default async transport is used otherwise).
+aiohttp = ["aiohttp[speedups]>=3.10", "httpx_aiohttp[httpx2]>=0.2"]
 dev = [
-  "ruff==0.16.5", "pytest==9.1.1", "coverage==7.10.6",
+  "ruff==0.16.5", "pytest==9.1.1", "pytest-asyncio==1.4.0", "coverage==7.10.6",
   "pytest-cov==7.1.0", "nox>=2024.4.15", "bandit==1.9.4", "safety==2.3.4",
-  "responses==0.26.3", "ty==0.0.77"
+  "unasync==0.6.0", "ty==0.0.77",
+  # Also declared in the `aiohttp` extra; included here so lint/type-check/test tooling can
+  # resolve and exercise the optional aiohttp-backed transport code path.
+  "aiohttp[speedups]>=3.10", "httpx_aiohttp[httpx2]>=0.2"
 ]
 lint = ["ruff==0.16.5"]
 test = [
-  "pytest==9.1.1", "coverage==7.10.6", "pytest-cov==7.1.0", "nox>=2024.4.15",
-  "responses==0.26.3"
+  "pytest==9.1.1", "pytest-asyncio==1.4.0", "coverage==7.10.6", "pytest-cov==7.1.0",
+  "nox>=2024.4.15"
 ]
 security-test = ["bandit==1.9.4", "safety==2.3.4", "setuptools<81"]
 
@@ -82,10 +87,12 @@ ignore = ["E501", "B904", "B008"]
 convention = "google"
 
 [tool.ruff.lint.per-file-ignores]
-"tests/*.py" = ["S101", "S106"]
+"tests/*.py" = ["S101", "S106", "PLR2004", "PLW0108"]
 
 [tool.ruff.lint.pylint]
-max-args = 10
+# Client/AsyncClient constructors take every SP-API/AWS credential kwarg plus the new
+# httpx2-era client options (timeout, max_retries, http_client, transport, limits).
+max-args = 15
 
 [tool.ruff.format]
 quote-style = "double"
@@ -98,11 +105,12 @@ deprecated = "ignore"
 minversion = "6.0"
 addopts = "-ra -q"
 testpaths = ["tests"]
+asyncio_mode = "auto"
+pythonpath = ["src"]
 
 [tool.coverage.run]
 branch = true
 source = ["amzn_selling_partner"]
-omit = ["src/amzn_selling_partner/client/auth.py"]
 
 [tool.coverage.report]
 fail_under = 90

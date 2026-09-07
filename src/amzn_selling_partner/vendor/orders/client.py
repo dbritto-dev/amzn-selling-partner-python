@@ -1,57 +1,57 @@
-import typing
+import os
+import warnings
 
-from ... import client
-from . import models
+from ... import _client
+from ..._regions import SellingPartnerRegion
+from . import _sync
 
 
-class Client(client.BaseClient):
+class Client(_sync.Orders):
+    """Deprecated. Use `amzn_selling_partner.Client(...).vendor.orders` instead."""
+
+    def __init__(
+        self,
+        *,
+        selling_partner_region: SellingPartnerRegion = SellingPartnerRegion.NORTH_AMERICA,
+        selling_partner_app_client_id: str = os.getenv("SELLING_PARTNER_APP_CLIENT_ID", ""),
+        selling_partner_app_client_secret: str = os.getenv(
+            "SELLING_PARTNER_APP_CLIENT_SECRET", ""
+        ),
+        selling_partner_app_refresh_token: str = os.getenv(
+            "SELLING_PARTNER_APP_REFRESH_TOKEN", ""
+        ),
+        aws_access_key_id: str = os.getenv("AWS_ACCESS_KEY_ID", ""),
+        aws_secret_access_key: str = os.getenv("AWS_SECRET_ACCESS_KEY", ""),
+        aws_selling_partner_role: str = os.getenv("AWS_SELLING_PARTNER_ROLE", ""),
+        aws_selling_partner_role_session_name: str = os.getenv(
+            "AWS_SELLING_PARTNER_ROLE_SESSION_NAME", ""
+        ),
+        sandbox: bool = False,
+    ) -> None:
+        warnings.warn(
+            "amzn_selling_partner.vendor.orders.Client is deprecated; use "
+            "amzn_selling_partner.Client(...).vendor.orders instead. See MIGRATION.md.",
+            DeprecationWarning,
+            stacklevel=2,
+        )
+        self._new_client = _client.Client(
+            selling_partner_region=selling_partner_region,
+            selling_partner_app_client_id=selling_partner_app_client_id,
+            selling_partner_app_client_secret=selling_partner_app_client_secret,
+            selling_partner_app_refresh_token=selling_partner_app_refresh_token,
+            aws_access_key_id=aws_access_key_id,
+            aws_secret_access_key=aws_secret_access_key,
+            aws_selling_partner_role=aws_selling_partner_role,
+            aws_selling_partner_role_session_name=aws_selling_partner_role_session_name,
+            sandbox=sandbox,
+        )
+        super().__init__(self._new_client)
+
     def get_resource_path(self) -> str:
-        return "vendor/orders/v1"
+        return _sync._RESOURCE_PATH
 
-    def _get_purchase_orders_response(
-        self, *, query: typing.Optional[models.GetPurchaseOrdersQuery] = None
-    ) -> models.GetPurchaseOrdersResponse:
-        _response = self.http_session.get(
-            self.get_operation_endpoint("purchaseOrders"),
-            params=query and query.dict(exclude_none=True),
-        )
-        _response.raise_for_status()
-        return models.GetPurchaseOrdersResponse(**_response.json())
+    def get_resource_endpoint(self) -> str:
+        return f"{self._new_client.base_url}/{self.get_resource_path()}"
 
-    def get_purchase_orders(
-        self, *, query: typing.Optional[models.GetPurchaseOrdersQuery] = None
-    ) -> typing.List[models.Order]:
-        data = self._get_purchase_orders_response(query=query)
-        if data.payload is None or data.payload.orders is None:
-            return []
-
-        next_token = (
-            data.payload.pagination.nextToken if data.payload.pagination is not None else None
-        )
-
-        if next_token is None:
-            return data.payload.orders
-
-        _query = query.copy() if query is not None else models.GetPurchaseOrdersQuery()
-        _query.nextToken = next_token
-
-        return data.payload.orders + self.get_purchase_orders(query=_query)
-
-    def _get_purchase_order_response(
-        self, purchase_order_number: str
-    ) -> models.GetPurchaseOrderResponse:
-        _response = self.http_session.get(
-            self.get_operation_endpoint(f"purchaseOrders/{purchase_order_number}")
-        )
-        _response.raise_for_status()
-        return models.GetPurchaseOrderResponse(**_response.json())
-
-    def get_purchase_order(self, purchase_order_number: str) -> typing.Optional[models.Order]:
-        if not purchase_order_number or not isinstance(purchase_order_number, str):
-            raise ValueError(
-                "purchase_order_number must be a string present but found "
-                f"`{purchase_order_number}`"
-            )
-
-        data = self._get_purchase_order_response(purchase_order_number)
-        return data.payload
+    def get_operation_endpoint(self, operation_method: str) -> str:
+        return f"{self.get_resource_endpoint()}/{operation_method}"

@@ -3,8 +3,8 @@ import enum
 import typing
 from decimal import Decimal
 
-# Third-party packages
-import pydantic
+# First-party packages
+from ... import _models
 
 
 class PurchaseOrderType(str, enum.Enum):
@@ -109,19 +109,19 @@ class ItemReceiveStatus(str, enum.Enum):
 DateTimeInterval = typing.NewType("DateTimeInterval", str)
 
 
-class Money(pydantic.BaseModel):
+class Money(_models.BaseModel):
     currencyCode: typing.Optional[str] = None
     amount: typing.Optional[Decimal] = None
     unitOfMeasure: typing.Optional[MoneyUnitOfMeasure] = None
 
 
-class ItemQuantity(pydantic.BaseModel):
+class ItemQuantity(_models.BaseModel):
     amount: typing.Optional[int] = None
     unitOfMeasure: typing.Optional[UnitOfMeasure] = None
     unitSize: typing.Optional[int] = None
 
 
-class OrderItem(pydantic.BaseModel):
+class OrderItem(_models.BaseModel):
     itemSequenceNumber: str
     orderedQuantity: ItemQuantity
     isBackOrderAllowed: bool
@@ -131,7 +131,7 @@ class OrderItem(pydantic.BaseModel):
     vendorProductIdentifier: typing.Optional[str] = None
 
 
-class ImportDetails(pydantic.BaseModel):
+class ImportDetails(_models.BaseModel):
     methodOfPayment: typing.Optional[MethodOfPayment] = None
     internationalCommercialTerms: typing.Optional[InternationalCommercialTerms] = None
     portOfDelivery: typing.Optional[str] = None
@@ -139,7 +139,7 @@ class ImportDetails(pydantic.BaseModel):
     shippingInstructions: typing.Optional[str] = None
 
 
-class Address(pydantic.BaseModel):
+class Address(_models.BaseModel):
     name: str
     addressLine1: str
     countryCode: str
@@ -154,18 +154,18 @@ class Address(pydantic.BaseModel):
     phone: typing.Optional[str] = None
 
 
-class TaxRegistrationDetails(pydantic.BaseModel):
+class TaxRegistrationDetails(_models.BaseModel):
     taxRegistrationType: TaxRegistrationType
     taxRegistrationNumber: str
 
 
-class PartyIdentification(pydantic.BaseModel):
+class PartyIdentification(_models.BaseModel):
     partyId: str
     address: typing.Optional[Address] = None
     taxInfo: typing.Optional[TaxRegistrationDetails] = None
 
 
-class OrderDetails(pydantic.BaseModel):
+class OrderDetails(_models.BaseModel):
     purchaseOrderDate: str
     purchaseOrderStateChangedDate: str
     items: typing.List[OrderItem]
@@ -182,37 +182,37 @@ class OrderDetails(pydantic.BaseModel):
     deliveryWindow: typing.Optional[DateTimeInterval] = None
 
 
-class Order(pydantic.BaseModel):
+class Order(_models.BaseModel):
     purchaseOrderNumber: str
     purchaseOrderState: PurchaseOrderState
     orderDetails: typing.Optional[OrderDetails] = None
 
 
-class Pagination(pydantic.BaseModel):
+class Pagination(_models.BaseModel):
     nextToken: typing.Optional[str] = None
 
 
-class OrderList(pydantic.BaseModel):
+class OrderList(_models.BaseModel):
     pagination: typing.Optional[Pagination] = None
     orders: typing.Optional[typing.List[Order]] = None
 
 
-class TransactionId(pydantic.BaseModel):
+class TransactionId(_models.BaseModel):
     transactionId: typing.Optional[str] = None
 
 
-class Error(pydantic.BaseModel):
+class Error(_models.BaseModel):
     code: str
     message: str
     details: typing.Optional[str] = None
 
 
-class GetPurchaseOrdersResponse(pydantic.BaseModel):
+class GetPurchaseOrdersResponse(_models.BaseModel):
     payload: typing.Optional[OrderList] = None
     errors: typing.Optional[typing.List[Error]] = None
 
 
-class GetPurchaseOrdersQuery(pydantic.BaseModel):
+class GetPurchaseOrdersQuery(_models.BaseModel):
     limit: typing.Optional[int] = None
     createdAfter: typing.Optional[str] = None
     createdBefore: typing.Optional[str] = None
@@ -227,12 +227,12 @@ class GetPurchaseOrdersQuery(pydantic.BaseModel):
     orderingVendorCode: typing.Optional[str] = None
 
 
-class GetPurchaseOrderResponse(pydantic.BaseModel):
+class GetPurchaseOrderResponse(_models.BaseModel):
     payload: typing.Optional[Order] = None
     errors: typing.Optional[typing.List[Error]] = None
 
 
-class OrderItemAcknowledgement(pydantic.BaseModel):
+class OrderItemAcknowledgement(_models.BaseModel):
     acknowledgementCode: AcknowledgementCode
     acknowledgedQuantity: ItemQuantity
     scheduledShipDate: typing.Optional[str] = None
@@ -240,7 +240,7 @@ class OrderItemAcknowledgement(pydantic.BaseModel):
     rejectionReason: typing.Optional[RejectionReason] = None
 
 
-class OrderAcknowledgementItem(pydantic.BaseModel):
+class OrderAcknowledgementItem(_models.BaseModel):
     orderedQuantity: ItemQuantity
     itemAcknowledgements: typing.List[OrderItemAcknowledgement]
     itemSequenceNumber: typing.Optional[str] = None
@@ -251,53 +251,53 @@ class OrderAcknowledgementItem(pydantic.BaseModel):
     discountMultiplier: typing.Optional[str] = None
 
 
-class OrderAcknowledgement(pydantic.BaseModel):
+class OrderAcknowledgement(_models.BaseModel):
     purchaseOrderNumber: str
     sellingParty: PartyIdentification
     acknowledgementDate: str
     items: typing.List[OrderAcknowledgementItem]
 
 
-class SubmitAcknowledgementRequest(pydantic.BaseModel):
+class SubmitAcknowledgementRequest(_models.BaseModel):
     acknowledgements: typing.Optional[typing.List[OrderAcknowledgement]] = None
 
 
-class SubmitAcknowledgementResponse(pydantic.BaseModel):
+class SubmitAcknowledgementResponse(_models.BaseModel):
     payload: typing.Optional[TransactionId] = None
     errors: typing.Optional[typing.List[Error]] = None
 
 
-class OrderedQuantityDetails(pydantic.BaseModel):
+class OrderedQuantityDetails(_models.BaseModel):
     updatedDate: typing.Optional[str] = None
     orderedQuantity: typing.Optional[ItemQuantity] = None
     cancelledQuantity: typing.Optional[ItemQuantity] = None
 
 
-class OrderedQuantityStatus(pydantic.BaseModel):
+class OrderedQuantityStatus(_models.BaseModel):
     orderedQuantity: typing.Optional[ItemQuantity] = None
     orderedQuantityDetails: typing.Optional[typing.List[OrderedQuantityDetails]] = None
 
 
-class AcknowledgementStatusDetails(pydantic.BaseModel):
+class AcknowledgementStatusDetails(_models.BaseModel):
     acknowledgementDate: typing.Optional[str] = None
     acceptedQuantity: typing.Optional[ItemQuantity] = None
     rejectedQuantity: typing.Optional[ItemQuantity] = None
 
 
-class AcknowledgementStatus(pydantic.BaseModel):
+class AcknowledgementStatus(_models.BaseModel):
     confirmationStatus: typing.Optional[ItemConfirmationStatus] = None
     acceptedQuantity: typing.Optional[ItemQuantity] = None
     rejectedQuantity: typing.Optional[ItemQuantity] = None
     acknowledgementStatusDetails: typing.Optional[typing.List[AcknowledgementStatusDetails]] = None
 
 
-class ReceivingStatus(pydantic.BaseModel):
+class ReceivingStatus(_models.BaseModel):
     receiveStatus: typing.Optional[ItemReceiveStatus] = None
     receivedQuantity: typing.Optional[ItemQuantity] = None
     lastReceiveDate: typing.Optional[str] = None
 
 
-class OrderItemStatus(pydantic.BaseModel):
+class OrderItemStatus(_models.BaseModel):
     itemSequenceNumber: str
     buyerProductIdentifier: typing.Optional[str] = None
     vendorProductIdentifier: typing.Optional[str] = None
@@ -308,7 +308,7 @@ class OrderItemStatus(pydantic.BaseModel):
     receivingStatus: typing.Optional[ReceivingStatus] = None
 
 
-class OrderStatus(pydantic.BaseModel):
+class OrderStatus(_models.BaseModel):
     purchaseOrderNumber: str
     purchaseOrderStatus: PurchaseOrderStatus
     purchaseOrderDate: str
@@ -318,17 +318,17 @@ class OrderStatus(pydantic.BaseModel):
     lastUpdatedDate: typing.Optional[str] = None
 
 
-class OrderListStatus(pydantic.BaseModel):
+class OrderListStatus(_models.BaseModel):
     pagination: typing.Optional[Pagination] = None
     ordersStatus: typing.Optional[typing.List[OrderStatus]] = None
 
 
-class GetPurchaseOrdersStatusResponse(pydantic.BaseModel):
+class GetPurchaseOrdersStatusResponse(_models.BaseModel):
     payload: typing.Optional[OrderListStatus] = None
     errors: typing.Optional[typing.List[Error]] = None
 
 
-class GetPurchaseOrdersStatusQuery(pydantic.BaseModel):
+class GetPurchaseOrdersStatusQuery(_models.BaseModel):
     limit: typing.Optional[int] = None
     sortOrder: typing.Optional[SortOrder] = None
     nextToken: typing.Optional[str] = None

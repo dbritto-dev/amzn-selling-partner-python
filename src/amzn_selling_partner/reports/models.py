@@ -5,6 +5,9 @@ import typing
 # Third-party packages
 import pydantic
 
+# First-party packages
+from .. import _models
+
 
 class ReportType(str, enum.Enum):
     VENDOR_REAL_TIME_INVENTORY_REPORT = "GET_VENDOR_REAL_TIME_INVENTORY_REPORT"
@@ -93,16 +96,15 @@ class SellingProgram(str, enum.Enum):
     FRESH = "FRESH"
 
 
-class ReportOptions(pydantic.BaseModel):
+class ReportOptions(_models.BaseModel):
+    model_config = pydantic.ConfigDict(extra="forbid")
+
     reportPeriod: typing.Optional[ReportPeriod] = None
     distributorView: typing.Optional[DistributorView] = None
     sellingProgram: typing.Optional[SellingProgram] = None
 
-    class Config:
-        extra = "forbid"
 
-
-class CreateReportSpecification(pydantic.BaseModel):
+class CreateReportSpecification(_models.BaseModel):
     reportType: ReportType
     marketplaceIds: typing.List[MarketPlaceId]
     reportOptions: typing.Optional[ReportOptions] = None
@@ -110,11 +112,11 @@ class CreateReportSpecification(pydantic.BaseModel):
     dataEndTime: typing.Optional[str] = None
 
 
-class CreateReportResponse(pydantic.BaseModel):
+class CreateReportResponse(_models.BaseModel):
     reportId: str
 
 
-class CreateReportScheduleSpecification(pydantic.BaseModel):
+class CreateReportScheduleSpecification(_models.BaseModel):
     reportType: ReportType
     marketplaceIds: typing.List[MarketPlaceId]
     period: SchedulePeriod
@@ -122,11 +124,11 @@ class CreateReportScheduleSpecification(pydantic.BaseModel):
     nextReportCreationTime: typing.Optional[str] = None
 
 
-class CreateReportScheduleResponse(pydantic.BaseModel):
+class CreateReportScheduleResponse(_models.BaseModel):
     reportScheduleId: str
 
 
-class GetReportsQuery(pydantic.BaseModel):
+class GetReportsQuery(_models.BaseModel):
     reportTypes: typing.Optional[typing.List[ReportType]] = None
     processingStatuses: typing.Optional[typing.List[ProcessingStatus]] = None
     marketplaceIds: typing.Optional[typing.List[MarketPlaceId]] = None
@@ -136,7 +138,7 @@ class GetReportsQuery(pydantic.BaseModel):
     nextToken: typing.Optional[str] = None
 
 
-class Report(pydantic.BaseModel):
+class Report(_models.BaseModel):
     reportId: str
     reportType: ReportType
     createdTime: str
@@ -150,12 +152,12 @@ class Report(pydantic.BaseModel):
     reportDocumentId: typing.Optional[str] = None
 
 
-class GetReportsResponse(pydantic.BaseModel):
+class GetReportsResponse(_models.BaseModel):
     reports: typing.List[Report]
     nextToken: typing.Optional[str] = None
 
 
-class ReportSchedule(pydantic.BaseModel):
+class ReportSchedule(_models.BaseModel):
     reportScheduleId: str
     reportType: ReportType
     period: str
@@ -164,11 +166,11 @@ class ReportSchedule(pydantic.BaseModel):
     nextReportCreationTime: typing.Optional[str] = None
 
 
-class ReportScheduleList(pydantic.BaseModel):
+class ReportScheduleList(_models.BaseModel):
     reportSchedules: typing.List[ReportSchedule]
 
 
-class ReportDocument(pydantic.BaseModel):
+class ReportDocument(_models.BaseModel):
     reportDocumentId: str
     url: str
     compressionAlgorithm: typing.Optional[CompressionAlgorithm] = None

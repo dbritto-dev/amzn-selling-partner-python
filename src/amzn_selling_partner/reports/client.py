@@ -1,177 +1,57 @@
-import copy
-import gzip
-import json
-import time
-import typing
+import os
+import warnings
 
-from .. import client, utils
-from . import models
+from .. import _client
+from .._regions import SellingPartnerRegion
+from . import _sync
 
 
-class Client(client.BaseClient):
-    def get_resource_path(self) -> str:
-        return "reports/2021-06-30"
+class Client(_sync.Reports):
+    """Deprecated. Use `amzn_selling_partner.Client(...).reports` instead."""
 
-    def _create_report_response(
-        self, data: models.CreateReportSpecification
-    ) -> models.CreateReportResponse:
-        _response = self.http_session.post(
-            self.get_operation_endpoint("reports"),
-            json=data.dict(exclude_none=True),
-        )
-        _response.raise_for_status()
-        return models.CreateReportResponse(**_response.json())
-
-    def create_report(self, data: models.CreateReportSpecification) -> models.Report:
-        return self.get_report(self._create_report_response(data).reportId)
-
-    def _get_reports_response(
+    def __init__(
         self,
         *,
-        query: typing.Optional[models.GetReportsQuery] = None,
-    ):
-        _response = self.http_session.get(
-            self.get_operation_endpoint("reports"),
-            params=query and query.dict(exclude_none=True),
-        )
-        _time_to_wait = float(_response.headers.get("x-amzn-RateLimit-Limit", 0.03)) * 100
-        time.sleep(_time_to_wait)
-        _response.raise_for_status()
-        return models.GetReportsResponse(**_response.json())
-
-    def get_reports(
-        self, *, query: typing.Optional[models.GetReportsQuery] = None, pages_limit: int = 3
-    ):
-        data = self._get_reports_response(
-            query=query,
-        )
-
-        next_token = data.nextToken
-
-        if next_token is None or pages_limit < 2:  # noqa
-            return data.reports
-
-        _query = models.GetReportsQuery()
-        _query.nextToken = next_token
-
-        return data.reports + self.get_reports(query=_query, pages_limit=pages_limit - 1)
-
-    def _get_report_response(self, report_id: str) -> models.Report:
-        _response = self.http_session.get(self.get_operation_endpoint(f"reports/{report_id}"))
-        _response.raise_for_status()
-        return models.Report(**_response.json())
-
-    def get_report(self, report_id: str) -> models.Report:
-        if not report_id or not isinstance(report_id, str):
-            raise ValueError(f"report_id must be a string present but found `{report_id}`")
-
-        return self._get_report_response(report_id)
-
-    def _get_report_document_response(
-        self,
-        report_document_id: str,
-        *,
-        enable_content_encoding_url_header: typing.Optional[bool] = None,
-    ) -> models.ReportDocument:
-        _response = self.http_session.get(
-            self.get_operation_endpoint(f"documents/{report_document_id}"),
-            params=(
-                {
-                    "enableContentEncodingUrlHeader": (
-                        str(enable_content_encoding_url_header).lower()
-                    ),
-                }
-                if enable_content_encoding_url_header is not None
-                else None
-            ),
-        )
-        _response.raise_for_status()
-        return models.ReportDocument(**_response.json())
-
-    def get_report_document(
-        self,
-        report_document_id: str,
-        *,
-        enable_content_encoding_url_header: typing.Optional[bool] = None,
-    ) -> models.ReportDocument:
-        if not report_document_id or not isinstance(report_document_id, str):
-            raise ValueError(
-                f"report_document_id must be a string present but found `{report_document_id}`"
-            )
-
-        return self._get_report_document_response(
-            report_document_id,
-            enable_content_encoding_url_header=enable_content_encoding_url_header,
-        )
-
-    def _get_report_document_raw_content(
-        self,
-        report_document_id: str,
-        *,
-        enable_content_encoding_url_header: typing.Optional[bool] = None,
-    ) -> bytes:
-        _report_document = self.get_report_document(
-            report_document_id,
-            enable_content_encoding_url_header=enable_content_encoding_url_header,
-        )
-        _download_session = copy.copy(self.http_session)
-        _download_session.auth = None
-        _download_response = _download_session.get(_report_document.url)
-        _download_response.raise_for_status()
-        if (
-            _report_document.compressionAlgorithm == models.CompressionAlgorithm.GZIP
-            and _download_response.headers.get("Content-Encoding", "").lower() != "gzip"
-        ):
-            return gzip.decompress(_download_response.content)
-        return _download_response.content
-
-    def _get_report_document_content(
-        self,
-        report_document_id: str,
-        *,
-        enable_content_encoding_url_header: typing.Optional[bool] = None,
-    ) -> typing.Dict:
-        _report_document_raw_content = self._get_report_document_raw_content(
-            report_document_id,
-            enable_content_encoding_url_header=enable_content_encoding_url_header,
-        )
-        return json.loads(_report_document_raw_content)
-
-    def get_report_document_content(
-        self,
-        report_document_id: str,
-        *,
-        enable_content_encoding_url_header: typing.Optional[bool] = None,
-    ) -> typing.Dict:
-        if not report_document_id or not isinstance(report_document_id, str):
-            raise ValueError(
-                f"report_document_id must be a string present but found `{report_document_id}`"
-            )
-
-        return self._get_report_document_content(
-            report_document_id,
-            enable_content_encoding_url_header=enable_content_encoding_url_header,
-        )
-
-    def download_report_document_content(
-        self,
-        report_document_id: str,
-        file_path: str,
-        *,
-        enable_content_encoding_url_header: typing.Optional[bool] = None,
+        selling_partner_region: SellingPartnerRegion = SellingPartnerRegion.NORTH_AMERICA,
+        selling_partner_app_client_id: str = os.getenv("SELLING_PARTNER_APP_CLIENT_ID", ""),
+        selling_partner_app_client_secret: str = os.getenv(
+            "SELLING_PARTNER_APP_CLIENT_SECRET", ""
+        ),
+        selling_partner_app_refresh_token: str = os.getenv(
+            "SELLING_PARTNER_APP_REFRESH_TOKEN", ""
+        ),
+        aws_access_key_id: str = os.getenv("AWS_ACCESS_KEY_ID", ""),
+        aws_secret_access_key: str = os.getenv("AWS_SECRET_ACCESS_KEY", ""),
+        aws_selling_partner_role: str = os.getenv("AWS_SELLING_PARTNER_ROLE", ""),
+        aws_selling_partner_role_session_name: str = os.getenv(
+            "AWS_SELLING_PARTNER_ROLE_SESSION_NAME", ""
+        ),
+        sandbox: bool = False,
     ) -> None:
-        if not report_document_id or not isinstance(report_document_id, str):
-            raise ValueError(
-                f"report_document_id must be a string present but found `{report_document_id}`"
-            )
-
-        if not file_path or not isinstance(file_path, str):
-            raise ValueError(f"file_path must be a string present but found `{file_path}`")
-
-        utils.file.write_binary_file(
-            file_path,
-            self._get_report_document_raw_content(
-                report_document_id,
-                enable_content_encoding_url_header=enable_content_encoding_url_header,
-            ),
+        warnings.warn(
+            "amzn_selling_partner.reports.Client is deprecated; use "
+            "amzn_selling_partner.Client(...).reports instead. See MIGRATION.md.",
+            DeprecationWarning,
+            stacklevel=2,
         )
+        self._new_client = _client.Client(
+            selling_partner_region=selling_partner_region,
+            selling_partner_app_client_id=selling_partner_app_client_id,
+            selling_partner_app_client_secret=selling_partner_app_client_secret,
+            selling_partner_app_refresh_token=selling_partner_app_refresh_token,
+            aws_access_key_id=aws_access_key_id,
+            aws_secret_access_key=aws_secret_access_key,
+            aws_selling_partner_role=aws_selling_partner_role,
+            aws_selling_partner_role_session_name=aws_selling_partner_role_session_name,
+            sandbox=sandbox,
+        )
+        super().__init__(self._new_client)
+
+    def get_resource_path(self) -> str:
+        return _sync._RESOURCE_PATH
+
+    def get_resource_endpoint(self) -> str:
+        return f"{self._new_client.base_url}/{self.get_resource_path()}"
+
+    def get_operation_endpoint(self, operation_method: str) -> str:
+        return f"{self.get_resource_endpoint()}/{operation_method}"

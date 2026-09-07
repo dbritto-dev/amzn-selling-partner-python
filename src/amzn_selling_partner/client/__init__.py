@@ -1,42 +1,20 @@
-import enum
 import os
+import warnings
 
-import requests
+from .._regions import SellingPartnerRegion
 
-from . import auth
-
-
-class SellingPartnerRegion(tuple, enum.Enum):
-    NORTH_AMERICA = (
-        "https://sellingpartnerapi-na.amazon.com",
-        "https://sandbox.sellingpartnerapi-na.amazon.com",
-        "us-east-1",
-    )
-    EUROPE = (
-        "https://sellingpartnerapi-eu.amazon.com",
-        "https://sandbox.sellingpartnerapi-eu.amazon.com",
-        "eu-west-1",
-    )
-    FAR_EAST = (
-        "https://sellingpartnerapi-fe.amazon.com",
-        "https://sandbox.sellingpartnerapi-fe.amazon.com",
-        "us-west-2",
-    )
-
-    @property
-    def api_endpoint(self):
-        return self.value[0]
-
-    @property
-    def api_sandbox_endpoint(self):
-        return self.value[1]
-
-    @property
-    def region_name(self):
-        return self.value[2]
+__all__ = ["SellingPartnerRegion", "BaseClient"]
 
 
 class BaseClient:
+    """Deprecated. Use `amzn_selling_partner.Client` or `amzn_selling_partner.AsyncClient`.
+
+    Only the pure string-building endpoint helpers survive here; `.http_session` and the
+    `requests`-based auth machinery that used to live in `client.auth` are gone (see
+    MIGRATION.md) since they were never part of this class's tested public contract beyond
+    those helpers.
+    """
+
     def __init__(
         self,
         *,
@@ -56,19 +34,15 @@ class BaseClient:
         ),
         sandbox: bool = False,
     ) -> None:
+        warnings.warn(
+            "amzn_selling_partner.client.BaseClient is deprecated; use "
+            "amzn_selling_partner.Client or amzn_selling_partner.AsyncClient instead. "
+            "See MIGRATION.md.",
+            DeprecationWarning,
+            stacklevel=2,
+        )
         self.region = selling_partner_region
         self.sandbox = sandbox
-        self.http_session = requests.Session()
-        self.http_session.auth = auth.ClientSessionAuth(
-            selling_partner_app_client_id=selling_partner_app_client_id,
-            selling_partner_app_client_secret=selling_partner_app_client_secret,
-            selling_partner_app_refresh_token=selling_partner_app_refresh_token,
-            aws_access_key_id=aws_access_key_id,
-            aws_secret_access_key=aws_secret_access_key,
-            aws_region=selling_partner_region.region_name,
-            aws_selling_partner_role=aws_selling_partner_role,
-            aws_selling_partner_role_session_name=aws_selling_partner_role_session_name,
-        )
 
     def get_api_endpoint(self) -> str:
         return self.region.api_endpoint if not self.sandbox else self.region.api_sandbox_endpoint

@@ -1,3 +1,5 @@
+from ._async import AsyncOrders
+from ._sync import Orders
 from .client import Client
 from .models import (
     AcknowledgementCode,
@@ -49,6 +51,8 @@ from .models import (
 )
 
 __all__ = [
+    "AsyncOrders",
+    "Orders",
     "Client",
     "Address",
     "AcknowledgementCode",

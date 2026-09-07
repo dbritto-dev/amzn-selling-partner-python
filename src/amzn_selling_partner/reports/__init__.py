@@ -1,3 +1,5 @@
+from ._async import AsyncReports
+from ._sync import Reports
 from .client import Client
 from .models import (
     CompressionAlgorithm,
@@ -22,6 +24,8 @@ from .models import (
 )
 
 __all__ = [
+    "AsyncReports",
+    "Reports",
     "Client",
     "CompressionAlgorithm",
     "CreateReportResponse",
