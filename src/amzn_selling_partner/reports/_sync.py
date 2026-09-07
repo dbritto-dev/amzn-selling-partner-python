@@ -6,6 +6,7 @@ from functools import cached_property
 import httpx2
 
 from .. import _base_client, utils
+from .._path import path_template
 from . import models
 
 if typing.TYPE_CHECKING:
@@ -66,7 +67,10 @@ class Reports:
 
     def _get_report_response(self, report_id: str) -> httpx2.Response:
         return self._client._request(
-            _base_client.RequestOptions(method="GET", url=f"{_RESOURCE_PATH}/reports/{report_id}")
+            _base_client.RequestOptions(
+                method="GET",
+                url=path_template(f"{_RESOURCE_PATH}/reports/{{report_id}}", report_id=report_id),
+            )
         )
 
     def get_report(self, report_id: str) -> models.Report:
@@ -85,7 +89,10 @@ class Reports:
         return self._client._request(
             _base_client.RequestOptions(
                 method="GET",
-                url=f"{_RESOURCE_PATH}/documents/{report_document_id}",
+                url=path_template(
+                    f"{_RESOURCE_PATH}/documents/{{report_document_id}}",
+                    report_document_id=report_document_id,
+                ),
                 params=(
                     {
                         "enableContentEncodingUrlHeader": (

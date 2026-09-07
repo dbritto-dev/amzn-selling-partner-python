@@ -4,6 +4,7 @@ from functools import cached_property
 import httpx2
 
 from ... import _base_client
+from ..._path import path_template
 from . import models
 
 if typing.TYPE_CHECKING:
@@ -59,7 +60,11 @@ class AsyncOrders:
     async def _get_purchase_order_response(self, purchase_order_number: str) -> httpx2.Response:
         return await self._client._request(
             _base_client.RequestOptions(
-                method="GET", url=f"{_RESOURCE_PATH}/purchaseOrders/{purchase_order_number}"
+                method="GET",
+                url=path_template(
+                    f"{_RESOURCE_PATH}/purchaseOrders/{{purchase_order_number}}",
+                    purchase_order_number=purchase_order_number,
+                ),
             )
         )
 
