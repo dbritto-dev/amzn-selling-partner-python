@@ -239,3 +239,67 @@ async def test_download_report_document_content_rejects_invalid_file_path(client
     client = client_factory(lambda request: httpx2.Response(200, json={}))
     with pytest.raises(ValueError):
         await maybe_await(client.reports.download_report_document_content("doc-1", None))
+
+
+@pytest.mark.parametrize("bad_document_id", [None, 123])
+async def test_get_report_document_rejects_invalid_document_id(client_factory, bad_document_id):
+    client = client_factory(lambda request: httpx2.Response(200, json={}))
+    with pytest.raises(ValueError):
+        await maybe_await(client.reports.get_report_document(bad_document_id))
+
+
+@pytest.mark.parametrize("bad_document_id", [None, 123])
+async def test_get_report_document_content_rejects_invalid_document_id(
+    client_factory, bad_document_id
+):
+    client = client_factory(lambda request: httpx2.Response(200, json={}))
+    with pytest.raises(ValueError):
+        await maybe_await(client.reports.get_report_document_content(bad_document_id))
+
+
+@pytest.mark.parametrize("bad_document_id", [None, 123])
+async def test_download_report_document_content_rejects_invalid_document_id(
+    client_factory, bad_document_id, tmp_path
+):
+    client = client_factory(lambda request: httpx2.Response(200, json={}))
+    with pytest.raises(ValueError):
+        await maybe_await(
+            client.reports.download_report_document_content(
+                bad_document_id, str(tmp_path / "out.json")
+            )
+        )
+
+
+async def test_with_raw_response_get_reports(client_factory):
+    def handler(request: httpx2.Request) -> httpx2.Response:
+        return httpx2.Response(200, json={"reports": [report_json()]})
+
+    client = client_factory(handler)
+    response = await maybe_await(client.reports.with_raw_response.get_reports())
+    assert isinstance(response, httpx2.Response)
+    assert response.json()["reports"][0]["reportId"] == "report-1"
+
+
+async def test_with_raw_response_get_report(client_factory):
+    client = client_factory(lambda request: httpx2.Response(200, json=report_json()))
+    response = await maybe_await(client.reports.with_raw_response.get_report("report-1"))
+    assert isinstance(response, httpx2.Response)
+    assert response.json()["reportId"] == "report-1"
+
+
+async def test_with_raw_response_get_report_document(client_factory):
+    doc_id = "doc-1"
+
+    def handler(request: httpx2.Request) -> httpx2.Response:
+        return httpx2.Response(
+            200,
+            json={
+                "reportDocumentId": doc_id,
+                "url": "https://tortuga-prod-na.s3-external-1.amazonaws.com/doc-1",
+            },
+        )
+
+    client = client_factory(handler)
+    response = await maybe_await(client.reports.with_raw_response.get_report_document(doc_id))
+    assert isinstance(response, httpx2.Response)
+    assert response.json()["reportDocumentId"] == doc_id

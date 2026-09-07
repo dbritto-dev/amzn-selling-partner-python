@@ -76,3 +76,11 @@ def test_vendor_orders_client_shim_warns_and_preserves_public_methods() -> None:
         assert callable(getattr(client, method))
 
     assert client.get_resource_path() == "vendor/orders/v1"
+    assert (
+        client.get_resource_endpoint()
+        == "https://sellingpartnerapi-na.amazon.com/vendor/orders/v1"
+    )
+    assert (
+        client.get_operation_endpoint("x")
+        == "https://sellingpartnerapi-na.amazon.com/vendor/orders/v1/x"
+    )

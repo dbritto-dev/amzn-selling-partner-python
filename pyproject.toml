@@ -90,7 +90,7 @@ ignore = ["E501", "B904", "B008"]
 convention = "google"
 
 [tool.ruff.lint.per-file-ignores]
-"tests/*.py" = ["S101", "S106", "PLR2004", "PLW0108"]
+"tests/*.py" = ["S101", "S105", "S106", "PLR2004", "PLW0108"]
 
 [tool.ruff.lint.pylint]
 # Client/AsyncClient constructors take every SP-API/AWS credential kwarg plus the new
@@ -116,4 +116,4 @@ branch = true
 source = ["amzn_selling_partner"]
 
 [tool.coverage.report]
-fail_under = 90
+fail_under = 100

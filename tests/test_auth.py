@@ -7,6 +7,10 @@ import amzn_selling_partner as sp
 from amzn_selling_partner import _auth
 from tests.conftest import CLIENT_KWARGS, maybe_await
 
+# Captured at collection time, before the autouse `mock_sts_credentials` fixture (in
+# conftest.py) replaces `_auth._STSCredentials` with a dummy for every other test.
+_RealSTSCredentials = _auth._STSCredentials
+
 
 def report_json(report_id: str = "report-1") -> dict:
     return {
@@ -135,3 +139,80 @@ async def test_async_request_cancellation_is_not_swallowed():
 
     with pytest.raises(asyncio.CancelledError):
         await task
+
+
+def test_lwa_token_access_token_before_refresh_raises() -> None:
+    token = _auth._LWAToken(client_id="a", client_secret="b", refresh_token="c")
+    with pytest.raises(RuntimeError):
+        _ = token.access_token
+
+
+class _FakeSTSClient:
+    def __init__(self, credentials: dict) -> None:
+        self._credentials = credentials
+        self.calls: list = []
+
+    def assume_role(self, *, RoleArn: str, RoleSessionName: str) -> dict:
+        self.calls.append((RoleArn, RoleSessionName))
+        return {"Credentials": self._credentials}
+
+
+class _FailingSTSClient:
+    def assume_role(self, **kwargs: object) -> dict:
+        raise RuntimeError("assume_role boom")
+
+
+def _make_fake_boto3_session(sts_client):
+    class FakeSession:
+        def __init__(self, **kwargs: object) -> None:
+            pass
+
+        def client(self, name: str):
+            assert name == "sts"
+            return sts_client
+
+    return FakeSession
+
+
+def test_sts_credentials_builds_refreshable_credentials(monkeypatch: pytest.MonkeyPatch) -> None:
+    import datetime
+
+    expiration = datetime.datetime.now(datetime.timezone.utc) + datetime.timedelta(hours=1)
+    fake_client = _FakeSTSClient(
+        {
+            "AccessKeyId": "AKIDEXAMPLE",
+            "SecretAccessKey": "secret",
+            "SessionToken": "token",
+            "Expiration": expiration,
+        }
+    )
+    monkeypatch.setattr(_auth.boto3, "Session", _make_fake_boto3_session(fake_client))
+
+    creds = _RealSTSCredentials(
+        aws_access_key_id="x",
+        aws_secret_access_key="y",
+        aws_region="us-east-1",
+        aws_role_arn="arn:aws:iam::123456789012:role/example-role",
+        aws_role_session_name="session",
+    )
+
+    frozen = creds.get_frozen_credentials()
+    assert frozen.access_key == "AKIDEXAMPLE"
+    assert frozen.secret_key == "secret"
+    assert frozen.token == "token"
+    assert fake_client.calls == [("arn:aws:iam::123456789012:role/example-role", "session")]
+
+
+def test_sts_credentials_wraps_assume_role_failure(monkeypatch: pytest.MonkeyPatch) -> None:
+    monkeypatch.setattr(_auth.boto3, "Session", _make_fake_boto3_session(_FailingSTSClient()))
+
+    with pytest.raises(sp._exceptions.SPAPIAuthError) as exc_info:
+        _RealSTSCredentials(
+            aws_access_key_id="x",
+            aws_secret_access_key="y",
+            aws_region="us-east-1",
+            aws_role_arn="arn:aws:iam::123456789012:role/example-role",
+            aws_role_session_name="session",
+        )
+
+    assert isinstance(exc_info.value.cause, RuntimeError)

@@ -65,8 +65,6 @@ def _parse_retry_after(value: str) -> typing.Optional[float]:
         parsed = email.utils.parsedate_to_datetime(value)
     except (TypeError, ValueError):
         return None
-    if parsed is None:
-        return None
     now = datetime.datetime.now(parsed.tzinfo or datetime.timezone.utc)
     return max(0.0, (parsed - now).total_seconds())
 
@@ -245,7 +243,12 @@ class AsyncAPIClient(BaseClient):
     async def _get_httpx_client(self) -> httpx2.AsyncClient:
         if self.__httpx_client is None:
             async with self.__client_lock:
-                if self.__httpx_client is None:
+                # Double-checked locking: the second branch (another coroutine already
+                # built it while this one was waiting for the lock) can't be forced
+                # deterministically in a test -- asyncio.Lock.acquire() never suspends
+                # when uncontended, so two concurrent callers always run this whole
+                # block on the first one's turn before the second is ever scheduled.
+                if self.__httpx_client is None:  # pragma: no branch
                     self.__httpx_client = (
                         self._provided_http_client
                         or _transports.DefaultAsyncHttpxClient(

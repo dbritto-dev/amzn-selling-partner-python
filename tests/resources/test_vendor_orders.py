@@ -100,3 +100,13 @@ async def test_with_raw_response_get_purchase_order(client_factory):
     response = await maybe_await(client.vendor.orders.with_raw_response.get_purchase_order("po-1"))
     assert isinstance(response, httpx2.Response)
     assert response.json()["payload"]["purchaseOrderNumber"] == "po-1"
+
+
+async def test_with_raw_response_get_purchase_orders(client_factory):
+    def handler(request: httpx2.Request) -> httpx2.Response:
+        return httpx2.Response(200, json={"payload": {"orders": [order_json()]}})
+
+    client = client_factory(handler)
+    response = await maybe_await(client.vendor.orders.with_raw_response.get_purchase_orders())
+    assert isinstance(response, httpx2.Response)
+    assert response.json()["payload"]["orders"][0]["purchaseOrderNumber"] == "po-1"
