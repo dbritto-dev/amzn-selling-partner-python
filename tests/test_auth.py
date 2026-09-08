@@ -43,6 +43,7 @@ async def test_signs_requests_with_sigv4_and_lwa_headers(client_factory):
     assert "x-amz-date" in request.headers
     assert request.headers.get("content-type") == "application/json; charset=utf-8"
     assert request.headers.get("accept") == "application/json"
+    assert request.headers.get("user-agent", "").startswith("amzn-selling-partner/Python ")
 
 
 async def test_lwa_token_is_cached_across_requests(client_kind):

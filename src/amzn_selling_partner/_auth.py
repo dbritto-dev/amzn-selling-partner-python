@@ -1,7 +1,7 @@
 import asyncio
-import platform
 import time
 import typing
+from importlib.metadata import version
 
 import boto3
 import botocore.auth
@@ -15,9 +15,7 @@ LWA_TOKEN_URL = "https://api.amazon.com/auth/o2/token"  # noqa # nosec B105
 
 
 def _user_agent() -> str:
-    language_info = f"Python/{platform.python_version()}"
-    platform_info = f"{platform.system()}/{platform.release()}"
-    return f"danilo-poc/0.0.1 (Language={language_info}; Platform={platform_info})"
+    return f"amzn-selling-partner/Python {version('amzn-selling-partner')}"
 
 
 class _LWAToken:
