@@ -1,8 +1,7 @@
 # Updating the bundled Amazon specs
 
-The Amazon models are a git submodule at `spec/selling-partner-api-models`,
-pinned to the commit recorded in `spec/PINNED_COMMIT`. They are an input of the
-generator only: the package ships the Python that `codegen/` (built on
+The Amazon models are a git submodule at `spec/selling-partner-api-models`
+(git records the pinned commit). They are an input of the generator only: the package ships the Python that `codegen/` (built on
 [oagen](https://github.com/workos/oagen)) generates from them, committed under
 `src/amzn_selling_partner/{models,resources,apis.py}`.
 
@@ -11,7 +10,6 @@ generator only: the package ships the Python that `codegen/` (built on
 ```sh
 git -C spec/selling-partner-api-models fetch origin
 git -C spec/selling-partner-api-models checkout <new commit or origin/main>
-git -C spec/selling-partner-api-models rev-parse HEAD > spec/PINNED_COMMIT
 ```
 
 ## 2. Review what changed in the specs
@@ -78,5 +76,33 @@ uv run pytest
 uv run python -m amzn_selling_partner.sandbox_tests   # every operation against its embedded examples
 ```
 
-Commit the submodule bump, `spec/PINNED_COMMIT` and the regenerated code
-together. CI regenerates from the submodule and fails on any drift.
+Commit the submodule bump and the regenerated code together. CI regenerates
+from the submodule and fails on any drift.
+
+## The generator
+
+`codegen/` is laid out like an `oagen init --lang python` project: `src/python/`
+is the emitter, `src/plugin.ts` the plugin bundle, `oagen.config.ts` the
+consumer config (plugin + this repo's spec policy). oagen only parses OpenAPI 3
+and its IR drops a few things the Amazon files rely on, so the driver
+(`src/generate.ts`) does, per model file:
+
+1. `convert.ts` – Swagger 2.0 → OpenAPI 3.0 with `swagger2openapi`, after
+   repairing the `#ref` typo and the dangling references in the pinned files.
+2. `transform.ts` – pre-IR fixes: inline alias schemas (`OrderList: array`),
+   hoist inline objects into named components, replace component names by
+   opaque tokens so oagen's name cleaner cannot rewrite them (`ASINIdentifier`
+   would become `AsinIdentifier`); `schemaNameTransform` maps them back.
+3. `parseSpec` (oagen) with `operationIdTransform` = identity.
+4. the `python` emitter: models (pydantic v2, `Literal` enums), resources (`Op`
+   tables + sync/async classes), pagination detection, rate-limit parsing;
+   `amazon.ts` holds the Amazon policy. Facts the IR does not carry (body
+   `required`, response media types, the `default` error response, greedy path
+   parameters) come from the converted document (`extras.ts`).
+5. `apis.py` and the package `__init__` files are written once from the
+   registry; `ruff` formats everything.
+
+`npm run sdk:generate` (alias `npm run generate`) runs all of it; `npm run
+typecheck` and `npm test` check the generator itself. `npm ci --ignore-scripts`
+skips the native builds of tree-sitter grammars oagen lists for its compat
+extractors, which this project never loads.

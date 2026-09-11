@@ -2,7 +2,7 @@ import assert from 'node:assert/strict';
 import { test } from 'node:test';
 import type { ApiSpec, Model, Operation } from '@workos/oagen';
 import { defaultSdkBehavior } from '@workos/oagen';
-import { detectPagination } from '../src/emitter/pagination.js';
+import { detectPagination } from '../src/python/pagination.js';
 import { apiNaming, compareVersions, paginationOverride } from '../src/amazon.js';
 
 const str = { kind: 'primitive', type: 'string' } as const;

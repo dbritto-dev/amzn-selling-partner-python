@@ -3,7 +3,7 @@
  * document (shared by the driver and oagen.config.ts).
  */
 import type { JsonObject } from './convert.js';
-import type { OperationExtras, UnionAlias } from './emitter/options.js';
+import type { OperationExtras, UnionAlias } from './python/options.js';
 
 function isObject(v: unknown): v is JsonObject {
   return typeof v === 'object' && v !== null && !Array.isArray(v);

@@ -1,6 +1,6 @@
 import assert from 'node:assert/strict';
 import { test } from 'node:test';
-import { parseRateLimit } from '../src/emitter/ratelimits.js';
+import { parseRateLimit } from '../src/python/ratelimits.js';
 
 test('two-column and three-column usage plan tables', () => {
   const two = 'text\n\n**Usage Plan:**\n\n| Rate (requests per second) | Burst |\n| ---- | ---- |\n| 0.0167 | 20 |\n\nmore';

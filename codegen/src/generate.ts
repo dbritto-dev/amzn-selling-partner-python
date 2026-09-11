@@ -16,12 +16,12 @@ import { fileURLToPath } from 'node:url';
 import { generateFiles, parseSpec, type ApiSpec, type GeneratedFile } from '@workos/oagen';
 import { toOpenApi3, wrapJsonSchema, type JsonObject } from './convert.js';
 import { schemaNameTransform, transformSpec } from './transform.js';
-import { pythonEmitter, resourceClassName } from './emitter/index.js';
-import { renderApisModule, type ApiVersionEntry } from './emitter/apis.js';
-import { newReport, type EmitterOptions } from './emitter/options.js';
+import { configure, pythonEmitter, resourceClassName } from './python/index.js';
+import { renderApisModule, type ApiVersionEntry } from './python/apis.js';
+import { newReport, type EmitterOptions } from './python/options.js';
 import { extractExtras, extractUnionAliases } from './extras.js';
 import { ALIASES, apiNaming, compareVersions, DROP_PARAMS_ON_NEXT, paginationOverride } from './amazon.js';
-import { className, snakeCase, pyStr } from './emitter/naming.js';
+import { className, snakeCase, pyStr } from './python/naming.js';
 
 const HERE = path.dirname(fileURLToPath(import.meta.url));
 const ROOT = path.resolve(HERE, '..', '..');
@@ -88,8 +88,8 @@ async function generateOne(
     paginationOverride: target.amazon ? (opId) => paginationOverride(api, version, opId) : undefined,
     dropParamsOnNext: target.amazon ? (opId) => DROP_PARAMS_ON_NEXT.has(`${api}.${opId}`) : undefined,
   };
-  const emitter = pythonEmitter(opts);
-  const { files } = generateFiles(spec, emitter, { namespace: resourceClassName(api, version), outputDir: path.join(BUILD, 'out') });
+  configure(opts);
+  const { files } = generateFiles(spec, pythonEmitter, { namespace: resourceClassName(api, version), outputDir: path.join(BUILD, 'out') });
   reports[`${target.packageName}.${api}.${version}`] = report;
   const operations = spec.services.reduce((n, s) => n + s.operations.length, 0);
   return { entry: { api, version, title: spec.name, operations }, files };

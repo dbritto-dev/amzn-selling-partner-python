@@ -4,8 +4,8 @@
  * settle (§9). Restricted-operation and grantless tables stay in Python
  * (`plugins/_amazon/rdt.py`) because the auth hook reads them at run time.
  */
-import type { PaginationDescriptor } from './emitter/pagination.js';
-import { snakeCase } from './emitter/naming.js';
+import type { PaginationDescriptor } from './python/pagination.js';
+import { snakeCase } from './python/naming.js';
 
 const VERSION_SUFFIX = /(?:[_-]|(?<=[a-z])V)(?<v>\d{4}-\d{2}-\d{2}|\d+)$/;
 

@@ -74,13 +74,4 @@ def default_schema_dir() -> pathlib.Path:
     raise FileNotFoundError("Amazon SP-API schemas not found (git submodule update --init, or set AMZN_SELLING_PARTNER_SCHEMAS).")
 
 
-def spec_path(api: str, version: str, root: pathlib.Path | None = None) -> pathlib.Path:
-    """The model file behind ``client.<api>.<version>``."""
-    for path in spec_files(root or default_spec_dir()):
-        named = api_naming(path)
-        if named == (api, version):
-            return path
-    raise KeyError(f"{api}.{version}")
-
-
-__all__ = ["UNVERSIONED", "api_naming", "default_schema_dir", "default_spec_dir", "spec_files", "spec_path"]
+__all__ = ["UNVERSIONED", "api_naming", "default_schema_dir", "default_spec_dir", "spec_files"]

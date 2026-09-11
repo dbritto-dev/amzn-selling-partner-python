@@ -5,7 +5,9 @@
   "description": "oagen-based generator for the amzn_selling_partner Python package",
   "type": "module",
   "scripts": {
+    "sdk:generate": "tsx src/generate.ts",
     "generate": "tsx src/generate.ts",
+    "typecheck": "tsc --noEmit",
     "check": "tsc --noEmit",
     "test": "tsx --test test/*.test.ts"
   },
