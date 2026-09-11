@@ -6,18 +6,23 @@
   "type": "module",
   "scripts": {
     "sdk:generate": "tsx src/generate.ts",
-    "generate": "tsx src/generate.ts",
+    "sdk:generate:python": "oagen generate --lang python",
+    "sdk:parse": "oagen parse",
+    "sdk:resolve": "oagen resolve",
+    "sdk:diff": "oagen diff",
     "typecheck": "tsc --noEmit",
-    "check": "tsc --noEmit",
-    "test": "tsx --test test/*.test.ts"
+    "test": "vitest run",
+    "test:watch": "vitest"
   },
   "dependencies": {
     "@workos/oagen": "0.30.2",
     "swagger2openapi": "7.0.8",
     "tsx": "^4.20.0",
-    "typescript": "^5.9.0"
+    "typescript": "^5.9.0",
+    "yaml": "^2.9.0"
   },
   "devDependencies": {
-    "@types/node": "^22.20.2"
+    "@types/node": "^22.20.2",
+    "vitest": "^3.2.7"
   }
 }

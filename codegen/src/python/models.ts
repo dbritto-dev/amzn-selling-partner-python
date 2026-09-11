@@ -1,15 +1,11 @@
 /** Models file: pydantic v2 classes + Literal enums for one API version. */
-import type { ApiSpec, Model, Enum, EmitterContext, GeneratedFile } from '@workos/oagen';
+import type { ApiSpec, Model, EmitterContext, GeneratedFile } from '@workos/oagen';
 import { className, docstring, fieldName, Uniquer } from './naming.js';
-import { enumAlias, pyType, typeContext, type TypeContext } from './types.js';
+import { renderEnums } from './enums.js';
+import { enumAlias, pyType, typeContext } from './types.js';
 import type { EmitterOptions } from './options.js';
 
 const SYNTHETIC_ADDITIONAL = 'Additional properties not captured by named fields';
-
-export function renderEnum(e: Enum, ctx: TypeContext): string[] {
-  const values = e.values.map((v) => JSON.stringify(v.value));
-  return [`${enumAlias(ctx, e.name)}: TypeAlias = Literal[${values.join(', ')}]`];
-}
 
 /** True when the model is rendered as a type alias (union) rather than a class. */
 export function isUnionAlias(model: Model, opts?: EmitterOptions): boolean {
@@ -70,7 +66,7 @@ export function renderModelsModule(spec: ApiSpec, opts: EmitterOptions): string 
   const ctx = typeContext(spec, '');
   const enums = [...spec.enums].sort((a, b) => a.name.localeCompare(b.name));
   const models = [...spec.models].sort((a, b) => a.name.localeCompare(b.name));
-  for (const e of enums) body.push(...renderEnum(e, ctx));
+  body.push(...renderEnums(enums, ctx));
   if (enums.length) body.push('');
   // classes first (string annotations resolve lazily); union aliases are runtime expressions and come last
   for (const m of models.filter((m) => !isUnionAlias(m, opts))) {

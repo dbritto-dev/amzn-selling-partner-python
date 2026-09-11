@@ -1,8 +1,10 @@
 /**
  * Driver: turn every pinned spec into generated Python.
  *
- *   npm run generate                 # Amazon models + notification schemas + the petstore test package
- *   npm run generate -- --only orders
+ *   npm run sdk:generate                 # Amazon models + notification schemas + the petstore test package
+ *   npm run sdk:generate -- --only orders
+ *   npm run sdk:generate -- --spec <openapi.yml|swagger.json> --namespace <Client> [--output <dir>] [--api <name>] [--version <vN>] [--amazon]
+ *                                        # one spec -> a standalone package (default codegen/sdk/), as in the oagen tutorial
  *
  * Per model file: read -> Swagger 2.0 -> OpenAPI 3 (`convert.ts`) -> pre-IR
  * fixes (`transform.ts`) -> `parseSpec` (oagen) -> `generateFiles` (oagen +
@@ -13,11 +15,12 @@ import { execFileSync } from 'node:child_process';
 import fs from 'node:fs';
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
+import YAML from 'yaml';
 import { generateFiles, parseSpec, type ApiSpec, type GeneratedFile } from '@workos/oagen';
 import { toOpenApi3, wrapJsonSchema, type JsonObject } from './convert.js';
 import { schemaNameTransform, transformSpec } from './transform.js';
 import { pythonEmitter, resourceClassName } from './python/index.js';
-import { renderApisModule, type ApiVersionEntry } from './python/apis.js';
+import { generateClient, renderClientModule, type ApiVersionEntry } from './python/client.js';
 import { newReport, type EmitterOptions } from './python/options.js';
 import { extractExtras, extractUnionAliases } from './extras.js';
 import { ALIASES, apiNaming, compareVersions, DROP_PARAMS_ON_NEXT, paginationOverride } from './amazon.js';
@@ -32,7 +35,9 @@ const PACKAGE = 'amzn_selling_partner';
 const SRC = path.join(ROOT, 'src', PACKAGE);
 
 const args = process.argv.slice(2);
-const only = args.includes('--only') ? args[args.indexOf('--only') + 1] : undefined;
+const flag = (name: string): string | undefined => (args.includes(name) ? args[args.indexOf(name) + 1] : undefined);
+const only = flag('--only');
+const specArg = flag('--spec');
 const skipFormat = args.includes('--no-format');
 const skipAmazon = args.includes('--skip-amazon');
 
@@ -168,9 +173,8 @@ async function generateAmazon(warnings: string[]): Promise<string[]> {
     process.stdout.write(`${key}: ${g.entry.operations} operations\n`);
   }
   if (!only) written.push(...(await generateNotifications(target, warnings)));
-  const apisPath = path.join(SRC, 'apis.py');
-  fs.writeFileSync(apisPath, renderApisModule({ packageName: PACKAGE, runtimePackage: PACKAGE, entries, aliases: ALIASES, compareVersions }));
-  written.push(apisPath, ...writeInits(target, entries));
+  written.push(...writeFiles(target, [generateClient({ packageName: PACKAGE, runtimePackage: PACKAGE, entries, aliases: ALIASES, compareVersions })]));
+  written.push(...writeInits(target, entries));
   return written;
 }
 
@@ -256,43 +260,36 @@ async function generatePetstore(warnings: string[]): Promise<string[]> {
     entries.push(g.entry);
     written.push(...writeFiles(target, g.files));
   }
-  const apisPath = path.join(target.srcDir, 'apis.py');
-  fs.writeFileSync(apisPath, renderApisModule({ packageName: 'petstore_sdk', runtimePackage: PACKAGE, entries, aliases: { pets: 'petstore' }, compareVersions }));
+  return [...written, ...writePackage(target, entries, { pets: 'petstore' }, 'Client')];
+}
+
+/** `apis.py`, `client.py`, the package `__init__` files: everything above the per-version modules. */
+function writePackage(target: Target, entries: ApiVersionEntry[], aliases: Record<string, string>, clientName: string): string[] {
+  const apis = generateClient({ packageName: target.packageName, runtimePackage: PACKAGE, entries, aliases, compareVersions });
+  const written = writeFiles(target, [apis]);
   const init = path.join(target.srcDir, '__init__.py');
-  fs.writeFileSync(init, '"""Generated test package (codegen/, oagen) from tests/fixtures. Do not edit by hand."""\n');
+  fs.writeFileSync(init, `"""Generated package ${target.packageName} (codegen/, oagen). Do not edit by hand."""\n`);
   const clientPath = path.join(target.srcDir, 'client.py');
-  fs.writeFileSync(
-    clientPath,
-    [
-      '"""Generated clients over the petstore fixtures (codegen/, oagen). Do not edit by hand."""',
-      '',
-      'from __future__ import annotations',
-      '',
-      'from typing import Any',
-      '',
-      `from ${PACKAGE}.runtime._base_client import AsyncAPIClient, SyncAPIClient`,
-      'from petstore_sdk.apis import APIs, AsyncAPIs',
-      '',
-      '',
-      'class Client(SyncAPIClient, APIs):',
-      '    _package = "petstore_sdk"',
-      '',
-      '    def __init__(self, *, base_url: str, **kwargs: Any) -> None:',
-      '        super().__init__(base_url=base_url, **kwargs)',
-      '',
-      '',
-      'class AsyncClient(AsyncAPIClient, AsyncAPIs):',
-      '    _package = "petstore_sdk"',
-      '',
-      '    def __init__(self, *, base_url: str, **kwargs: Any) -> None:',
-      '        super().__init__(base_url=base_url, **kwargs)',
-      '',
-      '',
-      '__all__ = ["AsyncClient", "Client"]',
-      '',
-    ].join('\n'),
-  );
-  written.push(apisPath, init, clientPath, ...writeInits(target, entries));
+  fs.writeFileSync(clientPath, renderClientModule({ packageName: target.packageName, runtimePackage: PACKAGE, clientName }));
+  return [...written, init, clientPath, ...writeInits(target, entries)];
+}
+
+/** One spec -> a standalone package: `npm run sdk:generate -- --spec <spec> --namespace <Client>`. */
+async function generateSpec(specFile: string, warnings: string[]): Promise<string[]> {
+  const file = path.resolve(specFile);
+  const text = fs.readFileSync(file, 'utf8');
+  const raw = (/\.ya?ml$/.test(file) ? YAML.parse(text) : JSON.parse(text)) as JsonObject;
+  const info = isObject(raw.info) ? raw.info : {};
+  const stem = path.basename(file).replace(/\.(json|ya?ml)$/, '');
+  const [defaultApi, defaultVersion] = apiNaming(stem, typeof info.version === 'string' ? info.version : undefined);
+  const api = flag('--api') ?? defaultApi;
+  const version = flag('--version') ?? defaultVersion;
+  const outDir = path.resolve(flag('--output') ?? path.join(HERE, '..', 'sdk'));
+  const target: Target = { packageName: snakeCase(path.basename(outDir)), srcDir: outDir, amazon: args.includes('--amazon') };
+  resetGenerated(target);
+  const g = await generateOne(raw, path.relative(ROOT, file), api, version, target, warnings);
+  const written = [...writeFiles(target, g.files), ...writePackage(target, [g.entry], {}, flag('--namespace') ?? 'Client')];
+  process.stdout.write(`${api}.${version}: ${g.entry.operations} operations -> ${path.relative(process.cwd(), outDir) || '.'}\n`);
   return written;
 }
 
@@ -311,8 +308,12 @@ function format(files: string[]): void {
 async function main(): Promise<void> {
   const warnings: string[] = [];
   fs.mkdirSync(BUILD, { recursive: true });
-  const written = skipAmazon ? [] : await generateAmazon(warnings);
-  if (!only) written.push(...(await generatePetstore(warnings)));
+  const written: string[] = [];
+  if (specArg) written.push(...(await generateSpec(specArg, warnings)));
+  else {
+    if (!skipAmazon) written.push(...(await generateAmazon(warnings)));
+    if (!only) written.push(...(await generatePetstore(warnings)));
+  }
   format(written);
   const summary = {
     generatedFiles: written.length,

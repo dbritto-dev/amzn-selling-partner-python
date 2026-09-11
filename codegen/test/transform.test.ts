@@ -1,5 +1,5 @@
 import assert from 'node:assert/strict';
-import { test } from 'node:test';
+import { test } from 'vitest';
 import { isAliasSchema, liftInlineObjects, NAME_GUARD, schemaNameTransform, transformSpec } from '../src/transform.js';
 
 const doc = {

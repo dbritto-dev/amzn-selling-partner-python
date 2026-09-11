@@ -44,11 +44,11 @@ jobs:
       - name: Type-check and test the generator
         run: |
           cd codegen
-          npm run check
+          npm run typecheck
           npm test
 
       - name: Regenerate
-        run: cd codegen && npm run generate
+        run: cd codegen && npm run sdk:generate
 
       - name: No drift between the pinned specs and the committed code
         run: |

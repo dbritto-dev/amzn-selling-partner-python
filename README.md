@@ -181,10 +181,17 @@ Connection limits: `SellingPartner(limits=httpx2.Limits(max_connections=100, max
 
 `amzn_selling_partner.Client` / `AsyncClient` is the runtime with the generated
 Amazon APIs attached and no Amazon auth (`Client(base_url=...)`). To target a
-different API, run the generator over its spec: `codegen/src/generate.ts` shows
-the whole pipeline (Swagger 2.0 conversion, the pre-IR fixes oagen needs, the
-Python emitter) and `tests/petstore_sdk` is the package it generates from
-`tests/fixtures/petstore_oas31.json`.
+different API, run the generator over its spec (OpenAPI 3 or Swagger 2.0):
+
+```sh
+cd codegen && npm ci --ignore-scripts
+npm run sdk:generate -- --spec path/to/openapi.yml --namespace MyClient --output ../my_sdk
+```
+
+`my_sdk/client.py` then has `MyClient` / `AsyncMyClient` over the same runtime.
+`tests/fixtures/tasks-api.yml` (the spec from the oagen tutorial) and
+`tests/petstore_sdk` are the worked examples; see
+[docs/UPDATING_SPECS.md](docs/UPDATING_SPECS.md) for the generator.
 
 ## Development
 
@@ -197,6 +204,7 @@ uv run pytest benchmarks                  # pytest-benchmark: generated method v
 uv run python -m amzn_selling_partner.sandbox_tests   # every operation against its embedded examples
 
 cd codegen && npm ci --ignore-scripts && npm run sdk:generate   # regenerate after a spec bump (Node 22)
+cd codegen && npm test && npm run typecheck                      # the generator's own tests (vitest) and types
 ```
 
 `src/amzn_selling_partner/{models,resources,apis.py}` and `tests/petstore_sdk`

@@ -1,5 +1,5 @@
 import assert from 'node:assert/strict';
-import { test } from 'node:test';
+import { test } from 'vitest';
 import { className, docstring, fieldName, methodName, paramName, snakeCase, Uniquer } from '../src/python/naming.js';
 
 test('snake_case mirrors the runtime rules', () => {

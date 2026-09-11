@@ -1,4 +1,9 @@
-/** `apis.py`: registry of every generated API version + typed accessors. */
+/**
+ * The top-level client: `apis.py` (registry of every generated API version +
+ * typed accessors, mixed into the client) and `client.py` (the sync/async
+ * client classes over the runtime).
+ */
+import type { GeneratedFile } from '@workos/oagen';
 import { pascalCase, pyStr } from './naming.js';
 import { resourceClassName } from './index.js';
 
@@ -120,4 +125,49 @@ export function renderApisModule(input: ApisInput): string {
   out.push('__all__ = ["ALIASES", "API_VERSIONS", "TITLES", "APIs", "AsyncAPIs"]');
   out.push('');
   return out.join('\n');
+}
+
+/** `apis.py` as a generated file. */
+export function generateClient(input: ApisInput): GeneratedFile {
+  return { path: 'apis.py', content: renderApisModule(input), headerPlacement: 'skip' };
+}
+
+export interface ClientModuleInput {
+  packageName: string;
+  runtimePackage: string;
+  /** Sync client class name; the async one is `Async<name>`. */
+  clientName: string;
+}
+
+/** `client.py`: `<Name>` / `Async<Name>` = runtime client + the `APIs` mixin. */
+export function renderClientModule(input: ClientModuleInput): string {
+  const { packageName, runtimePackage, clientName } = input;
+  return [
+    `"""Generated clients for ${packageName} (codegen/, oagen). Do not edit by hand."""`,
+    '',
+    'from __future__ import annotations',
+    '',
+    'from typing import Any',
+    '',
+    `from ${runtimePackage}.runtime._base_client import AsyncAPIClient, SyncAPIClient`,
+    `from ${packageName}.apis import APIs, AsyncAPIs`,
+    '',
+    '',
+    `class ${clientName}(SyncAPIClient, APIs):`,
+    `    _package = ${pyStr(packageName)}`,
+    '',
+    '    def __init__(self, *, base_url: str, **kwargs: Any) -> None:',
+    '        super().__init__(base_url=base_url, **kwargs)',
+    '',
+    '',
+    `class Async${clientName}(AsyncAPIClient, AsyncAPIs):`,
+    `    _package = ${pyStr(packageName)}`,
+    '',
+    '    def __init__(self, *, base_url: str, **kwargs: Any) -> None:',
+    '        super().__init__(base_url=base_url, **kwargs)',
+    '',
+    '',
+    `__all__ = [${pyStr('Async' + clientName)}, ${pyStr(clientName)}]`,
+    '',
+  ].join('\n');
 }

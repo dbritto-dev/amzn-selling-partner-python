@@ -7,7 +7,14 @@
     "noUncheckedIndexedAccess": true,
     "noEmit": true,
     "skipLibCheck": true,
-    "types": ["node"]
+    "types": [
+      "node"
+    ]
   },
-  "include": ["src/**/*.ts", "test/**/*.ts", "oagen.config.ts"]
+  "include": [
+    "src/**/*.ts",
+    "test/**/*.ts",
+    "oagen.config.ts",
+    "vitest.config.ts"
+  ]
 }

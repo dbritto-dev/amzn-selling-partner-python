@@ -1,4 +1,4 @@
-"""Generated clients over the petstore fixtures (codegen/, oagen). Do not edit by hand."""
+"""Generated clients for petstore_sdk (codegen/, oagen). Do not edit by hand."""
 
 from __future__ import annotations
 

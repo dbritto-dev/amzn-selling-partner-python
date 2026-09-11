@@ -1,0 +1,156 @@
+openapi: "3.1.0"
+info:
+  title: Tasks API
+  version: "1.0.0"
+servers:
+  - url: https://api.tasks.example.com
+
+components:
+  schemas:
+    Task:
+      type: object
+      required: [id, title, status]
+      properties:
+        id:
+          type: string
+          format: uuid
+        title:
+          type: string
+        status:
+          $ref: "#/components/schemas/TaskStatus"
+        assignee_id:
+          type: string
+          nullable: true
+        created_at:
+          type: string
+          format: date-time
+
+    TaskStatus:
+      type: string
+      enum: [pending, in_progress, done, cancelled]
+
+    TaskList:
+      type: object
+      required: [data]
+      properties:
+        data:
+          type: array
+          items:
+            $ref: "#/components/schemas/Task"
+        after:
+          type: string
+          nullable: true
+        before:
+          type: string
+          nullable: true
+
+    CreateTaskInput:
+      type: object
+      required: [title]
+      properties:
+        title: { type: string }
+        assignee_id:
+          type: string
+          nullable: true
+
+    UpdateTaskInput:
+      type: object
+      properties:
+        title: { type: string }
+        status:
+          $ref: "#/components/schemas/TaskStatus"
+        assignee_id:
+          type: string
+          nullable: true
+
+paths:
+  /tasks:
+    get:
+      operationId: listTasks
+      summary: List tasks
+      tags: [Tasks]
+      parameters:
+        - name: after
+          in: query
+          schema: { type: string }
+        - name: limit
+          in: query
+          schema: { type: integer }
+        - name: status
+          in: query
+          schema:
+            $ref: "#/components/schemas/TaskStatus"
+      responses:
+        "200":
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/TaskList"
+
+    post:
+      operationId: createTask
+      summary: Create a task
+      tags: [Tasks]
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/CreateTaskInput"
+      responses:
+        "201":
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Task"
+
+  /tasks/{id}:
+    get:
+      operationId: getTask
+      summary: Get a task
+      tags: [Tasks]
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema: { type: string, format: uuid }
+      responses:
+        "200":
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Task"
+
+    patch:
+      operationId: updateTask
+      summary: Update a task
+      tags: [Tasks]
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema: { type: string, format: uuid }
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/UpdateTaskInput"
+      responses:
+        "200":
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Task"
+
+    delete:
+      operationId: deleteTask
+      summary: Delete a task
+      tags: [Tasks]
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema: { type: string, format: uuid }
+      responses:
+        "204": {}

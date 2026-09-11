@@ -81,11 +81,55 @@ from the submodule and fails on any drift.
 
 ## The generator
 
-`codegen/` is laid out like an `oagen init --lang python` project: `src/python/`
-is the emitter, `src/plugin.ts` the plugin bundle, `oagen.config.ts` the
-consumer config (plugin + this repo's spec policy). oagen only parses OpenAPI 3
-and its IR drops a few things the Amazon files rely on, so the driver
-(`src/generate.ts`) does, per model file:
+`codegen/` is an oagen emitter project built the way the WorkOS tutorial
+([How to build a custom SDK generator with oagen](https://workos.com/blog/build-a-custom-sdk-generator-with-oagen))
+describes; the tutorial's own spec is checked in as `tests/fixtures/tasks-api.yml`
+so every step can be reproduced here. All commands run in `codegen/` after
+`npm ci --ignore-scripts` (Node 22; `--ignore-scripts` skips the native builds
+of tree-sitter grammars oagen lists for its compat extractors, which this
+project never loads).
+
+1. **Look at the IR before touching the emitter.** `npm run sdk:parse -- --spec
+   ../tests/fixtures/tasks-api.yml` prints oagen's intermediate representation
+   (services, operations, models, enums); `npm run sdk:resolve -- --spec
+   ../tests/fixtures/tasks-api.yml --format table` prints the resolution table
+   (operation → method name → service). The Amazon files are Swagger 2.0, so
+   convert them first: `npm run sdk:generate -- --only orders` leaves the
+   OpenAPI 3 documents in `.build/converted/`, then
+   `npm run sdk:parse -- --spec .build/converted/amzn_selling_partner__orders__v0.json`.
+2. **The emitter project** is what `oagen init --lang python` scaffolds:
+   `src/python/index.ts` assembles the `python` emitter from `types.ts` (IR
+   `TypeRef` → Python type, exhaustive over every kind), `enums.ts`,
+   `models.ts`, `resources.ts` and `client.ts`; `src/plugin.ts` registers it;
+   `oagen.config.ts` spreads the plugin and adds this repository's spec policy
+   (`transformSpec`, `schemaNameTransform`, `operationIdTransform`,
+   `emitterOptions.python`); `vitest.config.ts` and `test/` hold the tests.
+3. **Generate.** `npm run sdk:generate -- --spec <spec> --namespace <Client>`
+   turns one spec (OpenAPI 3 or Swagger 2.0, JSON or YAML) into a standalone
+   package under `codegen/sdk/` (`--output` to change it; `--api`/`--version`
+   to name the module, `--amazon` to apply the Amazon policy):
+
+   ```
+   npm run sdk:generate -- --spec ../tests/fixtures/tasks-api.yml --namespace TasksClient --api tasks --version v1
+   PYTHONPATH=.. python -c "from sdk.client import TasksClient; print(TasksClient(base_url='https://api.tasks.example.com').tasks.v1.list_tasks)"
+   ```
+
+   `npm run sdk:generate` with no `--spec` is the repository's driver: every
+   pinned model file and notification schema → `src/amzn_selling_partner/{models,resources,apis.py}`,
+   and the petstore fixtures → `tests/petstore_sdk`. `npm run sdk:generate:python --
+   --spec <openapi3.json> --output <dir>` runs the oagen CLI itself
+   (`OAGEN_API`/`OAGEN_VERSION` name the module; `OAGEN_AMAZON=0` turns the
+   Amazon policy off) and produces the same files as the driver.
+4. **Test the emitter.** `npm test` (vitest) runs the fixture-spec tests
+   (`test/models.test.ts`, `test/resources.test.ts`, `test/client.test.ts`
+   over `tasks-api.yml`) and the unit tests of the helpers; `npm run typecheck`
+   type-checks the generator.
+5. **Diff two spec versions.** `npm run sdk:diff -- --old <previous> --new
+   <current>` reports added/removed operations and parameter/schema changes
+   (see "Bumping the submodule" above).
+
+What the driver does per model file, because oagen only parses OpenAPI 3 and
+its IR drops a few things the Amazon files rely on:
 
 1. `convert.ts` – Swagger 2.0 → OpenAPI 3.0 with `swagger2openapi`, after
    repairing the `#ref` typo and the dangling references in the pinned files.
@@ -102,10 +146,5 @@ and its IR drops a few things the Amazon files rely on, so the driver
    settings (package, API, version, Amazon policy, those extras) reach the
    emitter through oagen's `emitterOptions` bag: the driver passes it to
    `generateFiles`, `oagen.config.ts` declares it as `emitterOptions.python`.
-5. `apis.py` and the package `__init__` files are written once from the
-   registry; `ruff` formats everything.
-
-`npm run sdk:generate` (alias `npm run generate`) runs all of it; `npm run
-typecheck` and `npm test` check the generator itself. `npm ci --ignore-scripts`
-skips the native builds of tree-sitter grammars oagen lists for its compat
-extractors, which this project never loads.
+5. `apis.py`, `client.py` and the package `__init__` files are written once
+   from the registry (`client.ts`); `ruff` formats everything.

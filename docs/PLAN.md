@@ -73,16 +73,16 @@ is now generated Python committed to the repository.
 
 ```
 codegen/                       the emitter project, laid out like `oagen init --lang python`
-  package.json                 @workos/oagen 0.30.2, swagger2openapi; `sdk:generate`, `typecheck`, `test`
+  package.json                 @workos/oagen 0.30.2, swagger2openapi, yaml, vitest; `sdk:generate`, `sdk:parse`, `sdk:resolve`, `sdk:diff`, `typecheck`, `test`
   oagen.config.ts              consumer config: the plugin bundle, this repo's spec policy, `emitterOptions.python` (CLI use)
   src/plugin.ts, src/index.ts  plugin bundle / barrel
-  src/python/                  the `python` emitter (models, resources, apis, naming, types, pagination, ratelimits)
-  src/generate.ts              driver: every model file + notification schema through the emitter
+  src/python/                  the `python` emitter (types, enums, models, resources, client, naming, pagination, ratelimits)
+  src/generate.ts              driver: every model file + notification schema, or `--spec <spec> --namespace <Client>` for one
   src/convert.ts               Swagger 2.0 → OpenAPI 3.0 (+ known-bad $ref fixes)
   src/transform.ts             alias inlining, inline-object hoisting, name protection
   src/extras.ts                facts the IR drops, read from the converted document
   src/amazon.ts                api naming, aliases, pagination overrides
-  test/                        node --test: helper unit tests + fixture-spec emitter tests
+  test/                        vitest: emitter tests over tests/fixtures/tasks-api.yml + helper unit tests
 src/amzn_selling_partner/
   models/<api>/<version>.py    pydantic v2 models, Literal enums (generated)
   models/notifications/*.py    notification payload models (generated)
@@ -92,22 +92,27 @@ src/amzn_selling_partner/
   plugins/                     hand-written: Amazon regions, LWA/RDT auth, documents, sandbox runner support
   client/, vendor/, reports/   compatibility package (unchanged API)
 tests/petstore_sdk/            the same emitter run over tests/fixtures (proves the core is API-agnostic)
+tests/fixtures/tasks-api.yml   the tutorial's spec: emitter test fixture and `sdk:parse`/`sdk:resolve`/`sdk:generate` example
 ```
 
 The wheel ships only Python; the spec submodule is a generator input. Enums
 are always `Literal` types.
 
-### Against the WorkOS tutorial
+### Following the WorkOS tutorial
 
 [How to build a custom SDK generator with oagen](https://workos.com/blog/build-a-custom-sdk-generator-with-oagen)
-is the reference for the layout. What it prescribes and this project follows:
-the `oagen init` scaffold (`src/python/index.ts` assembles the emitter from
-`types.ts`, `models.ts`, `resources.ts` and a client module; `src/plugin.ts`
+is the reference for the project, step by step: inspect the IR
+(`npm run sdk:parse`, `npm run sdk:resolve`), the `oagen init --lang python`
+scaffold (`src/python/index.ts` assembles the emitter from `types.ts`,
+`enums.ts`, `models.ts`, `resources.ts`, `client.ts`; `src/plugin.ts`
 registers it; `oagen.config.ts` spreads the plugin), an exhaustive type
 renderer (`mapTypeRef` fails the build when oagen adds a `TypeRef` kind, the
 same guarantee as the tutorial's `assertNever` switch), per-run settings
-through oagen's `emitterOptions` channel (`ctx.emitterOptions`), and emitter
-tests over fixture specs. Where it deliberately differs:
+through oagen's `emitterOptions` channel (`ctx.emitterOptions`),
+`npm run sdk:generate -- --spec <spec> --namespace <Client>` producing a
+working package, vitest tests over a fixture spec (the tutorial's own
+`tasks-api.yml`), and `npm run sdk:diff` for spec bumps. Where this project
+deliberately differs:
 
 * Method names come from Amazon's `operationId`s (`getOrders` → `get_orders`)
   instead of `ctx.resolvedOperations`: oagen's deriver renames 285 of 390
@@ -115,13 +120,13 @@ tests over fixture specs. Where it deliberately differs:
   `create_inbound_order_cancellation`) and collides 15 of them, and the RDT /
   grantless tables and Amazon's documentation are keyed by `operationId`.
 * Models are pydantic v2 classes, not dataclasses, and enums are `Literal`
-  aliases, not `str, Enum` (decision 3).
-* Retry, timeout and throttling policy is hand-written in `runtime/` and the
-  Amazon plugin rather than generated from `ctx.spec.sdk`; the runtime is
-  shared by every generated module.
+  aliases, not `str, Enum` (decision 3); one module per API version rather
+  than one file per model, because a version has hundreds of models.
+* The HTTP client is not generated: retry, timeout and throttling live in the
+  hand-written, shared `runtime/` and the Amazon plugin rather than in a
+  generated `http_client.py` filled from `ctx.spec.sdk`.
 * The generator runs from source with `tsx` (`npm run sdk:generate`); nothing
-  is published, so there is no `tsup` build step, and tests use `node --test`
-  instead of vitest to keep the toolchain to oagen itself.
+  is published, so there is no `tsup` build step.
 
 ### Generated code shape
 

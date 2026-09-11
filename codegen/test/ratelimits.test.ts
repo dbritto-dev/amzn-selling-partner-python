@@ -1,5 +1,5 @@
 import assert from 'node:assert/strict';
-import { test } from 'node:test';
+import { test } from 'vitest';
 import { parseRateLimit } from '../src/python/ratelimits.js';
 
 test('two-column and three-column usage plan tables', () => {

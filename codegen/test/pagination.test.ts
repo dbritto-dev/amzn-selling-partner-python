@@ -1,5 +1,5 @@
 import assert from 'node:assert/strict';
-import { test } from 'node:test';
+import { test } from 'vitest';
 import type { ApiSpec, Model, Operation } from '@workos/oagen';
 import { defaultSdkBehavior } from '@workos/oagen';
 import { detectPagination } from '../src/python/pagination.js';
