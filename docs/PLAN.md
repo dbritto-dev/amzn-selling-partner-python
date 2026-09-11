@@ -341,6 +341,16 @@ top-level `nextToken`, and any explicit `next_token_path`.
     `LISTINGS_ITEM_STATUS_CHANGE` where the schema enum says
     `LISTINGS_ITEM_STATUS_CHANGED`. The loader tolerates the first two (warning,
     typed as `Any` / accepted); the third is a known example failure.
+12c. Sandbox examples vs schemas: running every static example through both
+    clients (`python -m spapi.sandbox_tests`) gives 1958 passed / 76 failed of
+    2034 cases; every failure is Amazon's example response not matching its own
+    schema (enum casing such as `KG` vs `Kg` / `Each` vs `Eaches` in
+    `vendor_orders`, `vendor_shipments` and `vendor_direct_fulfillment_orders`,
+    missing required fields in `shipping.v1.getShipment`, `sellers.getAccount`,
+    `product_fees`, `supply_sources`, `easy_ship`, `awd`, and bodies attached to
+    204 examples in `services`). They surface as `APIResponseValidationError`;
+    the CI suite runs the runner for `orders` and `listings_items`, which are
+    clean.
 12b. No `orders` operation carries a `dataElements` parameter any more, so the
     "RDT only when PII is requested" rule became an explicit per-call opt-in
     (`with_rdt(...)` / `RequestOptions(auth={"rdt": ...})`).
