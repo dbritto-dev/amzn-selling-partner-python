@@ -5,9 +5,9 @@ import pathlib
 
 import pytest
 
-from spapi.spec import Document, Schema, load_document
-from spapi.spec.cache import load_cached, spec_hash
-from spapi.spec.loader import normalize
+from amzn_selling_partner.spec import Document, Schema, load_document
+from amzn_selling_partner.spec.cache import load_cached, spec_hash
+from amzn_selling_partner.spec.loader import normalize
 
 from .conftest import LISTINGS_ITEMS, OAS31, ORDERS_V0, SWAGGER2, requires_amazon
 

@@ -6,9 +6,9 @@ import json
 import pytest
 from pydantic import BaseModel, TypeAdapter, ValidationError
 
-from spapi.compile.models import build_models, clear_memo
-from spapi.spec import load_document
-from spapi.spec.loader import normalize
+from amzn_selling_partner.compile.models import build_models, clear_memo
+from amzn_selling_partner.spec import load_document
+from amzn_selling_partner.spec.loader import normalize
 
 from .conftest import OAS31, ORDERS_V0, SWAGGER2, requires_amazon
 
@@ -21,7 +21,7 @@ def ns():
 def test_object_model_fields_and_aliases(ns) -> None:
     Pet = ns.Pet
     assert issubclass(Pet, BaseModel)
-    assert Pet.__module__.startswith("spapi.models.")  # memoised per spec hash, so the first namespace wins
+    assert Pet.__module__.startswith("amzn_selling_partner.models.")  # memoised per spec hash, so the first namespace wins
     fields = Pet.model_fields
     assert fields["created_at"].alias == "createdAt"
     assert fields["schema_"].alias == "schema"  # BaseModel attribute collision
@@ -122,7 +122,7 @@ def test_binary_body_type(ns) -> None:
 
 
 def test_type_expressions(ns) -> None:
-    from spapi.compile.typenames import type_expr
+    from amzn_selling_partner.compile.typenames import type_expr
 
     doc = ns.document
     assert type_expr(doc, doc.schemas["Pet"].properties["tags"]) == "list[str]"

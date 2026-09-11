@@ -29,7 +29,7 @@ the ones where I picked a default that you may want to change.
 
 ## 2. Decisions that need your approval
 
-1. **DECISION – distribution name.** `spapi` on PyPI is taken by an unrelated
+1. **DECISION – package name** (changed after review: keep `amzn_selling_partner` as the import name; `spapi` was only the working name). `spapi` on PyPI is taken by an unrelated
    package (jakksoft.com client, last release 2021). Proposal: keep the PyPI
    distribution `amzn-selling-partner` (already published, versions continue from
    0.1.9 → 0.2.0) and use `spapi` as the *import* name, with `amzn_selling_partner`

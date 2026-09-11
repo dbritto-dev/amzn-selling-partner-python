@@ -1,4 +1,4 @@
-"""Compatibility ``reports`` resource over ``spapi`` (Reports API 2021-06-30)."""
+"""Compatibility ``reports`` resource over ``amzn_selling_partner`` (Reports API 2021-06-30)."""
 
 from __future__ import annotations
 
@@ -7,7 +7,7 @@ from typing import Any
 
 from pydantic import BaseModel, ConfigDict
 
-from .. import client as _client
+from .. import client as _compat_client
 from .._compat import query_kwargs, require_str, to_body
 from ..utils import file as _file
 from .models import (
@@ -62,7 +62,7 @@ class GetReportsQuery(BaseModel):
     nextToken: str | None = None
 
 
-class Client(_client.BaseClient):
+class Client(_compat_client.BaseClient):
     def get_resource_path(self) -> str:
         return "reports/2021-06-30"
 
@@ -108,7 +108,7 @@ class Client(_client.BaseClient):
         _file.write_binary_file(file_path, self._raw_content(report_document_id, enable_content_encoding_url_header))
 
     def _raw_content(self, report_document_id: str, enable_content_encoding_url_header: bool | None) -> bytes:
-        from spapi.plugins._amazon.documents import download_document
+        from amzn_selling_partner.plugins._amazon.documents import download_document
 
         doc = self.get_report_document(report_document_id, enable_content_encoding_url_header=enable_content_encoding_url_header)
         return download_document(doc.url, compression=doc.compression_algorithm, http_client=self.sp.http_client)

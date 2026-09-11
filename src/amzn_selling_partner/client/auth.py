@@ -1,7 +1,7 @@
 """Compatibility shims for the old auth classes.
 
 Only the LWA access-token part survives; it delegates to
-:class:`spapi.plugins.amazon_spapi.LWAAuth`. The AWS SigV4 classes are gone
+:class:`amzn_selling_partner.plugins.amazon_spapi.LWAAuth`. The AWS SigV4 classes are gone
 (see ``MIGRATION.md``) and raise on use.
 """
 
@@ -9,7 +9,7 @@ from __future__ import annotations
 
 from typing import Any, TypedDict
 
-from spapi.plugins.amazon_spapi import LWAAuth, LWACredentials
+from ..plugins.amazon_spapi import LWAAuth, LWACredentials
 
 
 class ClientSessionAuthAccessTokenError(Exception):

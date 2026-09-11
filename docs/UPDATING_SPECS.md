@@ -3,7 +3,7 @@
 The Amazon models are a git submodule at `spec/selling-partner-api-models`,
 pinned to the commit recorded in `spec/PINNED_COMMIT`. During development the
 package reads them straight from the submodule; a built wheel ships a copy
-under `spapi/plugins/_amazon/{models,schemas}` made by
+under `amzn_selling_partner/plugins/_amazon/{models,schemas}` made by
 `python scripts/sync_specs.py` (the release workflow runs it before `uv build`;
 the copies are git-ignored).
 
@@ -25,7 +25,7 @@ python scripts/spec_inventory.py            # operations, rate tables, sandbox e
 
 Look at:
 
-- **New API files or versions** – the naming rule (`spapi/plugins/_amazon/naming.py`)
+- **New API files or versions** – the naming rule (`amzn_selling_partner/plugins/_amazon/naming.py`)
   needs an entry in `_UNVERSIONED` only when a file stem carries no version
   suffix. Consider an alias in `ALIASES` for awkward names.
 - **`latest`** moves automatically to the highest version.
@@ -34,11 +34,11 @@ Look at:
   unparseable operations are genuinely table-less (never guess a limit).
 - **Pagination** – run the pagination tests; new list operations that the
   heuristic leaves ambiguous need an entry in
-  `spapi/plugins/_amazon/pagination.py` (`OVERRIDES`), and operations whose
+  `amzn_selling_partner/plugins/_amazon/pagination.py` (`OVERRIDES`), and operations whose
   `nextToken` description says the other parameters must be omitted go in
   `DROP_PARAMS_ON_NEXT`.
 - **Restricted / grantless operations** – compare the Tokens API use-case guide
-  with `spapi/plugins/_amazon/rdt.py`; `test_restricted_and_grantless_tables_reference_real_operations`
+  with `amzn_selling_partner/plugins/_amazon/rdt.py`; `test_restricted_and_grantless_tables_reference_real_operations`
   fails if an entry disappeared from the specs and `test_grantless_table_matches_descriptions`
   fails if a description mentions "grantless" for an unlisted operation.
 - **Notification schemas** – `test_notification_models` validates every schema's
@@ -47,8 +47,8 @@ Look at:
 ## 3. Regenerate the stubs
 
 ```sh
-python -m spapi.stubgen --out stubs
-python -m spapi.stubgen --check   # what CI runs
+python -m amzn_selling_partner.stubgen --out stubs
+python -m amzn_selling_partner.stubgen --check   # what CI runs
 ```
 
 Commit the `stubs/` changes together with the submodule bump.
@@ -58,9 +58,9 @@ Commit the `stubs/` changes together with the submodule bump.
 ```sh
 uv run pytest
 uv run pyright
-uv run python -m spapi.sandbox_tests           # all operations through both clients
+uv run python -m amzn_selling_partner.sandbox_tests           # all operations through both clients
 uv run python scripts/report_load_times.py    # per-API build times (targets: < 50 ms cached, < 300 ms cold)
 ```
 
 Then clear stale IR caches if you changed the loader (`IR_VERSION` in
-`spapi/spec/cache.py` invalidates them for everyone).
+`amzn_selling_partner/spec/cache.py` invalidates them for everyone).

@@ -1,4 +1,4 @@
-"""Compatibility ``vendor.orders`` resource over ``spapi``.
+"""Compatibility ``vendor.orders`` resource over ``amzn_selling_partner``.
 
 Models are the spec-generated ones (``client.vendor_orders.v1.models``); the
 old enum classes are kept as plain ``str`` enums.
@@ -10,7 +10,7 @@ from typing import Any
 
 from pydantic import BaseModel, ConfigDict
 
-from ... import client as _client
+from ... import client as _compat_client
 from ..._compat import query_kwargs, require_str, to_body
 from .models import (
     AcknowledgementCode,
@@ -66,7 +66,7 @@ class GetPurchaseOrdersStatusQuery(BaseModel):
     shipToPartyId: str | None = None
 
 
-class Client(_client.BaseClient):
+class Client(_compat_client.BaseClient):
     def get_resource_path(self) -> str:
         return "vendor/orders/v1"
 

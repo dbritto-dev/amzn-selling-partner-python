@@ -5,10 +5,10 @@ import inspect
 
 import pytest
 
-from spapi.compile.models import build_models
-from spapi.compile.operations import compile_operations
-from spapi.runtime import NOT_GIVEN, Pagination
-from spapi.spec import load_document
+from amzn_selling_partner.compile.models import build_models
+from amzn_selling_partner.compile.operations import compile_operations
+from amzn_selling_partner.runtime import NOT_GIVEN, Pagination
+from amzn_selling_partner.spec import load_document
 
 from .conftest import OAS31, SWAGGER2
 
@@ -74,7 +74,7 @@ def test_not_given_and_none_are_omitted(oas) -> None:
 
 
 def test_bool_and_datetime_serialization(oas) -> None:
-    from spapi.compile._serializers import scalar
+    from amzn_selling_partner.compile._serializers import scalar
 
     assert scalar(True) == "true" and scalar(False) == "false"
     assert scalar(datetime.datetime(2020, 1, 2, 3, 4, 5)) == "2020-01-02T03:04:05.000Z"
@@ -182,7 +182,7 @@ def test_plugin_pagination_override_and_disable() -> None:
 
 
 def test_duplicate_operation_ids_get_method_suffix() -> None:
-    from spapi.spec.loader import normalize
+    from amzn_selling_partner.spec.loader import normalize
 
     raw = {
         "openapi": "3.1.0",

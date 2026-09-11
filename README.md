@@ -1,13 +1,13 @@
-# Amazon Selling Partner API for Python (`spapi`)
+# Amazon Selling Partner API for Python
 
 A spec-driven client for the [Amazon Selling Partner API](https://developer-docs.amazon.com/sp-api).
 The bundled Swagger models are loaded at runtime and every operation becomes a
 typed method on a sync client and an async client; there is no code-generation
 step (optional `.pyi` stubs are provided for editors and type checkers).
 
-The core (`spapi.spec`, `spapi.compile`, `spapi.runtime`) is API-agnostic: it
+The core (`amzn_selling_partner.spec`, `amzn_selling_partner.compile`, `amzn_selling_partner.runtime`) is API-agnostic: it
 loads any OpenAPI 3.x or Swagger 2.0 document. Everything Amazon-specific lives
-in `spapi.plugins.amazon_spapi`.
+in `amzn_selling_partner.plugins.amazon_spapi`.
 
 - **Bug reports:** https://github.com/dbritto-dev/amzn-selling-partner-python/issues
 - **Migration from 0.1.x:** [MIGRATION.md](MIGRATION.md)
@@ -21,18 +21,18 @@ pip install amzn-selling-partner            # httpx2 + pydantic
 pip install "amzn-selling-partner[aiohttp]"  # + aiohttp transport for the async client
 ```
 
-Python 3.10 or later. The import name is `spapi`.
+Python 3.10 or later.
 
 ## Authentication
 
 Create an application in Seller Central and authorize it for the seller; the
 client needs the LWA client id, client secret and the seller's refresh token.
 They can be passed explicitly or read from the environment
-(`SPAPI_CLIENT_ID`, `SPAPI_CLIENT_SECRET`, `SPAPI_REFRESH_TOKEN`, or the old
+(`AMZN_SELLING_PARTNER_CLIENT_ID`, `AMZN_SELLING_PARTNER_CLIENT_SECRET`, `AMZN_SELLING_PARTNER_REFRESH_TOKEN`, or the old
 `SELLING_PARTNER_APP_*` names).
 
 ```python
-from spapi import SellingPartner
+from amzn_selling_partner import SellingPartner
 
 client = SellingPartner(
     client_id="amzn1.application-oa2-client....",
@@ -48,7 +48,7 @@ Tokens API automatically. Operations that return PII only on request take an
 explicit opt-in:
 
 ```python
-from spapi.plugins.amazon_spapi import with_rdt
+from amzn_selling_partner.plugins.amazon_spapi import with_rdt
 
 orders = client.orders.v0.get_orders(
     marketplace_ids=["ATVPDKIKX0DER"],
@@ -63,7 +63,7 @@ A custom token store (for example Redis) is any object with `get(key)` and
 ## Region, marketplace and sandbox
 
 ```python
-from spapi.plugins.amazon_spapi import Marketplace, Region
+from amzn_selling_partner.plugins.amazon_spapi import Marketplace, Region
 
 SellingPartner(region=Region.EU)                 # NA (default), EU, FE
 SellingPartner(marketplace=Marketplace.DE)        # region derived from the marketplace
@@ -81,7 +81,7 @@ arguments named after the spec's parameters in snake_case; request bodies are
 passed as `body=` (a model or a plain dict).
 
 ```python
-from spapi import SellingPartner
+from amzn_selling_partner import SellingPartner
 
 client = SellingPartner()
 
@@ -96,14 +96,14 @@ client.feeds.latest.create_feed(body={"feedType": "POST_PRODUCT_DATA", "marketpl
 ```
 
 Responses are frozen pydantic models generated from the spec (`client.orders.v0.models.Order`).
-Errors raise `spapi.APIStatusError` subclasses (`RateLimitError`, `NotFoundError`, ...)
+Errors raise `amzn_selling_partner.APIStatusError` subclasses (`RateLimitError`, `NotFoundError`, ...)
 with `.status_code`, `.body` (the decoded error list), `.request_id` and `.response`.
 
 ### Async
 
 ```python
 import asyncio
-from spapi import AsyncSellingPartner
+from amzn_selling_partner import AsyncSellingPartner
 
 async def main() -> None:
     async with AsyncSellingPartner() as client:
@@ -176,14 +176,14 @@ Connection limits: `SellingPartner(limits=httpx2.Limits(max_connections=100, max
 ## Using other APIs
 
 ```python
-from spapi import Client
+from amzn_selling_partner import Client
 
 client = Client("path/to/specs/", base_url="https://api.example.com")
 client.petstore.latest.list_pets(limit=10)
 ```
 
 Plugins (`plugins=[...]`) supply API-specific knowledge through an
-`annotate(document) -> document` hook; see `spapi.plugins`.
+`annotate(document) -> document` hook; see `amzn_selling_partner.plugins`.
 
 ## Development
 
@@ -192,7 +192,7 @@ git clone --recurse-submodules https://github.com/dbritto-dev/amzn-selling-partn
 uv sync --extra dev --extra aiohttp
 uv run pytest
 uv run pyright
-uv run python -m spapi.stubgen --check     # stubs/ in sync with the specs
+uv run python -m amzn_selling_partner.stubgen --check     # stubs/ in sync with the specs
 uv run python benchmarks/bench.py         # needs uvicorn (dev extra)
 uv run python scripts/report_load_times.py
 ```

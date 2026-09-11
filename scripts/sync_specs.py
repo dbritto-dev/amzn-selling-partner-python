@@ -1,7 +1,7 @@
 """Copy the pinned Amazon models and schemas into the package for distribution.
 
 The git repository keeps the specs only in the submodule; the package looks
-for them first under ``spapi/plugins/_amazon/{models,schemas}`` (what a built
+for them first under ``amzn_selling_partner/plugins/_amazon/{models,schemas}`` (what a built
 wheel ships) and falls back to the submodule during development.
 
     python scripts/sync_specs.py          # copy (run before `uv build`)
@@ -17,7 +17,7 @@ import sys
 
 ROOT = pathlib.Path(__file__).resolve().parents[1]
 SUBMODULE = ROOT / "spec" / "selling-partner-api-models"
-TARGET = ROOT / "src" / "spapi" / "plugins" / "_amazon"
+TARGET = ROOT / "src" / "amzn_selling_partner" / "plugins" / "_amazon"
 
 
 def sync() -> int:

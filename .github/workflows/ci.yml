@@ -48,7 +48,7 @@ jobs:
         run: uv run pytest -q
 
       - name: Stubs are up to date
-        run: uv run python -m spapi.stubgen --check
+        run: uv run python -m amzn_selling_partner.stubgen --check
 
       - name: Smoke benchmark (dynamic op within 10% of hand-written)
         run: uv run python benchmarks/bench.py --iterations 100

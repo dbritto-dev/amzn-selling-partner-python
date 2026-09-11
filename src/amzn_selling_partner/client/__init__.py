@@ -1,6 +1,6 @@
 """Compatibility ``BaseClient`` / ``SellingPartnerRegion``.
 
-``BaseClient`` wraps :class:`spapi.SellingPartner`. The AWS keyword arguments
+``BaseClient`` wraps :class:`amzn_selling_partner.SellingPartner`. The AWS keyword arguments
 of the old constructor are accepted and ignored (the Selling Partner API no
 longer requires AWS Signature V4).
 """
@@ -11,8 +11,7 @@ import os
 import warnings
 from typing import Any
 
-from spapi.plugins.amazon_spapi import Region, SellingPartner
-
+from ..plugins.amazon_spapi import Region, SellingPartner
 from . import auth
 
 #: Same members as before (``NORTH_AMERICA`` / ``EUROPE`` / ``FAR_EAST``) with
@@ -23,7 +22,7 @@ SellingPartnerRegion = Region
 class BaseClient:
     """Old-style client: one instance per API resource.
 
-    ``sp`` is the underlying :class:`spapi.SellingPartner`; subclasses map
+    ``sp`` is the underlying :class:`amzn_selling_partner.SellingPartner`; subclasses map
     their old methods onto it.
     """
 
@@ -39,7 +38,7 @@ class BaseClient:
         aws_selling_partner_role: str | None = None,
         aws_selling_partner_role_session_name: str | None = None,
         sandbox: bool = False,
-        **spapi_options: Any,
+        **options: Any,
     ) -> None:
         if any((aws_access_key_id, aws_secret_access_key, aws_selling_partner_role, aws_selling_partner_role_session_name)):
             warnings.warn(
@@ -58,7 +57,7 @@ class BaseClient:
             client_id=client_id or None,
             client_secret=client_secret or None,
             refresh_token=refresh_token or None,
-            **spapi_options,
+            **options,
         )
 
     def get_api_endpoint(self) -> str:

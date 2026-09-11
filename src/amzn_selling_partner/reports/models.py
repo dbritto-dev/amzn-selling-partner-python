@@ -6,7 +6,7 @@ from __future__ import annotations
 import enum
 from typing import Any
 
-from spapi.plugins.amazon_spapi import default_spec_dir
+from ..plugins.amazon_spapi import default_spec_dir
 
 
 class ReportType(str, enum.Enum):
@@ -103,8 +103,8 @@ def namespace() -> Any:
     """The spec-generated model namespace for ``reports.v2021_06_30``."""
     global _namespace_cache
     if _namespace_cache is None:
-        from spapi.compile.models import build_models
-        from spapi.spec.loader import load_document
+        from amzn_selling_partner.compile.models import build_models
+        from amzn_selling_partner.spec.loader import load_document
 
         path = default_spec_dir() / "reports-api-model" / "reports_2021-06-30.json"
         _namespace_cache = build_models(load_document(path), key="reports.v2021_06_30")

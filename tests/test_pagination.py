@@ -7,12 +7,12 @@ from typing import Any
 import httpx2
 import pytest
 
-from spapi.client import AsyncClient, Client
-from spapi.compile.models import build_models
-from spapi.compile.operations import compile_operations, detect_pagination
-from spapi.runtime import Pagination, RateLimit
-from spapi.runtime._throttle import AsyncTokenBucket, TokenBucket
-from spapi.spec import Document, load_document
+from amzn_selling_partner._client import AsyncClient, Client
+from amzn_selling_partner.compile.models import build_models
+from amzn_selling_partner.compile.operations import compile_operations, detect_pagination
+from amzn_selling_partner.runtime import Pagination, RateLimit
+from amzn_selling_partner.runtime._throttle import AsyncTokenBucket, TokenBucket
+from amzn_selling_partner.spec import Document, load_document
 
 from .conftest import LISTINGS_ITEMS, OAS31, ORDERS_V0, SWAGGER2, requires_amazon
 

@@ -6,7 +6,7 @@ from __future__ import annotations
 import enum
 from typing import Any
 
-from spapi.plugins.amazon_spapi import default_spec_dir
+from ...plugins.amazon_spapi import default_spec_dir
 
 
 class PurchaseOrderType(str, enum.Enum):
@@ -115,8 +115,8 @@ def namespace() -> Any:
     """The spec-generated model namespace for ``vendor_orders.v1``."""
     global _namespace_cache
     if _namespace_cache is None:
-        from spapi.compile.models import build_models
-        from spapi.spec.loader import load_document
+        from amzn_selling_partner.compile.models import build_models
+        from amzn_selling_partner.spec.loader import load_document
 
         path = default_spec_dir() / "vendor-orders-api-model" / "vendorOrders.json"
         _namespace_cache = build_models(load_document(path), key="vendor_orders.v1")

@@ -9,13 +9,13 @@ from typing import Any
 import httpx2
 import pytest
 
-from spapi import APIConnectionError, APIStatusError, APITimeoutError, NotFoundError, RateLimitError, RequestOptions
-from spapi._examples import example_from_schema
-from spapi.client import AsyncClient, Client
-from spapi.compile._serializers import scalar
-from spapi.runtime import NOT_GIVEN, Pagination, RateLimit
-from spapi.runtime._stream import AsyncStream, Stream
-from spapi.spec import load_document
+from amzn_selling_partner import APIConnectionError, APIStatusError, APITimeoutError, NotFoundError, RateLimitError, RequestOptions
+from amzn_selling_partner._client import AsyncClient, Client
+from amzn_selling_partner._examples import example_from_schema
+from amzn_selling_partner.compile._serializers import scalar
+from amzn_selling_partner.runtime import NOT_GIVEN, Pagination, RateLimit
+from amzn_selling_partner.runtime._stream import AsyncStream, Stream
+from amzn_selling_partner.spec import load_document
 
 from .conftest import OAS31, SWAGGER2, maybe_await
 
@@ -32,7 +32,7 @@ def _all_ops() -> list[tuple[str, str]]:
 
 def _example_kwargs(doc: Any, op: Any) -> dict[str, Any]:
     kwargs: dict[str, Any] = {}
-    from spapi.compile.naming import param_name
+    from amzn_selling_partner.compile.naming import param_name
 
     for p in op.parameters:
         if p.required or p.location == "path":
@@ -97,7 +97,7 @@ def test_every_operation(spec_name: str, operation_id: str, mode: str) -> None:
     assert request.url.path.startswith("/v1")
     for p in op.parameters:
         if p.location == "path":
-            assert scalar(kwargs[__import__("spapi.compile.naming", fromlist=["x"]).param_name(p.name)]) in request.url.path
+            assert scalar(kwargs[__import__("amzn_selling_partner.compile.naming", fromlist=["x"]).param_name(p.name)]) in request.url.path
     if op.request_body is not None and op.request_body.required:
         assert request.content
     success = next(r for c, r in op.responses.items() if c.startswith("2"))
@@ -147,7 +147,7 @@ def test_default_headers_and_base_url_from_spec() -> None:
     r = seen[0]
     assert str(r.url) == "https://api.example.com/v1/pets/3"
     assert r.headers["accept"] == "application/json" and r.headers["x-custom"] == "1"
-    assert r.headers["user-agent"].startswith("spapi/")
+    assert r.headers["user-agent"].startswith("amzn_selling_partner/")
     assert "content-type" not in r.headers
     api.list_pets(x_request_id="rid")
     assert seen[-1].headers["x-request-id"] == "rid"

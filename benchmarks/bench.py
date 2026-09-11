@@ -39,8 +39,8 @@ ROOT = pathlib.Path(__file__).resolve().parents[1]
 SPEC = ROOT / "tests" / "fixtures" / "petstore_oas31.json"
 sys.path.insert(0, str(ROOT / "src"))
 
-from spapi.client import AsyncClient, Client  # noqa: E402
-from spapi.runtime._transports import aiohttp_available  # noqa: E402
+from amzn_selling_partner._client import AsyncClient, Client  # noqa: E402
+from amzn_selling_partner.runtime._transports import aiohttp_available  # noqa: E402
 
 
 def _free_port() -> int:

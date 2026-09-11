@@ -1,4 +1,4 @@
-"""The 0.1.x ``amzn_selling_partner`` entry points keep working on top of spapi."""
+"""The 0.1.x ``amzn_selling_partner`` entry points keep working on top of amzn_selling_partner."""
 
 from __future__ import annotations
 

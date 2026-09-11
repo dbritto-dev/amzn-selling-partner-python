@@ -159,6 +159,6 @@ cython_debug/
 #  option (not recommended) you can uncomment the following to ignore the entire idea folder.
 #.idea/
 # packaged copies of the Amazon specs (scripts/sync_specs.py); the source of truth is the submodule
-src/spapi/plugins/_amazon/models/
-src/spapi/plugins/_amazon/schemas/
-src/spapi/plugins/_amazon/PINNED_COMMIT
+src/amzn_selling_partner/plugins/_amazon/models/
+src/amzn_selling_partner/plugins/_amazon/schemas/
+src/amzn_selling_partner/plugins/_amazon/PINNED_COMMIT

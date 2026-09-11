@@ -28,7 +28,7 @@ def type_check(session: nox.Session) -> None:
 @nox.session
 def stubs(session: nox.Session) -> None:
     session.install("-e", ".[dev]")
-    session.run("python", "-m", "spapi.stubgen", "--check")
+    session.run("python", "-m", "amzn_selling_partner.stubgen", "--check")
 
 
 @nox.session

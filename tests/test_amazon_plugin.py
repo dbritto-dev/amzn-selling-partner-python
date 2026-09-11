@@ -12,10 +12,10 @@ from typing import Any
 import httpx2
 import pytest
 
-from spapi import AuthenticationError, RequestOptions
-from spapi.plugins._amazon.pagination import DROP_PARAMS_ON_NEXT, OVERRIDES
-from spapi.plugins._amazon.rdt import GRANTLESS, RESTRICTED
-from spapi.plugins.amazon_spapi import (
+from amzn_selling_partner import AuthenticationError, RequestOptions
+from amzn_selling_partner.plugins._amazon.pagination import DROP_PARAMS_ON_NEXT, OVERRIDES
+from amzn_selling_partner.plugins._amazon.rdt import GRANTLESS, RESTRICTED
+from amzn_selling_partner.plugins.amazon_spapi import (
     AsyncLWAAuth,
     AsyncSellingPartner,
     LWAAuth,
@@ -27,8 +27,8 @@ from spapi.plugins.amazon_spapi import (
     parse_rate_limit,
     with_rdt,
 )
-from spapi.runtime._throttle import RateLimit, TokenBucket
-from spapi.spec import load_document
+from amzn_selling_partner.runtime._throttle import RateLimit, TokenBucket
+from amzn_selling_partner.spec import load_document
 
 from ._amazon_mock import AmazonMock
 from .conftest import AMAZON_MODELS, requires_amazon
@@ -93,7 +93,7 @@ def test_client_reports_unparsed_rate_limits() -> None:
 
 
 def _ops_index() -> dict[tuple[str, str], set[str]]:
-    from spapi.plugins._amazon.naming import api_naming
+    from amzn_selling_partner.plugins._amazon.naming import api_naming
 
     index: dict[tuple[str, str], set[str]] = {}
     for path in AMAZON_MODELS.glob("**/*.json"):
@@ -117,7 +117,7 @@ def test_restricted_and_grantless_tables_reference_real_operations() -> None:
 
 
 def test_grantless_table_matches_descriptions() -> None:
-    from spapi.plugins._amazon.naming import api_naming
+    from amzn_selling_partner.plugins._amazon.naming import api_naming
 
     found: set[tuple[str, str]] = set()
     for path in AMAZON_MODELS.glob("**/*.json"):
@@ -416,7 +416,7 @@ def test_document_download_gzip_and_upload(tmp_path: pathlib.Path) -> None:
 
 
 def test_download_already_decoded_by_transport() -> None:
-    from spapi.plugins._amazon.documents import download_document
+    from amzn_selling_partner.plugins._amazon.documents import download_document
 
     def handler(r: httpx2.Request) -> httpx2.Response:
         return httpx2.Response(200, content=gzip.compress(b"data"), headers={"Content-Encoding": "gzip"})
@@ -474,7 +474,7 @@ def test_sandbox_examples_exposed() -> None:
 
 @pytest.mark.parametrize("api", ["orders", "listings_items"])
 def test_sandbox_runner(api: str) -> None:
-    from spapi import sandbox_tests
+    from amzn_selling_partner import sandbox_tests
 
     def sync_factory(transport: httpx2.MockTransport | None) -> Any:
         return SellingPartner(transport=transport, sandbox=True, throttle=False, max_retries=0, credentials=None)

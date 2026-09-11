@@ -7,8 +7,8 @@ from urllib.parse import parse_qs, unquote
 from hypothesis import given, settings
 from hypothesis import strategies as st
 
-from spapi.compile._serializers import header_serializer, path_serializer, query_serializer, scalar
-from spapi.spec.ir import Parameter, Schema
+from amzn_selling_partner.compile._serializers import header_serializer, path_serializer, query_serializer, scalar
+from amzn_selling_partner.spec.ir import Parameter, Schema
 
 text = st.text(min_size=0, max_size=30)
 scalars = st.one_of(text, st.integers(), st.booleans(), st.floats(allow_nan=False, allow_infinity=False))

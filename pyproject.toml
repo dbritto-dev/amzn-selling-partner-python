@@ -1,7 +1,7 @@
 [project]
 name = "amzn-selling-partner"
 version = "0.2.0"
-description = "Spec-driven Python client for the Amazon Selling Partner API (import name: spapi)"
+description = "Spec-driven Python client for the Amazon Selling Partner API"
 authors = [
   { name = "Danilo Britto", email = "dbritto.dev@gmail.com" },
 ]
@@ -38,14 +38,14 @@ dev = [
 ]
 
 [project.scripts]
-spapi-stubgen = "spapi.stubgen:main"
+amzn_selling_partner-stubgen = "amzn_selling_partner.stubgen:main"
 
 [build-system]
 requires = ["uv_build>=0.8,<0.13"]
 build-backend = "uv_build"
 
 [tool.uv.build-backend]
-module-name = ["spapi", "amzn_selling_partner"]
+module-name = "amzn_selling_partner"
 
 [tool.ruff]
 line-length = 140
@@ -64,7 +64,7 @@ quote-style = "double"
 indent-style = "space"
 
 [tool.pyright]
-include = ["src/spapi", "src/amzn_selling_partner", "stubs"]
+include = ["src/amzn_selling_partner", "stubs"]
 venvPath = "."
 venv = ".venv"
 stubPath = "stubs"
@@ -77,4 +77,4 @@ reportMissingModuleSource = false
 minversion = "8.0"
 addopts = "-ra -q"
 testpaths = ["tests"]
-filterwarnings = ["error::DeprecationWarning:spapi.*"]
+filterwarnings = ["error::DeprecationWarning:amzn_selling_partner.*"]
