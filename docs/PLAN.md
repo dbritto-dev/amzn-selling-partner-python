@@ -59,13 +59,13 @@ src/amzn_selling_partner/sdk/          __init__.py, client.py, _http.py, errors.
 
 `npm run sdk:generate` runs the tutorial's command (`oagen generate --lang
 python --spec spec/open-api-spec.yaml --namespace Client --output
-../src/amzn_selling_partner/sdk`); `npm run regenerate` runs the whole thing
+../src/amzn_selling_partner/sdk`); `npm run generate` runs the whole thing
 (spec build, Amazon into `sdk/`, the petstore fixtures into
 `tests/petstore_sdk`, ruff). The layout follows
 [workos/openapi-spec](https://github.com/workos/openapi-spec): the committed
 spec in `spec/`, the resolution policy in `src/policy/` behind a thin
-`oagen.config.ts`, `sdk:resolve` / `sdk:generate` / `sdk:diff` / `sdk:check`
-scripts wrapping the `oagen` CLI.
+`oagen.config.ts`, `sdk:resolve` / `sdk:generate` / `sdk:diff` npm scripts
+that are plain `oagen` CLI invocations.
 
 ### Step 0: the spec build (`src/spec/build.ts`)
 
@@ -142,13 +142,16 @@ modules assembled in `index.ts`, plus three small support modules.
 
 `src/plugin.ts` exports `{ emitters, extractors, smokeRunners }` and
 `oagen.config.ts` spreads it (the CLI bundles its own registry, so
-`registerEmitter()` would not be seen). `npm run generate` produces both SDKs
-from clean output directories, `npm test` (vitest over an inline fixture spec
-written to a temp file, `tests/fixtures/tasks-api.yml` and the helper
-modules), `npm run typecheck`, `npm run build` (tsup) and `npm run smoke`
-(the tutorial's tasks API and the Amazon SDK over `httpx2.MockTransport`) are
-the definition of done. `codegen/README.md` lists the commands and the
-oagen API discrepancies met on the way.
+`registerEmitter()` would not be seen); its `formatCommand` runs ruff over
+every written file, so generation needs no formatting step of its own.
+`npm run generate` produces both SDKs from clean output directories,
+`npm test` (vitest over an inline fixture spec written to a temp file,
+`tests/fixtures/tasks-api.yml` and the helper modules), `npm run typecheck`
+and `npm run build` (tsup) are the generator's checks; the generated SDK is
+exercised by pytest (`tests/test_sdk_end_to_end.py` over
+`httpx2.MockTransport`, `tests/petstore_sdk` for every operation shape).
+`codegen/README.md` lists the commands and the oagen API discrepancies met
+on the way.
 
 ### Hand-written (never generated)
 

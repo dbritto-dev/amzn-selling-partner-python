@@ -22,8 +22,9 @@ Rebuild the merged OpenAPI 3 document (`spec/open-api-spec.yaml`, committed)
 and diff it against the last committed version:
 
 ```sh
-npm run spec:build      # -> spec/open-api-spec.yaml (+ .build/open-api-spec.report.json: services, warnings)
-npm run sdk:diff        # oagen diff: last committed spec -> working tree (--old <ref|file> --new <file> to pick others)
+git show HEAD:codegen/spec/open-api-spec.yaml > .build/previous.yaml
+npm run spec:build                            # -> spec/open-api-spec.yaml (+ .build/open-api-spec.report.json)
+npm run sdk:diff -- --old .build/previous.yaml
 ```
 
 `oagen diff` lists added/removed operations and parameter and schema changes.
@@ -39,16 +40,19 @@ in `src/policy/operation-hints.ts` (the generator also reports them as
 "collides" notes and suffixes the second one). A service that oagen splits
 because its paths start with different segments (pricing v0) needs an entry in
 `src/policy/mount-rules.ts`. `npm run sdk:parse` prints the IR when something
-looks off; `npm run sdk:check` only loads the config and the spec.
+looks off.
 
 ## 3. Regenerate and review the generated code
 
 ```sh
 npm run build          # the emitter (tsup), as in the tutorial
 npm run sdk:generate   # oagen generate --lang python --spec spec/open-api-spec.yaml --namespace Client --output ../src/amzn_selling_partner/sdk
-npm run regenerate     # or: spec build + sdk:generate + the petstore fixtures (spec/petstore.yaml -> tests/petstore_sdk) + ruff
+npm run generate       # or: spec build + sdk:generate + the petstore fixtures (spec/petstore.yaml -> tests/petstore_sdk)
 git diff --stat -- spec ../src ../tests/petstore_sdk
 ```
+
+oagen formats every written file with ruff through the emitter's
+`formatCommand` (the project's `.venv/bin/ruff`, or `ruff` on `PATH`).
 
 Look at:
 
@@ -123,27 +127,27 @@ reproduced here:
    `operationIdTransform`, `operationHints`, `mountRules`) plus
    `emitterOptions.python` with the `sdkBehavior` overrides that end up in
    `_http.py`.
-3. **Generate.** `npm run build`, then `npm run sdk:generate -- --spec
-   <spec.yml> --namespace <Client>` (`--output <dir>` for another
-   destination) turns one spec into a standalone package (`__init__.py`,
-   `client.py`, `_http.py`, `errors.py`, `models/`, `resources/`), starting
-   from a clean output directory; without arguments
-   it generates the Amazon SDK from `spec/open-api-spec.yaml`, which
-   `npm run spec:build` writes from the Swagger 2.0 files (`--petstore` for
-   the test fixtures, `spec/petstore.yaml`). `npm run regenerate` is the
-   repository's full run: spec build, Amazon into
-   `src/amzn_selling_partner/sdk`, the petstore fixtures into
-   `tests/petstore_sdk`, then ruff.
+3. **Generate.** `npm run build`, then `npx oagen generate --lang python
+   --spec <spec.yml> --namespace <Client> --output <dir>` turns one spec into
+   a standalone package (`__init__.py`, `client.py`, `_http.py`, `errors.py`,
+   `models/`, `resources/`), formatted with ruff by the emitter's
+   `formatCommand`. `npm run sdk:generate` does that for the Amazon SDK from
+   `spec/open-api-spec.yaml` (which `npm run spec:build` writes from the
+   Swagger 2.0 files; `--petstore` for the test fixtures) into a clean
+   `src/amzn_selling_partner/sdk`; `npm run generate` is the repository's
+   full run: spec build, the Amazon SDK, the petstore fixtures into
+   `tests/petstore_sdk`.
 4. **Test the emitter.** `npm test` (vitest: an inline fixture spec, written
    to a temp file because `parseSpec` takes a path, covering field ordering,
    nullable rendering and enum emission; the tutorial's `tasks-api.yml` for
    resources, client, HTTP layer and errors; the spec build and helper tests;
    the policy checked against the committed spec); `npm run typecheck`;
-   `npm run build` (tsup); `npm run smoke` proves the output runs (the tasks
-   SDK generated on the fly and the Amazon SDK over `httpx2.MockTransport`,
-   printing the parsed results and the exact requests).
-5. **Diff two spec versions.** `npm run sdk:diff` (last commit → working
-   tree; `--old <ref or file> --new <file>` for any other pair).
+   `npm run build` (tsup). The generated SDK itself is exercised by the
+   Python suite: `tests/test_sdk_end_to_end.py` runs the Amazon SDK over
+   `httpx2.MockTransport` (a list with an enum query parameter, a create with
+   a body model, a 404) and `tests/petstore_sdk` covers every operation shape.
+5. **Diff two spec versions.** `npm run sdk:diff -- --old <previous.yaml>`
+   (`oagen diff` against the committed spec; `--new <file>` for another pair).
 
 Facts the emitter needs that oagen's IR does not carry are handled before the
 IR (the spec build and `transformSpec`) or by configuration, never by reading

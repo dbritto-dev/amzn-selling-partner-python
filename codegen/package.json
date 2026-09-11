@@ -10,15 +10,11 @@
     "test": "vitest run",
     "test:watch": "vitest",
     "spec:build": "tsx src/spec/build.ts",
-    "sdk:parse": "npx oagen parse --spec spec/open-api-spec.yaml",
-    "sdk:resolve": "npx oagen resolve --spec spec/open-api-spec.yaml",
-    "sdk:generate": "bash scripts/sdk-generate.sh",
-    "sdk:diff": "bash scripts/sdk-diff.sh",
-    "sdk:check": "npx oagen resolve --spec spec/open-api-spec.yaml --format json > /dev/null && echo 'Config loaded successfully'",
-    "regenerate": "npm run spec:build && npm run sdk:generate && npm run spec:build -- --petstore && npm run sdk:generate -- --spec spec/petstore.yaml --output ../tests/petstore_sdk && npm run format",
-    "format": "tsx src/format.ts ../src/amzn_selling_partner/sdk ../tests/petstore_sdk",
-    "generate": "npm run regenerate",
-    "smoke": "bash scripts/smoke.sh"
+    "sdk:parse": "oagen parse --spec spec/open-api-spec.yaml",
+    "sdk:resolve": "oagen resolve --spec spec/open-api-spec.yaml",
+    "sdk:diff": "oagen diff --new spec/open-api-spec.yaml",
+    "sdk:generate": "rm -rf ../src/amzn_selling_partner/sdk && oagen generate --lang python --spec spec/open-api-spec.yaml --namespace Client --output ../src/amzn_selling_partner/sdk",
+    "generate": "npm run spec:build && npm run sdk:generate && npm run spec:build -- --petstore && rm -rf ../tests/petstore_sdk && oagen generate --lang python --spec spec/petstore.yaml --namespace Client --output ../tests/petstore_sdk"
   },
   "dependencies": {
     "@workos/oagen": "0.30.2",

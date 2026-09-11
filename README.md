@@ -245,8 +245,8 @@ errors). `tests/petstore_sdk` is generated from the petstore fixtures and
 `tests/fixtures/tasks-api.yml` is the spec from the oagen tutorial:
 
 ```sh
-cd codegen && npm ci --ignore-scripts
-npm run sdk:generate -- --spec ../tests/fixtures/tasks-api.yml --namespace TasksClient --output ../tasks_sdk
+cd codegen && npm ci --ignore-scripts && npm run build
+npx oagen generate --lang python --spec ../tests/fixtures/tasks-api.yml --namespace TasksClient --output ../tasks_sdk
 ```
 
 `tasks_sdk/client.py` then has `AsyncTasksClient` / `TasksClient`. Amazon's
@@ -267,7 +267,7 @@ uv run pytest benchmarks
 uvx nox -s security_test
 uv run python -m amzn_selling_partner.sandbox_tests
 
-cd codegen && npm ci --ignore-scripts && npm run regenerate
+cd codegen && npm ci --ignore-scripts && npm run generate
 cd codegen && npm test && npm run typecheck
 ```
 

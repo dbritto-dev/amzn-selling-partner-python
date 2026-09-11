@@ -13,7 +13,6 @@ src/policy/               operation hints, mount rules, transforms (consumed by 
 src/python/               the emitter: types.ts, models.ts, resources.ts, client.ts, index.ts
                           (+ naming.ts, pagination.ts, ratelimits.ts support modules)
 src/spec/, src/convert.ts Amazon Swagger 2.0 files -> one OpenAPI 3 document
-scripts/                  sdk-generate.sh, sdk-diff.sh, smoke.sh, smoke.py, smoke_tasks.py
 test/                     vitest (inline fixture spec, the tutorial's tasks-api.yml, helpers)
 ```
 
@@ -38,19 +37,24 @@ which parse/resolve/generate never need).
 | `npm run spec:build` | Amazon models + notification schemas → `spec/open-api-spec.yaml` (`-- --petstore` → `spec/petstore.yaml`) |
 | `npm run sdk:parse` | the full IR as JSON (`oagen parse`) |
 | `npm run sdk:resolve -- --format table` | derived method name per operation (`oagen resolve`); collisions go to `src/policy/operation-hints.ts` |
-| `npm run sdk:check` | load the config and the spec, nothing else |
-| `npm run sdk:generate` | `oagen generate --lang python --spec spec/open-api-spec.yaml --namespace Client --output ../src/amzn_selling_partner/sdk`, from a clean output dir (`--spec`, `--namespace`, `--output` override) |
-| `npm run generate` (= `regenerate`) | spec build + Amazon SDK + petstore fixtures (`../tests/petstore_sdk`) + ruff |
-| `npm run sdk:diff` | `oagen diff` last committed spec → working tree (`-- --old <ref or file> --new <file>`) |
-| `npm run smoke` | prove the output runs: the tutorial's tasks API (generated into `.build/tasks_sdk`) and the Amazon SDK over `httpx2.MockTransport`; prints parsed results and the exact requests, asserts `status=done` in the query string |
+| `npm run sdk:generate` | `oagen generate --lang python --spec spec/open-api-spec.yaml --namespace Client --output ../src/amzn_selling_partner/sdk`, into a clean output dir |
+| `npm run generate` | spec build + the Amazon SDK + the petstore fixtures (`../tests/petstore_sdk`) |
+| `npm run sdk:diff -- --old <previous.yaml>` | `oagen diff` of a previous spec against the committed one |
 | `npm test` / `npm run typecheck` / `npm run build` | vitest, `tsc --noEmit`, tsup |
+
+oagen formats every file it writes with ruff (import sorting, unused imports,
+formatting) through the emitter's `formatCommand`: the enclosing project's
+`.venv/bin/ruff`, or `ruff` on `PATH`. The generated SDK is tested by the
+Python suite (`../tests/test_sdk_end_to_end.py` runs it over
+`httpx2.MockTransport`: a list with an enum query parameter, a create with a
+body model, a 404; `../tests/petstore_sdk` covers every operation shape).
 
 Reproducing the tutorial on its own spec:
 
 ```sh
-npm run sdk:parse -- --spec ../tests/fixtures/tasks-api.yml
-npm run sdk:resolve -- --spec ../tests/fixtures/tasks-api.yml --format table
-npm run sdk:generate -- --spec ../tests/fixtures/tasks-api.yml --namespace TasksClient --output ../tasks_sdk
+npx oagen parse --spec ../tests/fixtures/tasks-api.yml
+npx oagen resolve --spec ../tests/fixtures/tasks-api.yml --format table
+npx oagen generate --lang python --spec ../tests/fixtures/tasks-api.yml --namespace TasksClient --output ../tasks_sdk
 ```
 
 No generated file is ever hand-edited: every fix lands in `src/python/` and is
@@ -88,7 +92,7 @@ re-verified by `npm run generate` (CI regenerates and fails on drift).
   `binary` and `text` are still rendered (`files=` / `data=` / `content=`),
   covered by the inline fixture test.
 * **Generating into an existing output directory merges** (`__init__.py`
-  additively, the manifest prunes stale files): `scripts/sdk-generate.sh`
+  additively, the manifest prunes stale files): the `sdk:generate` script
   removes the output directory first and every `GeneratedFile` sets
   `overwriteExisting: true`.
 * **Node.** oagen 0.30.2 declares `node >= 24.10.0`; the CLI shebang is
@@ -96,7 +100,8 @@ re-verified by `npm run generate` (CI regenerates and fails on drift).
   scripts (they put `node_modules/.bin` on `PATH`).
 * **Python 3.11+ `str()` on a `str` enum** returns `"TaskStatus.DONE"`; every
   generated enum sets `__str__ = str.__str__` and the HTTP layer encodes
-  `Enum.value`, so `status=done` reaches the wire (asserted by `npm run smoke`).
+  `Enum.value`, so `status=done` reaches the wire (asserted by the Python
+  suite on the petstore and Amazon SDKs).
 
 ## What the reference leaves out and this emitter includes
 

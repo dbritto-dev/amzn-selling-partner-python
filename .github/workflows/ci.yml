@@ -47,10 +47,9 @@ jobs:
           npm run build
           npm run typecheck
           npm test
-          npm run sdk:check
 
-      - name: Regenerate (spec build + oagen generate + ruff)
-        run: cd codegen && npm run regenerate
+      - name: Regenerate (spec build + oagen generate, ruff through the emitter's formatCommand)
+        run: cd codegen && npm run generate
 
       - name: No drift between the pinned specs, the committed spec and the generated code
         run: |
