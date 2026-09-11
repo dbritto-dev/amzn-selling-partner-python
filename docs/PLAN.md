@@ -173,6 +173,11 @@ spec's casing as the wire alias and expose snake_case keyword arguments
 
 ## 5. Swagger 2.0 → IR mapping
 
+(Changed after review: the on-disk documents are parsed and validated by
+pydantic v2 models in `spec/raw.py` — `SwaggerDocument`, `OpenAPIDocument`,
+`RawSchema` — and the IR nodes below are pydantic dataclasses, so every field
+is validated by pydantic on construction while keeping dataclass semantics.)
+
 | Swagger 2.0 construct | Occurrences | IR (`spec/ir.py`) |
 |---|---|---|
 | `host` / `basePath` / `schemes` | all files; two files have a non-NA host (`shippingV2` → EU, sandbox-data → sandbox NA); `basePath` is `/` in 2 files, absent elsewhere | one `Server(url=f"{scheme}://{host}{basePath.rstrip('/')}")`; Amazon plugin replaces servers with the regional table (§10) |

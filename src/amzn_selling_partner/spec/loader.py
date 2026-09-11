@@ -17,11 +17,12 @@ from collections.abc import Iterable
 
 from pydantic_core import from_json
 
-from ._jsonutil import JsonObject, as_object, obj, text
-from ._schema import SchemaConverter, extensions_of
+from ._jsonutil import JsonObject, as_object
+from ._schema import SchemaConverter
 from .cache import load_cached, spec_hash, store_cached
 from .ir import Document
 from .openapi3 import normalize_openapi3
+from .raw import RawSchema
 from .refs import RefResolver
 from .swagger2 import normalize_swagger2
 
@@ -38,25 +39,26 @@ def normalize(raw: JsonObject, *, source: str, digest: str) -> Document:
 
 def normalize_jsonschema(raw: JsonObject, *, source: str, digest: str) -> Document:
     """A standalone JSON Schema becomes a document with one root schema (named
-    after ``title`` or the file stem) plus its ``definitions`` / ``$defs``."""
+    after the file stem) plus its ``definitions`` / ``$defs``."""
+    root = RawSchema.model_validate(raw)
     resolver = RefResolver(source, raw)
     conv = SchemaConverter(resolver)
-    conv.register_all(obj(raw, "definitions"), source, "/definitions")
-    conv.register_all(obj(raw, "$defs"), source, "/$defs")
+    conv.register_all(root.definitions or {}, source, "/definitions")
+    conv.register_all(root.defs or {}, source, "/$defs")
     stem = pathlib.Path(source).stem
     name = re.sub(r"[^0-9A-Za-z_]", "_", stem) or "Root"
     if name in conv.schemas:
         name = f"{name}Root"
-    conv.schemas[name] = conv.convert(raw, source, name=name)
+    conv.schemas[name] = conv.convert(root, source, name=name)
     return Document(
         title=name,
         version=str(raw.get("version") or ""),
         format="jsonschema",
         source=source,
         hash=digest,
-        description=text(raw, "description"),
+        description=root.description,
         schemas=dict(conv.schemas),
-        extensions=extensions_of(raw),
+        extensions=root.extensions,
         annotations={"root_schema": name},
     )
 

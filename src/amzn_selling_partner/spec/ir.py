@@ -1,8 +1,10 @@
 """Normalised, immutable intermediate representation of an API description.
 
 Both Swagger 2.0 and OpenAPI 3.x documents are converted into these nodes, so
-the compiler never sees the source format. All nodes are frozen, slotted,
-keyword-only dataclasses and are picklable (the on-disk IR cache stores them).
+the compiler never sees the source format. Nodes are frozen, slotted,
+keyword-only **pydantic dataclasses**: pydantic v2 validates every field on
+construction, while the objects keep dataclass semantics (``dataclasses.replace``,
+equality, pickling for the on-disk IR cache).
 
 References: ``Schema.ref`` names an entry in ``Document.schemas``. Every ``$ref``
 is resolved at load time (including refs into other files, which are imported
@@ -15,36 +17,38 @@ node; ``Operation.annotations`` is the slot plugins fill via ``annotate``.
 
 from __future__ import annotations
 
-from collections.abc import Callable, Mapping
-from dataclasses import dataclass, field, replace
-from typing import Any, Literal, TypeAlias
+from collections.abc import Callable
+from dataclasses import field, replace
+from typing import Any, Literal
 
-Location: TypeAlias = Literal["path", "query", "header", "cookie"]
-Style: TypeAlias = Literal[
-    "form",
-    "simple",
-    "matrix",
-    "label",
-    "spaceDelimited",
-    "pipeDelimited",
-    "tabDelimited",
-    "deepObject",
-]
+from pydantic import ConfigDict
+from pydantic.dataclasses import dataclass
 
-_EMPTY: Mapping[str, Any] = {}
+Location = Literal["path", "query", "header", "cookie"]
+Style = Literal["form", "simple", "matrix", "label", "spaceDelimited", "pipeDelimited", "tabDelimited", "deepObject"]
+
+_CONFIG = ConfigDict(arbitrary_types_allowed=True)
+
+
+def _dict() -> dict[str, Any]:
+    return {}
+
+
+def _str_dict() -> dict[str, str]:
+    return {}
 
 
 def _schemas() -> dict[str, Schema]:
     return {}
 
 
-@dataclass(slots=True, frozen=True, kw_only=True)
+@dataclass(slots=True, frozen=True, kw_only=True, config=_CONFIG)
 class Discriminator:
     property_name: str
-    mapping: Mapping[str, str] = field(default_factory=dict[str, str])  # value -> schema name
+    mapping: dict[str, str] = field(default_factory=_str_dict)  # value -> schema name
 
 
-@dataclass(slots=True, frozen=True, kw_only=True)
+@dataclass(slots=True, frozen=True, kw_only=True, config=_CONFIG)
 class Schema:
     """A JSON-Schema-like node.
 
@@ -61,7 +65,7 @@ class Schema:
     type: str | None = None
     format: str | None = None
     nullable: bool = False
-    properties: Mapping[str, Schema] = field(default_factory=_schemas)
+    properties: dict[str, Schema] = field(default_factory=_schemas)
     required: frozenset[str] = frozenset()
     items: Schema | None = None
     additional_properties: Schema | bool | None = None
@@ -78,14 +82,14 @@ class Schema:
     write_only: bool = False
     deprecated: bool = False
     example: Any = None
-    extensions: Mapping[str, Any] = field(default_factory=dict[str, Any])
+    extensions: dict[str, Any] = field(default_factory=_dict)
 
     @property
     def is_ref(self) -> bool:
         return self.ref is not None
 
 
-@dataclass(slots=True, frozen=True, kw_only=True)
+@dataclass(slots=True, frozen=True, kw_only=True, config=_CONFIG)
 class Parameter:
     name: str
     location: Location
@@ -96,15 +100,15 @@ class Parameter:
     explode: bool = True
     allow_reserved: bool = False
     deprecated: bool = False
-    extensions: Mapping[str, Any] = field(default_factory=dict[str, Any])
+    extensions: dict[str, Any] = field(default_factory=_dict)
 
 
-@dataclass(slots=True, frozen=True, kw_only=True)
+@dataclass(slots=True, frozen=True, kw_only=True, config=_CONFIG)
 class RequestBody:
-    content: Mapping[str, Schema]  # media type -> schema
+    content: dict[str, Schema]  # media type -> schema
     required: bool = False
     description: str | None = None
-    extensions: Mapping[str, Any] = field(default_factory=dict[str, Any])
+    extensions: dict[str, Any] = field(default_factory=_dict)
 
     @property
     def json_schema(self) -> Schema | None:
@@ -114,13 +118,13 @@ class RequestBody:
         return None
 
 
-@dataclass(slots=True, frozen=True, kw_only=True)
+@dataclass(slots=True, frozen=True, kw_only=True, config=_CONFIG)
 class Response:
     status: str  # "200", "2XX", "default"
     description: str | None = None
-    content: Mapping[str, Schema] = field(default_factory=_schemas)
-    headers: Mapping[str, Schema] = field(default_factory=_schemas)
-    extensions: Mapping[str, Any] = field(default_factory=dict[str, Any])
+    content: dict[str, Schema] = field(default_factory=_schemas)
+    headers: dict[str, Schema] = field(default_factory=_schemas)
+    extensions: dict[str, Any] = field(default_factory=_dict)
 
     @property
     def json_schema(self) -> Schema | None:
@@ -130,15 +134,15 @@ class Response:
         return None
 
 
-@dataclass(slots=True, frozen=True, kw_only=True)
+@dataclass(slots=True, frozen=True, kw_only=True, config=_CONFIG)
 class Server:
     url: str
     description: str | None = None
-    variables: Mapping[str, str] = field(default_factory=dict[str, str])  # name -> default
-    extensions: Mapping[str, Any] = field(default_factory=dict[str, Any])
+    variables: dict[str, str] = field(default_factory=_str_dict)  # name -> default
+    extensions: dict[str, Any] = field(default_factory=_dict)
 
 
-@dataclass(slots=True, frozen=True, kw_only=True)
+@dataclass(slots=True, frozen=True, kw_only=True, config=_CONFIG)
 class Operation:
     operation_id: str
     method: str  # lower-case
@@ -148,22 +152,20 @@ class Operation:
     tags: tuple[str, ...] = ()
     parameters: tuple[Parameter, ...] = ()
     request_body: RequestBody | None = None
-    responses: Mapping[str, Response] = field(default_factory=dict[str, Response])
+    responses: dict[str, Response] = field(default_factory=_dict)
     deprecated: bool = False
-    extensions: Mapping[str, Any] = field(default_factory=dict[str, Any])
-    annotations: Mapping[str, Any] = field(default_factory=dict[str, Any])
+    extensions: dict[str, Any] = field(default_factory=_dict)
+    annotations: dict[str, Any] = field(default_factory=_dict)
 
     def annotated(self, **values: Any) -> Operation:
         """Return a copy with ``annotations`` updated (used by plugins)."""
         return replace(self, annotations={**self.annotations, **values})
 
     def success_responses(self) -> tuple[Response, ...]:
-        return tuple(
-            r for code, r in self.responses.items() if code.startswith("2") or code == "2XX"
-        )
+        return tuple(r for code, r in self.responses.items() if code.startswith("2") or code == "2XX")
 
 
-@dataclass(slots=True, frozen=True, kw_only=True)
+@dataclass(slots=True, frozen=True, kw_only=True, config=_CONFIG)
 class Document:
     title: str
     version: str
@@ -173,9 +175,9 @@ class Document:
     description: str | None = None
     servers: tuple[Server, ...] = ()
     operations: tuple[Operation, ...] = ()
-    schemas: Mapping[str, Schema] = field(default_factory=_schemas)
-    extensions: Mapping[str, Any] = field(default_factory=dict[str, Any])
-    annotations: Mapping[str, Any] = field(default_factory=dict[str, Any])
+    schemas: dict[str, Schema] = field(default_factory=_schemas)
+    extensions: dict[str, Any] = field(default_factory=_dict)
+    annotations: dict[str, Any] = field(default_factory=_dict)
 
     def resolve(self, schema: Schema) -> Schema:
         """Follow ``ref`` pointers until a concrete schema is reached."""
@@ -203,15 +205,4 @@ class Document:
         return replace(self, operations=tuple(fn(op) for op in self.operations))
 
 
-__all__ = [
-    "Discriminator",
-    "Document",
-    "Location",
-    "Operation",
-    "Parameter",
-    "RequestBody",
-    "Response",
-    "Schema",
-    "Server",
-    "Style",
-]
+__all__ = ["Discriminator", "Document", "Location", "Operation", "Parameter", "RequestBody", "Response", "Schema", "Server", "Style"]

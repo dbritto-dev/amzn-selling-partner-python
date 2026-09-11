@@ -19,7 +19,7 @@ from .ir import Document
 log = logging.getLogger("amzn_selling_partner.spec.cache")
 
 #: Bump whenever the IR or the normalisers change shape so stale pickles are ignored.
-IR_VERSION = "1"
+IR_VERSION = "2"
 
 
 def spec_hash(data: bytes) -> str:

@@ -1,8 +1,8 @@
 # Amazon Selling Partner API for Python
 
 A spec-driven client for the [Amazon Selling Partner API](https://developer-docs.amazon.com/sp-api).
-The bundled Swagger models are loaded at runtime and every operation becomes a
-typed method on a sync client and an async client; there is no code-generation
+The bundled Swagger models are parsed and validated with pydantic v2 at runtime
+and every operation becomes a typed method on a sync client and an async client; there is no code-generation
 step (optional `.pyi` stubs are provided for editors and type checkers).
 
 The core (`amzn_selling_partner.spec`, `amzn_selling_partner.compile`, `amzn_selling_partner.runtime`) is API-agnostic: it
