@@ -51,3 +51,9 @@ jobs:
 
       - name: Smoke benchmark (dynamic op within 10% of hand-written)
         run: uv run python benchmarks/bench.py --iterations 100
+
+      - name: Wheel contains the vendored specs
+        run: |
+          uv run python scripts/sync_specs.py
+          uv build --wheel
+          uv run python -c "import glob, zipfile; n = [x for x in zipfile.ZipFile(glob.glob('dist/*.whl')[0]).namelist() if x.endswith('.json')]; assert len(n) > 60, n; print(len(n), 'spec files in wheel')"

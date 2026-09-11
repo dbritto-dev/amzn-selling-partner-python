@@ -1,8 +1,11 @@
 # Updating the bundled Amazon specs
 
 The Amazon models are a git submodule at `spec/selling-partner-api-models`,
-pinned to the commit recorded in `spec/PINNED_COMMIT`. The package reads them
-through the symlinks `src/spapi/plugins/_amazon/models` and `.../schemas`.
+pinned to the commit recorded in `spec/PINNED_COMMIT`. During development the
+package reads them straight from the submodule; a built wheel ships a copy
+under `spapi/plugins/_amazon/{models,schemas}` made by
+`python scripts/sync_specs.py` (the release workflow runs it before `uv build`;
+the copies are git-ignored).
 
 ## 1. Bump the submodule
 
