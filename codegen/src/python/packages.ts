@@ -5,7 +5,7 @@
  * runs, enums oagen synthesises for inline parameter enums) go to the package
  * of the service that uses them, or `shared` when several do.
  */
-import type { ApiSpec, Enum, Model, Operation, Service } from '@workos/oagen';
+import type { ApiSpec, EmitterContext, Enum, Model, Operation, Service } from '@workos/oagen';
 import { className, snakeCase, Uniquer } from './naming.js';
 import { referencedNames } from './types.js';
 
@@ -122,4 +122,13 @@ export function importPackage(pkg: string, alias: string): string {
   const last = parts.pop()!;
   const parent = parts.length ? `..models.${parts.join('.')}` : '..models';
   return alias === last ? `from ${parent} import ${last}` : `from ${parent} import ${last} as ${alias}`;
+}
+
+const plans = new WeakMap<ApiSpec, Packages>();
+
+/** Package plan of the spec being generated (computed once per run). */
+export function packagesOf(ctx: EmitterContext): Packages {
+  let p = plans.get(ctx.spec);
+  if (!p) plans.set(ctx.spec, (p = planPackages(ctx.spec)));
+  return p;
 }

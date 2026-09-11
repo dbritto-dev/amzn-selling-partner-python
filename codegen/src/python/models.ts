@@ -4,9 +4,9 @@
  * `__init__.py` files that re-export models and enums).
  */
 import type { ApiSpec, EmitterContext, GeneratedFile, Model } from '@workos/oagen';
-import { HEADER_DOC } from './header.js';
+import { HEADER_DOC, file } from './header.js';
 import { docstring, fieldName, pyStr, Uniquer } from './naming.js';
-import { SHARED, type Packages } from './packages.js';
+import { SHARED, packagesOf, type Packages } from './packages.js';
 import { renderTypeRef, type TypeContext } from './types.js';
 
 const SYNTHETIC_ADDITIONAL = 'Additional properties not captured by named fields';
@@ -163,7 +163,9 @@ function packageInit(pkg: string, modelNames: string[], enumNames: string[], chi
   return lines.join('\n') + '\n';
 }
 
-export function generateModels(_models: Model[], _ctx: EmitterContext, spec: ApiSpec, packages: Packages): GeneratedFile[] {
+export function generateModels(_models: Model[], ctx: EmitterContext): GeneratedFile[] {
+  const spec = ctx.spec;
+  const packages = packagesOf(ctx);
   const byPkg = new Map<string, [Model, string][]>();
   for (const m of spec.models) {
     const place = packages.models.get(m.name);
@@ -173,10 +175,10 @@ export function generateModels(_models: Model[], _ctx: EmitterContext, spec: Api
     list.push([m, place.cls]);
   }
   const enumPkgs = new Set([...packages.enums.values()].map((p) => p.pkg));
-  const files: GeneratedFile[] = [{ path: 'models/_base.py', content: BASE_MODULE }];
+  const files: GeneratedFile[] = [file('models/_base.py', BASE_MODULE)];
   for (const [pkg, list] of [...byPkg.entries()].sort((a, b) => a[0].localeCompare(b[0]))) {
     list.sort((a, b) => a[1].localeCompare(b[1]));
-    files.push({ path: `models/${packages.modulePath(pkg)}/models.py`, content: renderModelsModule(pkg, list, packages) });
+    files.push(file(`models/${packages.modulePath(pkg)}/models.py`, renderModelsModule(pkg, list, packages)));
   }
   // package __init__ files (every package and every intermediate package)
   const inits = new Map<string, { models: string[]; enums: string[]; children: Set<string> }>();
@@ -193,12 +195,13 @@ export function generateModels(_models: Model[], _ctx: EmitterContext, spec: Api
     for (let i = parts.length - 1; i > 0; i--) ensure(parts.slice(0, i).join('.')).children.add(parts[i]!);
   }
   for (const [pkg, e] of [...inits.entries()].sort((a, b) => a[0].localeCompare(b[0]))) {
-    files.push({ path: `models/${packages.modulePath(pkg)}/__init__.py`, content: packageInit(pkg, e.models, e.enums, [...e.children].sort()) });
+    files.push(file(`models/${packages.modulePath(pkg)}/__init__.py`, packageInit(pkg, e.models, e.enums, [...e.children].sort())));
   }
   const top = [...new Set(packages.pkgs.map((p) => p.split('.')[0]!))].sort();
-  files.push({
-    path: 'models/__init__.py',
-    content: `"""Generated models of ${spec.name}: one package per API version.
+  files.push(
+    file(
+      'models/__init__.py',
+      `"""Generated models of ${spec.name}: one package per API version.
 
 ${HEADER_DOC}
 
@@ -207,7 +210,8 @@ Packages: ${top.join(', ')}.
 
 from __future__ import annotations
 `,
-  });
+    ),
+  );
   void SHARED;
   void enumPkgs;
   return files;

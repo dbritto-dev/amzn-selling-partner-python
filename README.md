@@ -196,7 +196,7 @@ errors). `tests/petstore_sdk` is generated from the petstore fixtures and
 
 ```sh
 cd codegen && npm ci --ignore-scripts
-npm run sdk:generate:python -- --spec ../tests/fixtures/tasks-api.yml --namespace TasksClient --output ../tasks_sdk
+npm run sdk:generate -- --spec ../tests/fixtures/tasks-api.yml --namespace TasksClient --output ../tasks_sdk
 ```
 
 `tasks_sdk/client.py` then has `TasksClient` / `AsyncTasksClient`; Swagger 2.0
@@ -213,7 +213,7 @@ uv run pyright                            # strict, generated code included
 uv run pytest benchmarks                  # pytest-benchmark: generated method vs hand-written httpx2 code
 uv run python -m amzn_selling_partner.sandbox_tests   # every operation against its embedded examples
 
-cd codegen && npm ci --ignore-scripts && npm run sdk:generate   # regenerate after a spec bump (Node 22)
+cd codegen && npm ci --ignore-scripts && npm run regenerate      # regenerate after a spec bump (Node 22)
 cd codegen && npm test && npm run typecheck                      # the generator's own tests (vitest) and types
 ```
 

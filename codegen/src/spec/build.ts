@@ -8,16 +8,17 @@
  * components as `<package>:<Name>` (`orders_v0:Order`) so equally named
  * schemas of different API versions never collide, tags every operation with
  * its API version (`OrdersV0`, the oagen service = the SDK resource class) and
- * merges everything into `.build/openapi.json`.
+ * merges everything into `.build/openapi.yml`.
  *
- *   npm run spec:build                # Amazon models + notification schemas -> .build/openapi.json
- *   npm run spec:build -- --petstore  # tests/fixtures/petstore_*.json      -> .build/petstore.json
+ *   npm run spec:build                # Amazon models + notification schemas -> .build/openapi.yml
+ *   npm run spec:build -- --petstore  # tests/fixtures/petstore_*.json      -> .build/petstore.yml
  *   npm run spec:build -- --only orders
  */
 import { execFileSync } from 'node:child_process';
 import fs from 'node:fs';
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
+import YAML from 'yaml';
 import { toOpenApi3, wrapJsonSchema, type JsonObject } from '../convert.js';
 import { apiNaming } from '../amazon.js';
 import { identifier, pascalCase } from '../python/naming.js';
@@ -206,10 +207,10 @@ async function main(): Promise<void> {
   const only = args.includes('--only') ? args[args.indexOf('--only') + 1] : undefined;
   const petstore = args.includes('--petstore');
   const result = petstore ? await buildPetstore() : await buildAmazon(only);
-  const out = path.join(BUILD, petstore ? 'petstore.json' : 'openapi.json');
+  const out = path.join(BUILD, petstore ? 'petstore.yml' : 'openapi.yml');
   fs.mkdirSync(BUILD, { recursive: true });
-  fs.writeFileSync(out, JSON.stringify(result.document, null, 1));
-  fs.writeFileSync(out.replace(/\.json$/, '.report.json'), JSON.stringify({ services: result.services, warnings: result.warnings }, null, 2));
+  fs.writeFileSync(out, YAML.stringify(result.document, { lineWidth: 0, aliasDuplicateObjects: false }));
+  fs.writeFileSync(out.replace(/\.yml$/, '.report.json'), JSON.stringify({ services: result.services, warnings: result.warnings }, null, 2));
   const ops = result.services.reduce((n, s) => n + s.operations, 0);
   process.stdout.write(`${path.relative(process.cwd(), out)}: ${result.services.length} services, ${ops} operations, ${result.warnings.length} warnings\n`);
 }

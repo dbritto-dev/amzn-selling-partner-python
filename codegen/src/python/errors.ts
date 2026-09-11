@@ -1,6 +1,6 @@
 /** `errors.py`: the exception hierarchy, status classes from the spec's error policy (`ctx.spec.sdk.errors`). */
 import type { EmitterContext, GeneratedFile } from '@workos/oagen';
-import { HEADER_DOC } from './header.js';
+import { HEADER_DOC, file } from './header.js';
 import { optionsOf } from './options.js';
 
 export function errorClassName(kind: string): string {
@@ -125,5 +125,5 @@ class APIResponseValidationError(APIError):
 }
 
 export function generateErrors(ctx: EmitterContext): GeneratedFile[] {
-  return [{ path: 'errors.py', content: renderErrorsModule(ctx) }];
+  return [file('errors.py', renderErrorsModule(ctx))];
 }

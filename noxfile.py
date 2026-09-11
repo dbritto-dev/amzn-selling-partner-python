@@ -31,7 +31,7 @@ def codegen(session: nox.Session) -> None:
     session.install("-e", ".[dev]")
     session.chdir("codegen")
     session.run("npm", "ci", "--ignore-scripts", external=True, silent=True)
-    session.run("npm", "run", "sdk:generate", external=True)
+    session.run("npm", "run", "regenerate", external=True)
 
 
 @nox.session

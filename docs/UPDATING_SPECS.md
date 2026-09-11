@@ -21,29 +21,31 @@ git -C spec/selling-partner-api-models checkout <new commit or origin/main>
 Build the merged OpenAPI 3 document before and after the bump and diff them:
 
 ```sh
-cp .build/openapi.json .build/openapi.previous.json   # from the previous generation (or build it on the old commit)
-npm run spec:build                                    # -> .build/openapi.json (+ openapi.report.json: services, warnings)
-npm run sdk:diff -- --old .build/openapi.previous.json --new .build/openapi.json
+cp .build/openapi.yml .build/openapi.previous.yml   # from the previous generation (or build it on the old commit)
+npm run spec:build                                  # -> .build/openapi.yml (+ openapi.report.json: services, warnings)
+npm run sdk:diff -- --old .build/openapi.previous.yml --new .build/openapi.yml
 ```
 
 `oagen diff` lists added/removed operations and parameter and schema changes.
 Then check the method names oagen derives for the new operations:
 
 ```sh
-npm run sdk:resolve -- --spec .build/openapi.json --format table
+npm run sdk:resolve -- --spec .build/openapi.yml --format table
 ```
 
 Two operations of one API version that resolve to the same name need an
 `operationHints` entry in `oagen.config.ts` (the generator also reports them
 as "collides" notes and suffixes the second one). A service that oagen splits
 because its paths start with different segments (pricing v0) needs a
-`mountRules` entry. `npm run sdk:parse -- --spec .build/openapi.json` prints
+`mountRules` entry. `npm run sdk:parse -- --spec .build/openapi.yml` prints
 the IR when something looks off.
 
 ## 3. Regenerate and review the generated code
 
 ```sh
-npm run sdk:generate                 # spec build + oagen generate (Amazon and the petstore fixtures) + ruff
+npm run build                                                        # the emitter (tsup), as in the tutorial
+npm run sdk:generate -- --spec .build/openapi.yml --namespace Client   # oagen generate -> ../src/amzn_selling_partner/sdk
+npm run regenerate                                                   # or: spec build + the line above + the petstore fixtures + ruff
 git diff --stat -- ../src ../tests/petstore_sdk
 ```
 
@@ -107,13 +109,15 @@ describes; the tutorial's own spec is checked in as
    (`transformSpec`, `schemaNameTransform`, `operationIdTransform`,
    `operationHints`, `mountRules`, `emitterOptions.python` with the
    `sdkBehavior` overrides that end up in `http_client.py`).
-3. **Generate.** `npm run sdk:generate:python -- --spec <openapi3.json|yml>
-   --namespace <Client> --output <dir>` turns one spec into a standalone
-   package (`client.py`, `http_client.py`, `errors.py`, `models/`,
-   `resources/`); Swagger 2.0 files go through `npm run spec:build` first
-   (`--petstore` for the test fixtures). `npm run sdk:generate` is the
-   repository's regeneration: Amazon into `src/amzn_selling_partner/sdk`, the
-   petstore fixtures into `tests/petstore_sdk`, then ruff.
+3. **Generate.** `npm run build`, then `npm run sdk:generate -- --spec
+   <spec.yml> --namespace <Client>` (`--output <dir>` for another
+   destination) turns one spec into a standalone package (`client.py`,
+   `http_client.py`, `errors.py`, `models/`, `resources/`). Amazon's Swagger
+   2.0 files go through `npm run spec:build` first, which writes
+   `.build/openapi.yml` (`--petstore` for the test fixtures).
+   `npm run regenerate` is the repository's full run: spec build, Amazon into
+   `src/amzn_selling_partner/sdk`, the petstore fixtures into
+   `tests/petstore_sdk`, then ruff.
 4. **Test the emitter.** `npm test` (vitest: fixture-spec tests over
    `tasks-api.yml` for models, enums, resources, client, HTTP client and errors,
    plus the spec build and helper tests); `npm run typecheck`; `npm run build`

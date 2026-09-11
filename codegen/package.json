@@ -5,14 +5,14 @@
   "description": "oagen-based generator for the amzn_selling_partner Python package",
   "type": "module",
   "scripts": {
+    "build": "tsup",
     "spec:build": "tsx src/spec/build.ts",
-    "sdk:generate": "npm run spec:build && npm run sdk:generate:python -- --spec .build/openapi.json --namespace Client --output ../src/amzn_selling_partner/sdk && npm run spec:build -- --petstore && npm run sdk:generate:python -- --spec .build/petstore.json --namespace Client --output ../tests/petstore_sdk && npm run format",
-    "sdk:generate:python": "oagen generate --lang python",
+    "sdk:generate": "oagen generate --lang python --output ../src/amzn_selling_partner/sdk",
     "sdk:parse": "oagen parse",
     "sdk:resolve": "oagen resolve",
     "sdk:diff": "oagen diff",
+    "regenerate": "npm run spec:build && npm run sdk:generate -- --spec .build/openapi.yml --namespace Client && npm run spec:build -- --petstore && oagen generate --lang python --spec .build/petstore.yml --namespace Client --output ../tests/petstore_sdk && npm run format",
     "format": "tsx src/format.ts ../src/amzn_selling_partner/sdk ../tests/petstore_sdk",
-    "build": "tsup",
     "typecheck": "tsc --noEmit",
     "test": "vitest run",
     "test:watch": "vitest"

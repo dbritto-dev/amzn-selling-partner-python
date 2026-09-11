@@ -1,16 +1,19 @@
 /**
  * oagen configuration: the plugin (the `python` emitter) plus this
- * repository's spec policy. `npm run sdk:generate` builds the merged OpenAPI 3
- * document (`src/spec/build.ts`) and runs `oagen generate` with this config.
+ * repository's spec policy. `npm run spec:build` writes the merged OpenAPI 3
+ * document (`.build/openapi.yml`), then
+ * `npm run sdk:generate -- --spec .build/openapi.yml --namespace Client`
+ * runs `oagen generate` with this config (`npm run regenerate` does both, plus
+ * the petstore fixtures and ruff).
  */
 import type { OagenConfig } from '@workos/oagen';
 import { ALIASES } from './src/amazon.js';
 import type { JsonObject } from './src/convert.js';
-import { plugin } from './src/plugin.js';
+import { myEmittersPlugin } from './src/plugin.js';
 import { schemaNameTransform, transformSpec } from './src/transform.js';
 
 const config: OagenConfig = {
-  ...plugin,
+  ...myEmittersPlugin,
 
   // Pre-IR fixes for the Amazon files (alias schemas, inline objects, name protection).
   transformSpec: (doc) => transformSpec(doc as unknown as JsonObject) as never,
@@ -19,7 +22,7 @@ const config: OagenConfig = {
   operationIdTransform: (id) => id,
 
   // Method names come from oagen's resolver; these are the operations whose derived
-  // names collide within their service (`npm run sdk:resolve -- --spec .build/openapi.json`).
+  // names collide within their service (`npm run sdk:resolve -- --spec .build/openapi.yml`).
   operationHints: {
     'POST /aplus/2020-11-01/contentDocuments': { name: 'create_content_document' },
     'POST /aplus/2020-11-01/contentDocuments/{contentReferenceKey}': { name: 'update_content_document' },

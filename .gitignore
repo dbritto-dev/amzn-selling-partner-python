@@ -164,4 +164,5 @@ cython_debug/
 # generator scratch space (codegen/.build) and its node_modules
 codegen/node_modules/
 codegen/.build/
+codegen/dist/
 codegen/sdk/

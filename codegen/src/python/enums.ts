@@ -1,8 +1,8 @@
 /** Enums: one `models/<package>/enums.py` per package, `class Name(str, Enum)` as in the oagen tutorial. */
 import type { Enum, EmitterContext, GeneratedFile } from '@workos/oagen';
-import { HEADER_DOC } from './header.js';
+import { HEADER_DOC, file } from './header.js';
 import { pyStr, snakeCase, Uniquer } from './naming.js';
-import type { Packages } from './packages.js';
+import { packagesOf } from './packages.js';
 
 function memberName(value: string | number, used: Uniquer): string {
   let s = snakeCase(String(value)).toUpperCase();
@@ -37,7 +37,8 @@ export function renderEnumsModule(pkg: string, enums: [Enum, string][]): string 
   return out.join('\n');
 }
 
-export function generateEnums(_enums: Enum[], ctx: EmitterContext, packages: Packages): GeneratedFile[] {
+export function generateEnums(_enums: Enum[], ctx: EmitterContext): GeneratedFile[] {
+  const packages = packagesOf(ctx);
   const byPkg = new Map<string, [Enum, string][]>();
   for (const e of ctx.spec.enums) {
     const place = packages.enums.get(e.name);
@@ -49,7 +50,7 @@ export function generateEnums(_enums: Enum[], ctx: EmitterContext, packages: Pac
   const files: GeneratedFile[] = [];
   for (const [pkg, list] of [...byPkg.entries()].sort((a, b) => a[0].localeCompare(b[0]))) {
     list.sort((a, b) => a[1].localeCompare(b[1]));
-    files.push({ path: `models/${packages.modulePath(pkg)}/enums.py`, content: renderEnumsModule(pkg, list) });
+    files.push(file(`models/${packages.modulePath(pkg)}/enums.py`, renderEnumsModule(pkg, list)));
   }
   return files;
 }

@@ -48,7 +48,7 @@ in `../MIGRATION.md`.
 spec/selling-partner-api-models        67 Swagger 2.0 files + 23 notification JSON Schemas (submodule)
         │  npm run spec:build           convert.ts (swagger2openapi, #ref/dangling-ref repairs), namespace components
         ▼                               as <package>:<Name>, tag every operation with its API version, merge
-codegen/.build/openapi.json            one OpenAPI 3 document: 67 services, 373 operations, 2032 schemas
+codegen/.build/openapi.yml             one OpenAPI 3 document: 67 services, 373 operations, 2032 schemas
         │  oagen generate               oagen.config.ts: transformSpec (alias inlining, inline-object hoisting,
         ▼                               name protection), operationHints, mountRules, emitterOptions.python
 oagen IR (ApiSpec)                     services, operations, models, enums, sdk behavior
@@ -57,8 +57,9 @@ oagen IR (ApiSpec)                     services, operations, models, enums, sdk 
 src/amzn_selling_partner/sdk/          client.py, http_client.py, errors.py, models/, resources/  (+ .oagen-manifest.json)
 ```
 
-`npm run sdk:generate` runs the whole thing (Amazon into `sdk/`, the petstore
-fixtures into `tests/petstore_sdk`) and formats the output with ruff.
+`npm run sdk:generate -- --spec .build/openapi.yml --namespace Client` is the
+tutorial's command; `npm run regenerate` runs the whole thing (spec build,
+Amazon into `sdk/`, the petstore fixtures into `tests/petstore_sdk`, ruff).
 
 ### Step 0: the spec build (`src/spec/build.ts`)
 
@@ -121,10 +122,14 @@ Path collisions are an error (none in the pinned models).
 * `errors.ts` – `errors.py` from the error policy (`BadRequestError`, ...,
   `RateLimitExceededError`, `ServerError`).
 
-The emitter is registered in `src/plugin.ts`; `oagen.config.ts` spreads the
-plugin. `npm run typecheck`, `npm test` (vitest over
+The emitter is registered in `src/plugin.ts` (`registerEmitter`) and
+`oagen.config.ts` spreads the plugin, as in the tutorial. `npm run build`
+(tsup), `npm run typecheck` and `npm test` (vitest over
 `tests/fixtures/tasks-api.yml`, the tutorial's spec, and the helper modules)
-and `npm run build` (tsup) work as in the scaffold.
+work as in the scaffold. Two things the tutorial shows are not in the released
+oagen (0.30.2): `sdkBehavior` as a top-level config key (here it is
+`emitterOptions.python.sdkBehavior`, merged with `mergeSdkBehavior`) and
+`parseSpec({ content })` (the tests parse the fixture file).
 
 ### Hand-written (never generated)
 

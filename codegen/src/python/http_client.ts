@@ -4,10 +4,10 @@
  * with `sdkBehavior` in oagen.config.ts), so changing the config changes the
  * generated client on the next run.
  */
-import type { EmitterContext, GeneratedFile } from '@workos/oagen';
-import { HEADER_DOC } from './header.js';
+import type { ApiSpec, EmitterContext, GeneratedFile } from '@workos/oagen';
+import { HEADER_DOC, file } from './header.js';
 import { pyStr } from './naming.js';
-import type { EmitterOptions } from './options.js';
+import { optionsOf, type EmitterOptions } from './options.js';
 
 export function renderHttpClientModule(ctx: EmitterContext, opts: EmitterOptions): string {
   const sdk = opts.sdk;
@@ -951,6 +951,6 @@ __all__ = [
 `;
 }
 
-export function generateHttpClient(ctx: EmitterContext, opts: EmitterOptions): GeneratedFile[] {
-  return [{ path: 'http_client.py', content: renderHttpClientModule(ctx, opts), }];
+export function generateHttpClient(_spec: ApiSpec, ctx: EmitterContext): GeneratedFile[] {
+  return [file('http_client.py', renderHttpClientModule(ctx, optionsOf(ctx)))];
 }

@@ -5,10 +5,10 @@
  * builds its parameters explicitly and calls the generated HTTP client.
  */
 import { resolveOperations, type EmitterContext, type GeneratedFile, type Operation, type Parameter, type ResolvedOperation, type Service, type TypeRef } from '@workos/oagen';
-import { HEADER_DOC } from './header.js';
+import { HEADER_DOC, file } from './header.js';
 import { docstring, fieldName, identifier, paramName, pyStr, snakeCase, Uniquer } from './naming.js';
-import type { EmitterOptions } from './options.js';
-import type { Packages } from './packages.js';
+import { optionsOf, type EmitterOptions } from './options.js';
+import { packagesOf, type Packages } from './packages.js';
 import { paginationFor, type PaginationDescriptor } from './pagination.js';
 import { parseRateLimit } from './ratelimits.js';
 import { isVoid, renderTypeRef, unwrap, type TypeContext } from './types.js';
@@ -308,7 +308,9 @@ export function resourceModuleOf(name: string, ops: ResolvedOperation[], package
   return identifier(pkg.replace(/\./g, '_'));
 }
 
-export function generateResources(_services: Service[], ctx: EmitterContext, packages: Packages, opts: EmitterOptions, notes: string[] = []): GeneratedFile[] {
+export function generateResources(_services: Service[], ctx: EmitterContext, notes: string[] = []): GeneratedFile[] {
+  const packages = packagesOf(ctx);
+  const opts = optionsOf(ctx);
   const files: GeneratedFile[] = [];
   const index: ResourceIndex[] = [];
   const modules = new Uniquer();
@@ -342,7 +344,7 @@ export function generateResources(_services: Service[], ctx: EmitterContext, pac
       plans.push(planOperation(ctx, r, name, pkg, tctx, opts, notes));
     }
     const imports = [...usedPkgs].sort().map((p) => importLine(p, packages));
-    files.push({ path: `resources/${module}.py`, content: renderResourceModule(ctx, service, plans, module, imports, packages) });
+    files.push(file(`resources/${module}.py`, renderResourceModule(ctx, service, plans, module, imports, packages)));
     index.push({
       module,
       service: service.name,
@@ -350,7 +352,7 @@ export function generateResources(_services: Service[], ctx: EmitterContext, pac
       operations: plans.map((p) => ({ operationId: p.op.name, method: p.name, httpMethod: p.op.httpMethod.toUpperCase(), path: p.op.path, paginated: p.pagination !== null, rateLimit: p.rateLimit !== null })),
     });
   }
-  files.push({ path: 'resources/__init__.py', content: renderResourcesInit(ctx, index) });
+  files.push(file('resources/__init__.py', renderResourcesInit(ctx, index)));
   return files;
 }
 

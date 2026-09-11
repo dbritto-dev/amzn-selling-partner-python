@@ -41,14 +41,15 @@ jobs:
           uv sync --extra dev
           cd codegen && npm ci --ignore-scripts
 
-      - name: Type-check and test the generator
+      - name: Build, type-check and test the emitter
         run: |
           cd codegen
+          npm run build
           npm run typecheck
           npm test
 
-      - name: Regenerate
-        run: cd codegen && npm run sdk:generate
+      - name: Regenerate (spec build + oagen generate + ruff)
+        run: cd codegen && npm run regenerate
 
       - name: No drift between the pinned specs and the committed code
         run: |

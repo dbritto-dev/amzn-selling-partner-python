@@ -1,10 +1,10 @@
 /** `client.py`: the top-level client (`--namespace`), one lazily created resource per service. */
 import type { ApiSpec, EmitterContext, GeneratedFile } from '@workos/oagen';
 import { compareVersions } from '../amazon.js';
-import { HEADER_DOC } from './header.js';
+import { HEADER_DOC, file } from './header.js';
 import { docstring, pyStr } from './naming.js';
-import type { EmitterOptions } from './options.js';
-import type { Packages } from './packages.js';
+import { optionsOf, type EmitterOptions } from './options.js';
+import { packagesOf, type Packages } from './packages.js';
 import { apiVersionOf } from './pagination.js';
 import { resourceGroups, resourceModuleOf } from './resources.js';
 
@@ -122,6 +122,6 @@ export function renderClientModule(spec: ApiSpec, ctx: EmitterContext, packages:
   return out.join('\n');
 }
 
-export function generateClient(spec: ApiSpec, ctx: EmitterContext, packages: Packages, opts: EmitterOptions): GeneratedFile[] {
-  return [{ path: 'client.py', content: renderClientModule(spec, ctx, packages, opts) }];
+export function generateClient(spec: ApiSpec, ctx: EmitterContext): GeneratedFile[] {
+  return [file('client.py', renderClientModule(spec, ctx, packagesOf(ctx), optionsOf(ctx)))];
 }

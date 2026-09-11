@@ -1,9 +1,9 @@
-/** Plugin bundle (what `oagen init` scaffolds): every emitter this project provides. */
-import type { OagenConfig } from '@workos/oagen';
+import { registerEmitter } from '@workos/oagen';
 import { pythonEmitter } from './python/index.js';
 
-export const plugin: Pick<OagenConfig, 'emitters' | 'extractors' | 'smokeRunners'> = {
-  emitters: [pythonEmitter],
-  extractors: [],
-  smokeRunners: {},
-};
+registerEmitter(pythonEmitter);
+
+// The oagen CLI bundles its own copy of the registry, so it registers the
+// emitters listed here (as `oagen init` scaffolds) rather than seeing the
+// registerEmitter() call above, which serves library users of this package.
+export const myEmittersPlugin = { emitters: [pythonEmitter] };
