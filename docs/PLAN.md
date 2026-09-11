@@ -11,7 +11,7 @@ in `../MIGRATION.md`.
 ## Decisions
 
 1. Package and distribution names unchanged (`amzn-selling-partner` /
-   `amzn_selling_partner`); Python 3.10+ (like the OpenAI SDK).
+   `amzn_selling_partner`); Python 3.10+.
 2. Runtime dependencies are `httpx2` and `pydantic>=2` only; `aiohttp` is an
    extra. Schemas, validation and parsing use pydantic v2.
 3. The SDK is generated, standalone, at build time (decision of 2026-09-11,
@@ -138,7 +138,7 @@ modules assembled in `index.ts`, plus three small support modules.
   whose transport carries the connection retries; the module adds the
   status-code retries with backoff (constants from the SDK behavior in the
   IR), per-operation token buckets, the `Auth` hook, response decoding,
-  `paginate` / `apaginate` and `DefaultAioHttpClient` (aiohttp as an httpx2 transport, opted into via `http_client=` as in the OpenAI SDK).
+  `paginate` / `apaginate` and `DefaultAioHttpClient` (aiohttp as an httpx2 transport, opted into via `http_client=`).
 * `index.ts` – assembles the `Emitter`; `naming.ts`, `pagination.ts`
   (token-parameter heuristic + the Amazon override table) and `ratelimits.ts`
   (usage-plan tables) support the above.

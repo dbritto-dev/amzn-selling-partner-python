@@ -468,7 +468,7 @@ class _BaseHttpClient:
         if options is not None and options.auth is not None:
             extensions["auth_hints"] = options.auth
         # httpx2 joins the path onto the client's base_url and encodes the URL, the query and the
-        # headers; a user-supplied client (as with the OpenAI SDK's http_client=) also contributes
+        # headers; a user-supplied client (http_client=) also contributes
         # its own defaults (headers, cookies, params) and gets the absolute URL since its base_url is its own.
         url = path if self._owns_client else self._base_url + path
         request: httpx2.Request = self._http().build_request(
@@ -887,7 +887,7 @@ async def apaginate(
 
 
 class DefaultAioHttpClient(httpx2.AsyncClient):
-    """An ``httpx2.AsyncClient`` on the aiohttp transport, for ``http_client=`` (as ``openai.DefaultAioHttpClient``).
+    """An ``httpx2.AsyncClient`` on the aiohttp transport, for ``http_client=``.
 
     Needs the ``aiohttp`` extra. Keyword arguments go to ``httpx2.AsyncClient``
     (``proxy``, ``event_hooks``, ``headers``, ...); ``limits`` and ``verify`` configure the transport.

@@ -128,8 +128,8 @@ async def main() -> None:
 asyncio.run(main())
 ```
 
-The async client runs on httpx2's own transport; as in the OpenAI SDK, aiohttp
-is opted into by passing a client on its transport (the `aiohttp` extra):
+The async client runs on httpx2's own transport; aiohttp is opted into by
+passing a client on its transport (the `aiohttp` extra):
 `AsyncSellingPartner(http_client=DefaultAioHttpClient())`. `async with` closes
 the connection pool, `await client.aclose()` does the same by hand.
 
@@ -239,7 +239,7 @@ The sync client takes the `httpx2.Client` counterparts; a `MockTransport` is
 how the tests run without a network. Any other httpx2 transport option
 (`limits`, `verify`, `proxy`, `http2`, ...) is passed through:
 `AsyncSellingPartner(limits=httpx2.Limits(max_connections=100), http2=True)`.
-`http_client=` works as in the OpenAI SDK: the client you pass is used as is
+`http_client=` takes your own httpx2 client, used as is
 (its transport, proxies, event hooks, auth, default headers and cookies apply;
 the base URL, timeout and retries are the SDK's) and is yours to close.
 

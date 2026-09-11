@@ -329,7 +329,7 @@ def test_with_options_shares_the_pool_and_drops_cached_resources() -> None:
     assert not client.http.is_closed
 
 
-def test_user_supplied_http_client_keeps_its_defaults_like_the_openai_sdk() -> None:
+def test_user_supplied_http_client_keeps_its_defaults() -> None:
     seen: list[httpx2.Request] = []
 
     def handler(request: httpx2.Request) -> httpx2.Response:
@@ -350,13 +350,13 @@ def test_user_supplied_http_client_keeps_its_defaults_like_the_openai_sdk() -> N
     assert request.headers["x-tenant"] == "t1" and request.headers["cookie"] == "session=s"  # the client's defaults apply
     assert request.headers["accept"] == "application/json"  # ours win where they overlap
     assert hooks == ["/v3/pets/1"]  # and its event hooks run
-    assert request.extensions["timeout"]["read"] == 30.0  # the SDK's timeout, not the client's, as with the OpenAI SDK
+    assert request.extensions["timeout"]["read"] == 30.0  # the SDK's timeout, not the client's
     assert client.http_client is mine
     client.close()
     assert not mine.is_closed  # not ours to close
 
 
-def test_aiohttp_is_explicit_like_the_openai_sdk() -> None:
+def test_aiohttp_is_an_explicit_http_client() -> None:
     from petstore_sdk import DefaultAioHttpClient
 
     default = AsyncClient(base_url=BASE)
