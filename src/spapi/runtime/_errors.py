@@ -81,6 +81,25 @@ class APIStatusError(APIError):
         return f"{self.message}{rid}"
 
 
+class APIResponseValidationError(APIError):
+    """A success response whose body did not validate against the spec's schema."""
+
+    response: httpx2.Response
+    body: bytes
+    cause: BaseException
+
+    def __init__(self, message: str, *, response: httpx2.Response, cause: BaseException) -> None:
+        super().__init__(message, request=response.request)
+        self.response = response
+        self.body = response.content
+        self.cause = cause
+        self.__cause__ = cause
+
+    @property
+    def status_code(self) -> int:
+        return self.response.status_code
+
+
 class BadRequestError(APIStatusError):
     pass
 

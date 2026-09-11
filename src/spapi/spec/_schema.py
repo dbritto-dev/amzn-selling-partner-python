@@ -2,6 +2,7 @@
 
 from __future__ import annotations
 
+import logging
 import posixpath
 import re
 from collections.abc import Mapping
@@ -9,6 +10,8 @@ from typing import Any
 
 from .ir import Discriminator, Schema
 from .refs import RefError, RefResolver
+
+log = logging.getLogger("spapi.spec")
 
 _SCHEMA_CONTAINERS = ("/definitions/", "/components/schemas/", "/$defs/")
 _SAFE_NAME = re.compile(r"[^A-Za-z0-9_]")
@@ -27,6 +30,7 @@ class SchemaConverter:
         self.schemas: dict[str, Schema] = {}
         self._in_progress: set[str] = set()
         self._ref_names: dict[tuple[str, str], str] = {}  # (uri, pointer) -> name
+        self.dangling_refs: list[str] = []
 
     # -- named schemas -------------------------------------------------------------
 
@@ -81,8 +85,17 @@ class SchemaConverter:
             return Schema(name=name, type="null")  # nothing validates; closest IR
 
         ref = node.get("$ref")
+        if ref is None and isinstance(node.get("#ref"), str):  # misspelled key seen in vendor schemas
+            ref = node["#ref"]
+            log.warning("%s: '#ref' used instead of '$ref' (%s); accepting it", base_uri, ref)
         if isinstance(ref, str):
-            target_name = self.name_for_ref(ref, base_uri)
+            try:
+                target_name = self.name_for_ref(ref, base_uri)
+            except RefError as exc:
+                # dangling reference (seen in vendor schemas): keep loading, type as Any
+                log.warning("%s: %s; treating as untyped", base_uri, exc)
+                self.dangling_refs.append(ref)
+                return Schema(name=name, description=node.get("description"), extensions=extensions_of(node))
             if target_name is not None:
                 extra = {k: v for k, v in node.items() if k != "$ref"}
                 return Schema(

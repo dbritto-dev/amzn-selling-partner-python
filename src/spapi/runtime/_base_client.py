@@ -27,6 +27,7 @@ from pydantic_core import from_json
 
 from ._errors import (
     APIConnectionError,
+    APIResponseValidationError,
     APIStatusError,
     APITimeoutError,
     RateLimitError,
@@ -194,6 +195,8 @@ class BaseClient:
         else:
             t = options.timeout if isinstance(options.timeout, httpx2.Timeout) else httpx2.Timeout(options.timeout)
             extensions = {"timeout": t.as_dict()}
+        if options.auth is not None:
+            extensions = {**extensions, "spapi_auth": options.auth}
         return httpx2.Request(op.method, url, headers=headers, content=content, extensions=extensions)
 
     # -- retry policy ----------------------------------------------------------------
@@ -241,7 +244,10 @@ class BaseClient:
             else:
                 result = body
         else:
-            result = op.decoder_for(response.status_code).decode(body, lambda: response.text)
+            try:
+                result = op.decoder_for(response.status_code).decode(body, lambda: response.text)
+            except ValidationError as exc:
+                raise APIResponseValidationError(f"{op.operation_id}: response body does not match the spec: {exc}", response=response, cause=exc) from exc
         pagination = self._pagination_for(op, options)
         if pagination is None:
             return result

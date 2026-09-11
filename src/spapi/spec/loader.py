@@ -11,6 +11,7 @@ from __future__ import annotations
 import logging
 import os
 import pathlib
+import re
 import time
 from collections.abc import Iterable, Mapping
 from typing import Any
@@ -43,9 +44,9 @@ def normalize_jsonschema(raw: Mapping[str, Any], *, source: str, digest: str) ->
     conv.register_all(raw.get("definitions"), source, "/definitions")
     conv.register_all(raw.get("$defs"), source, "/$defs")
     stem = pathlib.Path(source).stem
-    name = str(raw.get("title") or stem).replace(" ", "")
+    name = re.sub(r"[^0-9A-Za-z_]", "_", stem) or "Root"
     if name in conv.schemas:
-        name = stem
+        name = f"{name}Root"
     conv.schemas[name] = conv.convert(raw, source, name=name)
     return Document(
         title=name,

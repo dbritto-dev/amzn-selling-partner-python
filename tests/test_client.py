@@ -152,7 +152,7 @@ def test_default_headers_and_base_url_from_spec() -> None:
     api.list_pets(x_request_id="rid")
     assert seen[-1].headers["x-request-id"] == "rid"
     api.get_pet(pet_id=3, request_options=RequestOptions(extra_headers={"X-Extra": "e"}, extra_query={"q": "1 2"}))
-    assert seen[1].headers["x-extra"] == "e" and str(seen[1].url).endswith("/pets/3?q=1%202")
+    assert seen[-1].headers["x-extra"] == "e" and str(seen[-1].url).endswith("/pets/3?q=1%202")
 
 
 def test_json_body_and_status_specific_decoder() -> None:

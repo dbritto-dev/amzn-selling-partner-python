@@ -12,6 +12,7 @@ from typing import TYPE_CHECKING, Any
 from .runtime._errors import (
     APIConnectionError,
     APIError,
+    APIResponseValidationError,
     APIStatusError,
     APITimeoutError,
     AuthenticationError,
@@ -37,6 +38,7 @@ __all__ = [
     "NOT_GIVEN",
     "APIConnectionError",
     "APIError",
+    "APIResponseValidationError",
     "APIStatusError",
     "APITimeoutError",
     "AsyncClient",

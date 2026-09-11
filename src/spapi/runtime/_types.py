@@ -51,6 +51,10 @@ class RequestOptions:
     max_retries: int | None = None
     paginate: Pagination | None | NotGiven = NOT_GIVEN
     raw: bool = False
+    #: free-form hints for the auth hook (e.g. ``{"rdt": ["buyerInfo"]}`` for
+    #: the Amazon plugin); passed to the transport layer as
+    #: ``request.extensions["spapi_auth"]``.
+    auth: Mapping[str, Any] | None = None
 
 
 DEFAULT_OPTIONS: Final = RequestOptions()
