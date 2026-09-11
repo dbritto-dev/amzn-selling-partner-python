@@ -15,10 +15,10 @@ import email.utils
 import logging
 import random
 import time
-from collections.abc import Mapping
+from collections.abc import Awaitable, Mapping
 from dataclasses import dataclass, replace
 from types import TracebackType
-from typing import TYPE_CHECKING, Any, Self
+from typing import TYPE_CHECKING, Any
 from urllib.parse import quote
 
 import httpx2
@@ -40,6 +40,8 @@ from ._transports import DEFAULT_LIMITS, DEFAULT_TIMEOUT, async_transport, sync_
 from ._types import DEFAULT_OPTIONS, NOT_GIVEN, HeaderPairs, RequestOptions
 
 if TYPE_CHECKING:
+    from typing_extensions import Self
+
     from ..compile.operations import CompiledOp
     from ._auth import AsyncAuthHook, AuthHook
 
@@ -299,6 +301,17 @@ class BaseClient:
         return cls(message, response=response, body=parsed, request_id=request_id)
 
 
+async def _with_deadline(awaitable: Awaitable[httpx2.Response], total: float | None) -> httpx2.Response:
+    """Apply an overall deadline (``asyncio.timeout`` on 3.11+, ``wait_for`` on 3.10)."""
+    if total is None:
+        return await awaitable
+    timeout_cm = getattr(asyncio, "timeout", None)
+    if timeout_cm is not None:
+        async with timeout_cm(total):
+            return await awaitable
+    return await asyncio.wait_for(awaitable, total)
+
+
 def _parse_retry_after(value: str | None) -> float | None:
     if not value:
         return None
@@ -482,9 +495,8 @@ class AsyncAPIClient(BaseClient):
                 if extra:
                     request.headers.update(extra)
             try:
-                async with asyncio.timeout(total):
-                    response = await client.send(request, stream=stream)
-            except (httpx2.TimeoutException, TimeoutError) as exc:
+                response = await _with_deadline(client.send(request, stream=stream), total)
+            except (httpx2.TimeoutException, TimeoutError, asyncio.TimeoutError) as exc:
                 if attempt >= retries:
                     raise APITimeoutError(request=request, cause=exc) from exc
                 delay = self._backoff(attempt)

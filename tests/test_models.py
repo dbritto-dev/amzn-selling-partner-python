@@ -45,7 +45,7 @@ def test_decode_and_encode_roundtrip(ns) -> None:
         "extra": 5,
     }
     pet = TypeAdapter(ns.Pet).validate_json(json.dumps(body).encode())
-    assert pet.created_at == datetime.datetime(2020, 1, 1, tzinfo=datetime.UTC)
+    assert pet.created_at == datetime.datetime(2020, 1, 1, tzinfo=datetime.timezone.utc)
     assert pet.birthday == datetime.date(2020, 1, 2)
     assert pet.photo == b"hello"
     assert pet.category.parent.name == "root"

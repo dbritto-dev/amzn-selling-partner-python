@@ -21,7 +21,7 @@ pip install amzn-selling-partner            # httpx2 + pydantic
 pip install "amzn-selling-partner[aiohttp]"  # + aiohttp transport for the async client
 ```
 
-Python 3.12 or later. The import name is `spapi`.
+Python 3.10 or later. The import name is `spapi`.
 
 ## Authentication
 

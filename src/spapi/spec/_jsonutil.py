@@ -4,9 +4,9 @@ without sprinkling casts through the normalisers)."""
 from __future__ import annotations
 
 from collections.abc import Mapping
-from typing import Any, cast
+from typing import Any, TypeAlias, cast
 
-type JsonObject = Mapping[str, Any]
+JsonObject: TypeAlias = Mapping[str, Any]
 
 
 def as_object(value: object) -> JsonObject | None:

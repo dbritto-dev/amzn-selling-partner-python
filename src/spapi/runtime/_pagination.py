@@ -12,7 +12,7 @@ from __future__ import annotations
 
 from collections.abc import AsyncIterator, Callable, Iterator
 from dataclasses import dataclass, field
-from typing import TYPE_CHECKING, Any, cast
+from typing import TYPE_CHECKING, Any, Generic, TypeVar, cast
 
 from ._types import NOT_GIVEN, NotGiven
 
@@ -94,7 +94,10 @@ def make_getter(path: str, *, python_names: Callable[[str], str] | None = None) 
     return getn
 
 
-class _PageBase[T]:
+T = TypeVar("T")
+
+
+class _PageBase(Generic[T]):
     __slots__ = ("_client", "_kwargs", "_options", "_op", "_raw_mode", "_spec", "raw")
 
     raw: Any
@@ -153,7 +156,7 @@ class _PageBase[T]:
         return f"<{type(self).__name__} items={len(self.items)} has_next={self.has_next}>"
 
 
-class SyncPage[T](_PageBase[T]):
+class SyncPage(_PageBase[T]):
     __slots__ = ()
 
     _client: SyncAPIClient
@@ -178,7 +181,7 @@ class SyncPage[T](_PageBase[T]):
         return list(self)
 
 
-class AsyncPage[T](_PageBase[T]):
+class AsyncPage(_PageBase[T]):
     __slots__ = ()
 
     _client: AsyncAPIClient

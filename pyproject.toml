@@ -12,6 +12,8 @@ classifiers = [
   "Operating System :: OS Independent",
   "Programming Language :: Python :: 3",
   "Programming Language :: Python :: 3 :: Only",
+  "Programming Language :: Python :: 3.10",
+  "Programming Language :: Python :: 3.11",
   "Programming Language :: Python :: 3.12",
   "Programming Language :: Python :: 3.13",
   "Topic :: Internet :: WWW/HTTP",
@@ -23,7 +25,7 @@ dependencies = [
   "pydantic>=2.9",
 ]
 readme = "README.md"
-requires-python = ">=3.12"
+requires-python = ">=3.10"
 
 [project.optional-dependencies]
 aiohttp = ["aiohttp[speedups]>=3.10", "httpx-aiohttp[httpx2]>=0.2"]
@@ -47,7 +49,7 @@ module-name = ["spapi", "amzn_selling_partner"]
 
 [tool.ruff]
 line-length = 140
-target-version = "py312"
+target-version = "py310"
 exclude = ["build", ".venv", ".nox", "spec", "stubs", "*.pyi"]
 
 [tool.ruff.lint]
@@ -67,7 +69,7 @@ venvPath = "."
 venv = ".venv"
 stubPath = "stubs"
 exclude = ["**/__pycache__"]
-pythonVersion = "3.12"
+pythonVersion = "3.10"
 typeCheckingMode = "strict"
 reportMissingModuleSource = false
 

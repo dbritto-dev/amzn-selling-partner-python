@@ -41,7 +41,7 @@ class Region(enum.Enum):
         return self.sandbox_endpoint if sandbox else self.endpoint
 
 
-class Marketplace(enum.StrEnum):
+class Marketplace(str, enum.Enum):
     """Marketplace identifiers (value) with their region and country code."""
 
     # North America
@@ -70,6 +70,9 @@ class Marketplace(enum.StrEnum):
     SG = "A19VAU5U5O7RUS"
     AU = "A39IBJ37TRP1C6"
     JP = "A1VC38T7YXB528"
+
+    def __str__(self) -> str:
+        return str(self.value)
 
     @property
     def region(self) -> Region:

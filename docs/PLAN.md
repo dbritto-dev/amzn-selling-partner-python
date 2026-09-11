@@ -36,10 +36,9 @@ the ones where I picked a default that you may want to change.
    kept as a compatibility package. README will say `pip install amzn-selling-partner`
    / `amzn-selling-partner[aiohttp]` and `import spapi`. If you can obtain the
    `spapi` PyPI name, only `pyproject.toml` changes.
-2. **DECISION – Python floor 3.12.** The current package advertises 3.10–3.13; the
-   new one is 3.12+ as requested (needed for `asyncio.timeout`, PEP 695 generics and
-   the `frozen=True, slots=True` dataclass performance path). CI matrix becomes
-   3.12 / 3.13. Recorded in `MIGRATION.md`.
+2. **DECISION – Python floor 3.10** (changed after review: "support 3.10 like the
+   OpenAI SDK"). `asyncio.timeout` is used on 3.11+ with an `asyncio.wait_for`
+   fallback on 3.10; `StrEnum`/PEP 695 syntax are avoided. CI matrix 3.10–3.13.
 3. **DECISION – drop AWS SigV4 / boto3.** SP-API stopped requiring AWS Signature V4
    in 2023; the current `ClientSessionAuth` still assumes an IAM role and signs every
    request. The new auth is LWA-only (`x-amz-access-token`). `boto3`,

@@ -8,7 +8,7 @@ thin wrappers, but several things changed.
 
 | Area | 0.1.x | 0.2 |
 |---|---|---|
-| Python | 3.10+ | **3.12+** |
+| Python | 3.10+ | 3.10+ (unchanged) |
 | HTTP | `requests` | `httpx2` (sync and async) |
 | Models | pydantic 1 (`.dict()`, `class Config`) | pydantic 2, generated from the specs (`.model_dump()`, frozen, `extra="allow"`) |
 | Auth | LWA + AWS Signature V4 (boto3, `requests_aws4auth`) | **LWA only.** The `aws_*` constructor arguments are accepted and ignored with a `DeprecationWarning`; `ClientSessionAuth` / `ClientSessionAuthTemporaryCredentials` raise `NotImplementedError` |

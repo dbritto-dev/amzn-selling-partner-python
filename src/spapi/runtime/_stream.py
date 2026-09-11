@@ -9,9 +9,12 @@ from __future__ import annotations
 from collections.abc import AsyncIterator, Iterator
 from dataclasses import dataclass
 from types import TracebackType
-from typing import Any, Self
+from typing import TYPE_CHECKING, Any
 
 import httpx2
+
+if TYPE_CHECKING:
+    from typing_extensions import Self
 
 CHUNK_SIZE = 64 * 1024
 

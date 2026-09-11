@@ -10,7 +10,7 @@ from __future__ import annotations
 import enum
 from collections.abc import Mapping
 from dataclasses import dataclass
-from typing import TYPE_CHECKING, Any, Final, Literal
+from typing import TYPE_CHECKING, Any, Final, Literal, TypeAlias
 
 if TYPE_CHECKING:
     import httpx2
@@ -37,7 +37,7 @@ class NotGiven(enum.Enum):
 
 NOT_GIVEN: Final = NotGiven.NOT_GIVEN
 
-type HeaderPairs = tuple[tuple[str, str], ...]
+HeaderPairs: TypeAlias = tuple[tuple[str, str], ...]
 
 
 @dataclass(slots=True, frozen=True, kw_only=True)

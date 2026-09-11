@@ -9,7 +9,7 @@ from typing import Any
 from spapi.plugins.amazon_spapi import default_spec_dir
 
 
-class ReportType(enum.StrEnum):
+class ReportType(str, enum.Enum):
     VENDOR_REAL_TIME_INVENTORY_REPORT = "GET_VENDOR_REAL_TIME_INVENTORY_REPORT"
     VENDOR_REAL_TIME_TRAFFIC_REPORT = "GET_VENDOR_REAL_TIME_TRAFFIC_REPORT"
     VENDOR_REAL_TIME_SALES_REPORT = "GET_VENDOR_REAL_TIME_SALES_REPORT"
@@ -20,7 +20,7 @@ class ReportType(enum.StrEnum):
     VENDOR_INVENTORY_REPORT = "GET_VENDOR_INVENTORY_REPORT"
 
 
-class MarketPlaceId(enum.StrEnum):
+class MarketPlaceId(str, enum.Enum):
     CANADA = "A2EUQ1WTGCTBG2"
     UNITED_STATES_OF_AMERICA = "ATVPDKIKX0DER"
     MEXICO = "A1AM78C64UM0Y8"
@@ -44,7 +44,7 @@ class MarketPlaceId(enum.StrEnum):
     JAPAN = "A1VC38T7YXB528"
 
 
-class ProcessingStatus(enum.StrEnum):
+class ProcessingStatus(str, enum.Enum):
     CANCELLED = "CANCELLED"
     DONE = "DONE"
     FATAL = "FATAL"
@@ -52,11 +52,11 @@ class ProcessingStatus(enum.StrEnum):
     IN_QUEUE = "IN_QUEUE"
 
 
-class CompressionAlgorithm(enum.StrEnum):
+class CompressionAlgorithm(str, enum.Enum):
     GZIP = "GZIP"
 
 
-class SchedulePeriod(enum.StrEnum):
+class SchedulePeriod(str, enum.Enum):
     FIVE_MINUTES = "PT5M"
     FIFTEEN_MINUTES = "PT15M"
     THIRTY_MINUTES = "PT30M"
@@ -77,7 +77,7 @@ class SchedulePeriod(enum.StrEnum):
     ONE_MONTH = "P1M"
 
 
-class ReportPeriod(enum.StrEnum):
+class ReportPeriod(str, enum.Enum):
     DAY = "DAY"
     WEEK = "WEEK"
     MONTH = "MONTH"
@@ -85,12 +85,12 @@ class ReportPeriod(enum.StrEnum):
     YEAR = "YEAR"
 
 
-class DistributorView(enum.StrEnum):
+class DistributorView(str, enum.Enum):
     SOURCING = "SOURCING"
     MANUFACTURING = "MANUFACTURING"
 
 
-class SellingProgram(enum.StrEnum):
+class SellingProgram(str, enum.Enum):
     RETAIL = "RETAIL"
     BUSINESS = "BUSINESS"
     FRESH = "FRESH"

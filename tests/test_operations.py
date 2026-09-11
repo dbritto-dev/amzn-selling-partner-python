@@ -53,7 +53,7 @@ def test_url_building_styles(oas, sw2) -> None:
     )
     assert oas["get_pet"].build_url("", {"pet_id": 7, "include": ["a", "b"]}) == "/pets/7?include=a,b"
     assert (
-        oas["list_animals"].build_url("", {"ids": [1, 2, 3], "since": datetime.datetime(2020, 1, 1, tzinfo=datetime.UTC)})
+        oas["list_animals"].build_url("", {"ids": [1, 2, 3], "since": datetime.datetime(2020, 1, 1, tzinfo=datetime.timezone.utc)})
         == "/animals?ids=1%7C2%7C3&since=2020-01-01T00%3A00%3A00.000Z"
     )
     assert (
