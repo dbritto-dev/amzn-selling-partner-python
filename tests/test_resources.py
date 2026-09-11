@@ -128,9 +128,9 @@ def client(cap: _Capture) -> Client:
 
 def test_url_building_styles(client: Client, cap: _Capture) -> None:
     client.petstore_v3.list_pets(limit=5, tags=["a", "b c"], status="sold")
-    assert str(cap.last.url) == "https://h/v3/pets?limit=5&tags=a&tags=b%20c&status=sold"
+    assert str(cap.last.url) == "https://h/v3/pets?limit=5&tags=a&tags=b+c&status=sold"
     client.petstore_v3.get_pet(pet_id=7, include=["a", "b"])
-    assert str(cap.last.url) == "https://h/v3/pets/7?include=a,b"  # csv: joining commas stay raw
+    assert str(cap.last.url) == "https://h/v3/pets/7?include=a%2Cb"  # csv, percent-encoded by httpx2
     client.petstore_v3.list_animals(ids=[1, 2, 3], since=datetime.datetime(2020, 1, 1, tzinfo=datetime.timezone.utc))
     assert str(cap.last.url) == "https://h/v3/animals?ids=1%7C2%7C3&since=2020-01-01T00%3A00%3A00.000Z"
     client.petstore_v3.get_label(label="a/b", filter={"x": "1", "y": "2"})
@@ -138,7 +138,7 @@ def test_url_building_styles(client: Client, cap: _Capture) -> None:
     client.petstore_v2.list_pets(tags=["a", "b"], ids=[1, 2], codes=["x", "y"], next_token="t/1")
     url = str(cap.last.url)
     assert url.startswith("https://h/v2/pets?") and set(url.split("?")[1].split("&")) == {
-        "Tags=a,b",
+        "Tags=a%2Cb",
         "Ids=1",
         "Ids=2",
         "Codes=x%7Cy",
@@ -227,4 +227,4 @@ def test_async_client_parity() -> None:
     import asyncio
 
     assert asyncio.run(go()).id == 1
-    assert str(cap.last.url) == "https://h/v3/pets/7?include=a,b"
+    assert str(cap.last.url) == "https://h/v3/pets/7?include=a%2Cb"

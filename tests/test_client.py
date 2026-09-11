@@ -72,7 +72,7 @@ def test_default_headers_and_base_url() -> None:
     api.list_pets(x_request_id="rid")
     assert seen[-1].headers["x-request-id"] == "rid"
     api.get_pet(pet_id=3, request_options=http_client.RequestOptions(extra_headers={"X-Extra": "e"}, extra_query={"q": "1 2"}))
-    assert seen[-1].headers["x-extra"] == "e" and str(seen[-1].url).endswith("/v3/pets/3?q=1%202")
+    assert seen[-1].headers["x-extra"] == "e" and str(seen[-1].url).endswith("/v3/pets/3?q=1+2")
 
 
 def test_json_body_and_status_specific_decoder() -> None:
@@ -258,20 +258,6 @@ def test_async_cancellation_propagates() -> None:
     asyncio.run(go())
 
 
-def test_async_total_timeout_maps_to_api_timeout() -> None:
-    async def slow_handler(r: httpx2.Request) -> httpx2.Response:
-        await asyncio.sleep(1)
-        return httpx2.Response(200, json={})
-
-    async def go() -> None:
-        client = AsyncClient(base_url=BASE, transport=httpx2.MockTransport(slow_handler), total_timeout=0.05, max_retries=0)
-        with pytest.raises(errors.APITimeoutError):
-            await client.petstore_v3.get_pet(pet_id=1)
-        await client.aclose()
-
-    asyncio.run(go())
-
-
 def test_close_releases_pool() -> None:
     class Recording(httpx2.MockTransport):
         closed = False
@@ -339,7 +325,5 @@ def test_with_options_shares_the_pool_and_drops_cached_resources() -> None:
     derived.petstore_v3.get_pet(pet_id=1)
     client.petstore_v3.get_pet(pet_id=1)
     assert calls == ["b", "-"]
-    with pytest.raises(TypeError, match="unknown option"):
-        client.with_options(bogus=1)
     derived.close()  # does not close the shared pool
     assert not client.http.is_closed

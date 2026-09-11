@@ -285,13 +285,13 @@ export function renderHttpModule(ctx: EmitterContext, opts: EmitterOptions): str
   const timeoutEnv = sdk.timeout.timeoutEnvVar;
   const timeoutExpr = timeoutEnv ? `float(os.environ.get(${pyStr(timeoutEnv)}, ${sdk.timeout.defaultTimeoutSeconds}))` : String(sdk.timeout.defaultTimeoutSeconds);
   const rateHint = opts.rateHintHeader ? pyStr(opts.rateHintHeader) : 'None';
-  return `"""HTTP layer of the ${ctx.spec.name} SDK.
+  return `"""HTTP layer of the ${ctx.spec.name} SDK, built on httpx2.
 
-Retry, backoff and timeout policy come from the spec's SDK behavior. Every
-generated resource method builds its parameters and calls
-\`\`HttpClient.request\`\` / \`\`AsyncHttpClient.request\`\`, which encodes them,
-sends the request (auth hook, per-operation token bucket, retries) and decodes
-the response into the type the method names.
+URL and query encoding, headers, timeouts, connection pooling, proxies and
+connection retries are httpx2's. This module adds what the spec's SDK behavior
+asks for on top: retries on retryable status codes with backoff
+(\`\`Retry-After\`\` honoured), a per-operation token bucket, an auth hook that
+sees the operation, decoding into the model each method names, pagination.
 
 ${HEADER_DOC}
 """
@@ -341,8 +341,6 @@ REQUEST_ID_HEADER = ${pyStr(opts.requestIdHeader)}
 RATE_HINT_HEADER: str | None = ${rateHint}
 SDK_NAME = ${pyStr(opts.distribution)}
 
-DEFAULT_LIMITS = httpx2.Limits(max_connections=100, max_keepalive_connections=50)
-
 
 def _user_agent() -> str:
     from importlib.metadata import PackageNotFoundError, version
@@ -358,15 +356,15 @@ def _user_agent() -> str:
 
 
 def scalar(value: Any) -> str:
-    """String form of a parameter value (bool, datetime and Enum aware)."""
+    """String form of a parameter value (bool, datetime and Enum aware); httpx2 percent-encodes it."""
+    if isinstance(value, enum.Enum):  # before str: a str enum without __str__ would render as "Name.MEMBER"
+        return scalar(value.value)
     if isinstance(value, str):
         return value
     if value is True:
         return "true"
     if value is False:
         return "false"
-    if isinstance(value, enum.Enum):
-        return scalar(value.value)
     if isinstance(value, datetime.datetime):
         if value.tzinfo is None:
             return value.isoformat(timespec="milliseconds") + "Z"
@@ -386,60 +384,32 @@ def path_segment(value: Any, *, greedy: bool = False) -> str:
     return quote(scalar(value), safe="/" if greedy else "")
 
 
-class Joined(str):
-    """A delimited array parameter: the items are percent-encoded individually,
-    the delimiter stays as is (\`\`a,b\`\`, \`\`a%7Cb\`\` on the wire)."""
-
-    __slots__ = ("parts", "sep")
-
-    parts: tuple[str, ...]
-    sep: str
-
-    def __new__(cls, parts: Sequence[str], sep: str) -> Joined:
-        self = super().__new__(cls, sep.join(parts))
-        self.parts = tuple(parts)
-        self.sep = sep
-        return self
-
-    def encoded(self) -> str:
-        return quote(self.sep, safe=",").join(quote(p, safe="") for p in self.parts)
-
-
-def joined(values: Any, sep: str = ",") -> Joined | None:
+def joined(values: Any, sep: str = ",") -> str | None:
     """Join an array parameter with \`\`sep\`\` (\`\`None\`\` stays \`\`None\`\`)."""
     if values is None:
         return None
     if isinstance(values, (str, bytes)) or not isinstance(values, Sequence):
-        return Joined([scalar(values)], sep)
-    return Joined([scalar(v) for v in cast(Sequence[Any], values)], sep)
+        return scalar(values)
+    return sep.join(scalar(v) for v in cast(Sequence[Any], values))
 
 
-def _query_items(params: Mapping[str, Any] | None) -> list[tuple[str, str]]:
-    """\`\`(encoded key, encoded value)\`\` pairs; \`\`None\`\` values are omitted, lists repeat the key."""
+def _query(params: Mapping[str, Any] | None) -> list[tuple[str, str]]:
+    """\`\`(key, value)\`\` pairs for httpx2: \`\`None\`\` values are omitted, lists repeat the key."""
     out: list[tuple[str, str]] = []
     for key, value in (params or {}).items():
         if value is None:
             continue
-        k = quote(key, safe="")
-        if isinstance(value, Joined):
-            out.append((k, value.encoded()))
-        elif isinstance(value, (list, tuple)):
-            out.extend((k, quote(scalar(v), safe="")) for v in cast(Sequence[Any], value) if v is not None)
+        if isinstance(value, (list, tuple)):
+            out.extend((key, scalar(v)) for v in cast(Sequence[Any], value) if v is not None)
         elif isinstance(value, Mapping):  # deepObject style: key[prop]=value
-            for prop, v in cast(Mapping[str, Any], value).items():
-                if v is not None:
-                    out.append((f"{k}%5B{quote(str(prop), safe='')}%5D", quote(scalar(v), safe="")))
+            out.extend((f"{key}[{prop}]", scalar(v)) for prop, v in cast(Mapping[str, Any], value).items() if v is not None)
         else:
-            out.append((k, quote(scalar(value), safe="")))
+            out.append((key, scalar(value)))
     return out
 
 
-def _encode_query(query: Sequence[tuple[str, str]]) -> str:
-    return "&".join(f"{k}={v}" for k, v in query)
-
-
-def _header_items(headers: Mapping[str, Any] | None) -> list[tuple[str, str]]:
-    return [(k, scalar(v)) for k, v in (headers or {}).items() if v is not None]
+def _headers(headers: Mapping[str, Any] | None) -> dict[str, str]:
+    return {k: scalar(v) for k, v in (headers or {}).items() if v is not None}
 
 
 # -- throttling ---------------------------------------------------------------------------
@@ -642,7 +612,12 @@ def _encode_json(body: Any) -> bytes:
 
 
 class _BaseHttpClient:
-    """Everything that does not perform I/O (shared by the sync and async clients)."""
+    """Everything that does not perform I/O (shared by the sync and async clients).
+
+    Keyword arguments not listed here (\`\`limits\`\`, \`\`verify\`\`, \`\`proxy\`\`, \`\`http2\`\`, ...)
+    go to the httpx2 transport this object creates; pass \`\`transport\`\` or
+    \`\`http_client\`\` to bring your own.
+    """
 
     def __init__(
         self,
@@ -660,8 +635,7 @@ class _BaseHttpClient:
         request_id_header: str = REQUEST_ID_HEADER,
         rate_hint_header: str | None = RATE_HINT_HEADER,
         user_agent: str | None = None,
-        limits: httpx2.Limits = DEFAULT_LIMITS,
-        verify: Any = True,
+        **httpx_kwargs: Any,
     ) -> None:
         self._options: dict[str, Any] = {
             "base_url": base_url,
@@ -677,12 +651,10 @@ class _BaseHttpClient:
             "request_id_header": request_id_header,
             "rate_hint_header": rate_hint_header,
             "user_agent": user_agent,
-            "limits": limits,
-            "verify": verify,
+            **httpx_kwargs,
         }
         self._base_url = base_url.rstrip("/")
-        t = DEFAULT_TIMEOUT if timeout is None else timeout
-        self._timeout = t if isinstance(t, httpx2.Timeout) else httpx2.Timeout(t)
+        self._timeout = httpx2.Timeout(DEFAULT_TIMEOUT if timeout is None else timeout)
         self._max_retries = max_retries
         self._retry_statuses = frozenset(retry_statuses)
         self._auth = auth
@@ -690,16 +662,12 @@ class _BaseHttpClient:
         self._default_rate_limit = default_rate_limit
         self._throttler: Throttler | None = None
         self._transport = transport
+        self._httpx_kwargs = httpx_kwargs
         self._client: Any = http_client
         self._owns_client = http_client is None
         self._request_id_header = request_id_header
         self._rate_hint_header = rate_hint_header
-        self._limits = limits
-        self._verify = verify
-        pairs: list[tuple[str, str]] = [("Accept", "application/json"), ("User-Agent", user_agent or _user_agent())]
-        if default_headers:
-            pairs.extend(default_headers.items())
-        self._default_headers: tuple[tuple[str, str], ...] = tuple(pairs)
+        self._default_headers: dict[str, str] = {"Accept": "application/json", "User-Agent": user_agent or _user_agent(), **(default_headers or {})}
 
     @property
     def base_url(self) -> str:
@@ -710,7 +678,7 @@ class _BaseHttpClient:
         return self._auth
 
     @property
-    def default_headers(self) -> tuple[tuple[str, str], ...]:
+    def default_headers(self) -> Mapping[str, str]:
         return self._default_headers
 
     @property
@@ -726,23 +694,25 @@ class _BaseHttpClient:
 
     def with_options(self, **overrides: Any) -> Self:
         """A copy with some constructor options changed, sharing this client's connection pool."""
-        unknown = set(overrides) - set(self._options)
-        if unknown:
-            raise TypeError(f"unknown option(s): {', '.join(sorted(unknown))}")
         options = {**self._options, **overrides}
         if "http_client" not in overrides and "transport" not in overrides:
             options["http_client"] = self._http()
         new = type(self)(**options)
         if options["http_client"] is self._client:
             new._owns_client = False
-        if self._throttler is not None and new._throttler is not None and overrides.get("default_rate_limit", self._default_rate_limit) == self._default_rate_limit:
+        if self._throttler is not None and new._throttler is not None and options["default_rate_limit"] == self._default_rate_limit:
             new._throttler = self._throttler
         return new
 
     def _http(self) -> Any:  # pragma: no cover - overridden
         raise NotImplementedError
 
-    # -- request building --------------------------------------------------------------
+    @staticmethod
+    def _connection_retries() -> int:
+        """Connection-level retries are httpx2's (its transport backs off on connect failures)."""
+        return MAX_RETRIES if RETRY_ON_CONNECTION_ERROR else 0
+
+    # -- request building ------------------------------------------------------------------
 
     def _build(
         self,
@@ -758,34 +728,28 @@ class _BaseHttpClient:
         content_type: str | None,
         options: RequestOptions | None,
     ) -> httpx2.Request:
-        query = _query_items(params)
+        query = _query(params)
         if options is not None and options.extra_query:
-            query.extend(_query_items(options.extra_query))
-        url = self._base_url + path
-        if query:
-            url = f"{url}?{_encode_query(query)}"
-        hdrs: list[tuple[str, str]] = list(self._default_headers)
-        hdrs.extend(_header_items(headers))
+            query.extend(_query(options.extra_query))
+        hdrs = {**self._default_headers, **_headers(headers)}
         if options is not None and options.extra_headers:
-            hdrs.extend(options.extra_headers.items())
+            hdrs.update(options.extra_headers)
         body: bytes | None = None
         if json is not None:
             body = _encode_json(json)
-            hdrs.append(("Content-Type", content_type or "application/json"))
+            hdrs["Content-Type"] = content_type or "application/json"
         elif content is not None:
             body = content.encode() if isinstance(content, str) else content
-            hdrs.append(("Content-Type", content_type or "application/octet-stream"))
-        timeout = self._timeout
-        if options is not None and options.timeout is not None:
-            timeout = options.timeout if isinstance(options.timeout, httpx2.Timeout) else httpx2.Timeout(options.timeout)
+            hdrs["Content-Type"] = content_type or "application/octet-stream"
+        timeout = self._timeout if options is None or options.timeout is None else httpx2.Timeout(options.timeout)
         extensions: dict[str, Any] = {"timeout": timeout.as_dict()}
         if options is not None and options.auth is not None:
             extensions["auth_hints"] = options.auth
-        if data is not None or files is not None:
-            return httpx2.Request(method, url, headers=hdrs, data=cast(Any, data), files=files, extensions=extensions)
-        return httpx2.Request(method, url, headers=hdrs, content=body, extensions=extensions)
+        # httpx2.Request encodes the URL, the query and the headers; the client-level
+        # merging of build_request() (cookies, base URL, default headers) is not needed.
+        return httpx2.Request(method, self._base_url + path, params=tuple(query) if query else None, headers=hdrs, content=body, data=cast(Any, data), files=files, extensions=extensions)
 
-    # -- retry policy ----------------------------------------------------------------------
+    # -- retry policy (status codes; connection retries are httpx2's) ----------------------
 
     @staticmethod
     def _backoff(attempt: int) -> float:
@@ -867,18 +831,8 @@ class _BaseHttpClient:
         return cls(message, response=response, body=parsed, request_id=request_id, retry_after=_parse_retry_after(response.headers.get("retry-after")))
 
 
-async def _with_deadline(awaitable: Awaitable[httpx2.Response], total: float | None) -> httpx2.Response:
-    if total is None:
-        return await awaitable
-    timeout_cm = getattr(asyncio, "timeout", None)
-    if timeout_cm is not None:
-        async with timeout_cm(total):
-            return await awaitable
-    return await asyncio.wait_for(awaitable, total)
-
-
 class HttpClient(_BaseHttpClient):
-    """Synchronous HTTP client over \`\`httpx2.Client\`\` with retries, throttling and auth."""
+    """Synchronous HTTP client over \`\`httpx2.Client\`\` with status retries, throttling and auth."""
 
     _auth: Auth | None
 
@@ -890,8 +844,8 @@ class HttpClient(_BaseHttpClient):
     def _http(self) -> httpx2.Client:
         client = self._client
         if client is None:
-            transport = self._transport or httpx2.HTTPTransport(limits=self._limits, verify=self._verify)
-            client = httpx2.Client(transport=transport, timeout=self._timeout, limits=self._limits)
+            transport = self._transport or httpx2.HTTPTransport(retries=self._connection_retries(), **self._httpx_kwargs)
+            client = httpx2.Client(transport=transport, timeout=self._timeout)
             self._client = client
         return cast(httpx2.Client, client)
 
@@ -964,13 +918,7 @@ class HttpClient(_BaseHttpClient):
                 attempt += 1
                 continue
             except httpx2.TransportError as exc:
-                if not RETRY_ON_CONNECTION_ERROR or attempt >= retries:
-                    raise APIConnectionError(str(exc) or "Connection error.", request=request, cause=exc) from exc
-                delay = self._backoff(attempt)
-                log.debug("%s: connection error (%s); retry %d/%d in %.2fs", ctx.operation, exc, attempt + 1, retries, delay)
-                time.sleep(delay)
-                attempt += 1
-                continue
+                raise APIConnectionError(str(exc) or "Connection error.", request=request, cause=exc) from exc
             status = response.status_code
             if status < 400:
                 return response
@@ -989,20 +937,18 @@ class AsyncHttpClient(_BaseHttpClient):
 
     _auth: AsyncAuth | None
 
-    def __init__(self, *, prefer_aiohttp: bool = True, total_timeout: float | None = None, **kwargs: Any) -> None:
+    def __init__(self, *, prefer_aiohttp: bool = True, **kwargs: Any) -> None:
         super().__init__(**kwargs)
         self._options["prefer_aiohttp"] = prefer_aiohttp
-        self._options["total_timeout"] = total_timeout
         self._prefer_aiohttp = prefer_aiohttp
-        self._total_timeout = total_timeout
         if self._throttle_enabled:
             self._throttler = Throttler(default=self._default_rate_limit, factory=AsyncTokenBucket)
 
     def _http(self) -> httpx2.AsyncClient:
         client = self._client
         if client is None:
-            transport = self._transport or async_transport(limits=self._limits, verify=self._verify, prefer_aiohttp=self._prefer_aiohttp)
-            client = httpx2.AsyncClient(transport=transport, timeout=self._timeout, limits=self._limits)
+            transport = self._transport or async_transport(retries=self._connection_retries(), prefer_aiohttp=self._prefer_aiohttp, **self._httpx_kwargs)
+            client = httpx2.AsyncClient(transport=transport, timeout=self._timeout)
             self._client = client
         return cast(httpx2.AsyncClient, client)
 
@@ -1064,8 +1010,8 @@ class AsyncHttpClient(_BaseHttpClient):
                 if extra:
                     request.headers.update(extra)
             try:
-                response = await _with_deadline(client.send(request), self._total_timeout)
-            except (httpx2.TimeoutException, TimeoutError, asyncio.TimeoutError) as exc:
+                response = await client.send(request)
+            except httpx2.TimeoutException as exc:
                 if not RETRY_ON_TIMEOUT or attempt >= retries:
                     raise APITimeoutError(request=request, cause=exc) from exc
                 delay = self._backoff(attempt)
@@ -1074,13 +1020,7 @@ class AsyncHttpClient(_BaseHttpClient):
                 attempt += 1
                 continue
             except httpx2.TransportError as exc:
-                if not RETRY_ON_CONNECTION_ERROR or attempt >= retries:
-                    raise APIConnectionError(str(exc) or "Connection error.", request=request, cause=exc) from exc
-                delay = self._backoff(attempt)
-                log.debug("%s: connection error (%s); retry %d/%d in %.2fs", ctx.operation, exc, attempt + 1, retries, delay)
-                await asyncio.sleep(delay)
-                attempt += 1
-                continue
+                raise APIConnectionError(str(exc) or "Connection error.", request=request, cause=exc) from exc
             status = response.status_code
             if status < 400:
                 return response
@@ -1194,7 +1134,7 @@ def aiohttp_available() -> bool:
     return importlib.util.find_spec("httpx_aiohttp") is not None
 
 
-def async_transport(*, limits: httpx2.Limits = DEFAULT_LIMITS, verify: Any = True, prefer_aiohttp: bool = True) -> httpx2.AsyncBaseTransport:
+def async_transport(*, retries: int = 0, prefer_aiohttp: bool = True, **kwargs: Any) -> httpx2.AsyncBaseTransport:
     """\`\`httpx_aiohttp.AiohttpTransport\`\` when the \`\`aiohttp\`\` extra is installed, else \`\`httpx2.AsyncHTTPTransport\`\`."""
     if prefer_aiohttp:
         try:
@@ -1203,12 +1143,13 @@ def async_transport(*, limits: httpx2.Limits = DEFAULT_LIMITS, verify: Any = Tru
             pass
         else:
             hx: Any = getattr(_hat, "httpx")  # noqa: B009 - the httpx module httpx_aiohttp was written against
-            hx_limits = hx.Limits(max_connections=limits.max_connections, max_keepalive_connections=limits.max_keepalive_connections, keepalive_expiry=limits.keepalive_expiry)
-            inner: Any = _hat.AiohttpTransport(limits=hx_limits, verify=verify)
+            limits = kwargs.get("limits")
+            hx_limits = hx.Limits(max_connections=limits.max_connections, max_keepalive_connections=limits.max_keepalive_connections, keepalive_expiry=limits.keepalive_expiry) if limits is not None else hx.Limits()
+            inner: Any = _hat.AiohttpTransport(limits=hx_limits, verify=kwargs.get("verify", True))
             if hx is httpx2:  # alias_httpx() was called
                 return cast(httpx2.AsyncBaseTransport, inner)
             return _HttpxBridgeTransport(inner, hx)
-    return httpx2.AsyncHTTPTransport(limits=limits, verify=verify)
+    return httpx2.AsyncHTTPTransport(retries=retries, **kwargs)
 
 
 class _BridgedStream(httpx2.AsyncByteStream):
@@ -1258,7 +1199,6 @@ __all__ = [
     "StaticHeaderAuth",
     "Throttler",
     "TokenBucket",
-    "Joined",
     "aiohttp_available",
     "apaginate",
     "async_transport",

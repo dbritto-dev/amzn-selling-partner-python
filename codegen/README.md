@@ -18,8 +18,10 @@ test/                     vitest (inline fixture spec, the tutorial's tasks-api.
 
 Generated SDK layout (`../src/amzn_selling_partner/sdk`, and `../tests/petstore_sdk`
 for the test fixtures): `__init__.py`, `client.py` (`Client` / `AsyncClient`, one
-resource per service, `with_options()`), `_http.py` (retry, backoff and timeout
-constants from the IR's SDK behavior, token buckets, auth hook, pagination),
+resource per service, `with_options()`), `_http.py` (httpx2 does the request
+encoding, pooling, timeouts and connection retries; the module adds the
+status-code retries from the IR's SDK behavior, token buckets, the auth hook,
+decoding and pagination),
 `errors.py` (from the error policy), `models/<package>/__init__.py` (all models
 of an API version in one module, required fields first, `X | None = None`),
 `models/<package>/enums.py` (`class X(str, Enum)` with `__str__ = str.__str__`),

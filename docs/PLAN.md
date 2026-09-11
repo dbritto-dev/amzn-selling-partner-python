@@ -133,9 +133,12 @@ modules assembled in `index.ts`, plus three small support modules.
   with one lazily created resource per service, a latest-version alias per
   API and `with_options()`), `__init__.py`, `errors.py` (from the error
   policy: `BadRequestError`, ..., `RateLimitExceededError`, `ServerError`) and
-  `_http.py` (retries, backoff and timeout constants from the SDK behavior in
-  the IR, per-operation token buckets, the `Auth` hook, request encoding,
-  response decoding, `paginate` / `apaginate`, the optional aiohttp transport).
+  `_http.py`, built on httpx2: it constructs `httpx2.Request`s (URL, query
+  and header encoding are httpx2's) and sends them through an `httpx2.Client`
+  whose transport carries the connection retries; the module adds the
+  status-code retries with backoff (constants from the SDK behavior in the
+  IR), per-operation token buckets, the `Auth` hook, response decoding,
+  `paginate` / `apaginate` and the optional aiohttp transport.
 * `index.ts` – assembles the `Emitter`; `naming.ts`, `pagination.ts`
   (token-parameter heuristic + the Amazon override table) and `ratelimits.ts`
   (usage-plan tables) support the above.

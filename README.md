@@ -195,10 +195,12 @@ data["payload"]["OrderStatus"]
 
 ### Throttling and retries
 
-Each operation has a token bucket seeded from the rate/burst table in the
-Amazon documentation; 408, 429 and 5xx responses are retried with
+The HTTP layer is httpx2: connection pooling, timeouts, proxies, TLS, URL and
+query encoding and connection retries are its own (`httpx2.HTTPTransport(retries=...)`).
+On top, each operation has a token bucket seeded from the rate/burst table in
+the Amazon documentation, and 408, 429 and 5xx responses are retried with
 `Retry-After` (or Amazon's `x-amzn-RateLimit-Limit` hint) or exponential
-backoff. The policy is generated into `sdk/_http.py` from
+backoff. That policy is generated into `sdk/_http.py` from
 `sdkBehavior` in `codegen/oagen.config.ts`. Tune with
 `AsyncSellingPartner(max_retries=..., throttle=False, timeout=httpx2.Timeout(...))`
 or per call with `request_options=RequestOptions(timeout=5.0, max_retries=0)`;
@@ -233,9 +235,10 @@ client = SellingPartner(http_client=httpx2.Client(proxy="http://proxy:3128"))
 ```
 
 The sync client takes the `httpx2.Client` counterparts; a `MockTransport` is
-how the tests run without a network.
+how the tests run without a network. Any other httpx2 transport option
+(`limits`, `verify`, `proxy`, `http2`, ...) is passed through:
+`AsyncSellingPartner(limits=httpx2.Limits(max_connections=100), http2=True)`.
 
-Connection limits: `AsyncSellingPartner(limits=httpx2.Limits(max_connections=100, max_keepalive_connections=50))`.
 
 ## Using other APIs
 
