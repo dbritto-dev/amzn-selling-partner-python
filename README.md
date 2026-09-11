@@ -22,10 +22,12 @@ notification models) lives in `amzn_selling_partner.plugins.amazon_spapi`.
 ## Installation
 
 ```sh
-pip install amzn-selling-partner            # httpx2 + pydantic
-pip install "amzn-selling-partner[aiohttp]"  # + the aiohttp transport (recommended for the async client)
+pip install amzn-selling-partner
+pip install "amzn-selling-partner[aiohttp]"
 ```
 
+The package depends on `httpx2` and `pydantic` only; the `aiohttp` extra adds
+the aiohttp transport the async client prefers when it is installed.
 Python 3.10 or later.
 
 ## Authentication
@@ -53,10 +55,11 @@ Tokens API automatically. Operations that return PII only on request take an
 explicit opt-in:
 
 ```python
+from amzn_selling_partner import Marketplace
 from amzn_selling_partner.plugins.amazon_spapi import with_rdt
 
 orders = await client.orders_v0.list_orders(
-    marketplace_ids=["ATVPDKIKX0DER"],
+    marketplace_ids=[Marketplace.US],
     created_after="2024-01-01T00:00:00Z",
     request_options=with_rdt("buyerInfo", "shippingAddress"),
 )
@@ -68,15 +71,19 @@ A custom token store (for example Redis) is any object with `get(key)` and
 ## Region, marketplace and sandbox
 
 ```python
-from amzn_selling_partner.plugins.amazon_spapi import Marketplace, Region
+from amzn_selling_partner import AsyncSellingPartner, Marketplace, Region
 
-AsyncSellingPartner(region=Region.EU)                 # NA (default), EU, FE
-AsyncSellingPartner(marketplace=Marketplace.DE)        # region derived from the marketplace
-AsyncSellingPartner(region=Region.NA, sandbox=True)    # sandbox endpoint
+AsyncSellingPartner(region=Region.EU)
+AsyncSellingPartner(marketplace=Marketplace.DE)
+AsyncSellingPartner(region=Region.NA, sandbox=True)
 ```
 
-`Marketplace` is a `StrEnum` of marketplace ids (`Marketplace.US == "ATVPDKIKX0DER"`)
-with `.region` and `.country_code`.
+`Region` is `NA` (the default), `EU` or `FE`; a `marketplace` implies its
+region; `sandbox=True` selects the sandbox endpoint of the region.
+
+`Marketplace` is a `str` enum of marketplace ids (`Marketplace.US == "ATVPDKIKX0DER"`)
+with `.region` and `.country_code`; pass its members wherever an operation
+takes marketplace ids (`marketplace_ids=[Marketplace.US, Marketplace.CA]`).
 
 ## Calling operations
 
@@ -86,26 +93,36 @@ method is a coroutine named after the operation as oagen derives it
 (`list_orders`, `get_order`, `create_feed`); path parameters, the request body
 and required parameters are positional (keywords work too), optional
 parameters are keyword-only, all named after the spec's parameters in
-snake_case; request bodies are a model or a plain dict.
-`amzn_selling_partner.sdk.resources.OPERATIONS` maps Amazon's operationIds
-(`getOrders`) to the method names.
+snake_case; request bodies are a model from `amzn_selling_partner.sdk.models`
+(a plain dict with the wire names is accepted too). Every enumerated value in
+the specs is a `str` enum in the same package (`OrderOrderStatus.SHIPPED`,
+`FeedProcessingStatus.DONE`), usable as arguments and returned in responses;
+`Marketplace` covers the marketplace ids. `amzn_selling_partner.sdk.resources.OPERATIONS`
+maps Amazon's operationIds (`getOrders`) to the method names.
 
 ```python
 import asyncio
-from amzn_selling_partner import AsyncSellingPartner
+from amzn_selling_partner import AsyncSellingPartner, Marketplace
+from amzn_selling_partner.sdk.models.feeds_v2021_06_30 import CreateFeedSpecification
+from amzn_selling_partner.sdk.models.orders_v0 import OrderOrderStatus
 
 
 async def main() -> None:
     async with AsyncSellingPartner() as client:
         order = await client.orders_v0.get_order("123-1234567-1234567")
-        print(order.payload.order_status)
+        if order.payload.order_status is OrderOrderStatus.SHIPPED:
+            print("shipped")
 
         item = await client.listings_items.get_listings_item(
-            seller_id="A1SELLER", sku="MY-SKU", marketplace_ids=["ATVPDKIKX0DER"]
+            seller_id="A1SELLER", sku="MY-SKU", marketplace_ids=[Marketplace.US]
         )
 
         await client.feeds.create_feed(
-            {"feedType": "POST_PRODUCT_DATA", "marketplaceIds": ["ATVPDKIKX0DER"], "inputFeedDocumentId": "..."}
+            CreateFeedSpecification(
+                feed_type="POST_PRODUCT_DATA",
+                marketplace_ids=[Marketplace.US],
+                input_feed_document_id="...",
+            )
         )
 
 
@@ -130,11 +147,11 @@ iterator and `with` / `close()` release the pool. Both are generated from the
 same plan per operation, so they never drift apart.
 
 ```python
-from amzn_selling_partner import SellingPartner
+from amzn_selling_partner import Marketplace, SellingPartner
 
 with SellingPartner() as client:
     order = client.orders_v0.get_order("123-1234567-1234567")
-    for order in client.orders_v0.iter_list_orders(marketplace_ids=["ATVPDKIKX0DER"]):
+    for order in client.orders_v0.iter_list_orders(marketplace_ids=[Marketplace.US]):
         ...
 ```
 
@@ -147,12 +164,19 @@ of every page, following the API's `nextToken` (and dropping the other
 parameters on the next page where Amazon requires it):
 
 ```python
-page = await client.orders_v0.list_orders(marketplace_ids=["ATVPDKIKX0DER"], created_after="2024-01-01T00:00:00Z")
-page.payload.orders          # this page
-page.payload.next_token      # the NextToken, or None
+from amzn_selling_partner import Marketplace
+from amzn_selling_partner.sdk.models.orders_v0 import OrderOrderStatus
 
-async for order in client.orders_v0.iter_list_orders(marketplace_ids=["ATVPDKIKX0DER"], created_after="2024-01-01T00:00:00Z"):
-    ...                      # every order, fetching pages as needed
+page = await client.orders_v0.list_orders(
+    marketplace_ids=[Marketplace.US], created_after="2024-01-01T00:00:00Z", order_statuses=[OrderOrderStatus.UNSHIPPED]
+)
+page.payload.orders
+page.payload.next_token
+
+async for order in client.orders_v0.iter_list_orders(
+    marketplace_ids=[Marketplace.US], created_after="2024-01-01T00:00:00Z", order_statuses=[OrderOrderStatus.UNSHIPPED]
+):
+    ...
 ```
 
 Every page fetch goes through the normal request path (auth, retries,
@@ -185,12 +209,17 @@ default timeout.
 ### Documents and notifications
 
 ```python
-content = await client.documents.download_report("amzn1.tortuga.4...")              # bytes, gunzipped
-await client.documents.download_report("amzn1.tortuga.4...", path="report.tsv")     # streamed to disk
-feed = await client.documents.create_feed("POST_PRODUCT_DATA", ["ATVPDKIKX0DER"], xml, content_type="text/xml; charset=UTF-8")
+content = await client.documents.download_report("amzn1.tortuga.4...")
+await client.documents.download_report("amzn1.tortuga.4...", path="report.tsv")
+feed = await client.documents.create_feed("POST_PRODUCT_DATA", [Marketplace.US], xml, content_type="text/xml; charset=UTF-8")
 
-message = client.notifications_models.parse(sqs_body)   # typed notification payload (no I/O)
+message = client.notifications_models.parse(sqs_body)
 ```
+
+`download_report` returns the decompressed bytes, or streams to `path` when
+given; `create_feed` uploads the document and creates the feed in one call;
+`parse` turns an SQS message body into the typed notification model without
+any I/O.
 
 ### Injecting a custom HTTP client or transport
 
@@ -199,9 +228,12 @@ import httpx2
 
 client = AsyncSellingPartner(http_client=httpx2.AsyncClient(proxy="http://proxy:3128"))
 client = AsyncSellingPartner(transport=httpx2.AsyncHTTPTransport(retries=1))
-client = AsyncSellingPartner(transport=httpx2.MockTransport(handler))   # tests
-client = SellingPartner(http_client=httpx2.Client(proxy="http://proxy:3128"))   # sync: the httpx2.Client counterparts
+client = AsyncSellingPartner(transport=httpx2.MockTransport(handler))
+client = SellingPartner(http_client=httpx2.Client(proxy="http://proxy:3128"))
 ```
+
+The sync client takes the `httpx2.Client` counterparts; a `MockTransport` is
+how the tests run without a network.
 
 Connection limits: `AsyncSellingPartner(limits=httpx2.Limits(max_connections=100, max_keepalive_connections=50))`.
 
@@ -230,14 +262,20 @@ OpenAPI 3 document the generator runs against, `codegen/spec/open-api-spec.yaml`
 git clone --recurse-submodules https://github.com/dbritto-dev/amzn-selling-partner-python
 uv sync --extra dev --extra aiohttp
 uv run pytest
-uv run pyright                            # strict, generated code included
-uv run pytest benchmarks                  # pytest-benchmark: generated method vs hand-written httpx2 code
-uvx nox -s security_test                  # bandit + safety, as in CI
-uv run python -m amzn_selling_partner.sandbox_tests   # every operation against its embedded examples
+uv run pyright
+uv run pytest benchmarks
+uvx nox -s security_test
+uv run python -m amzn_selling_partner.sandbox_tests
 
-cd codegen && npm ci --ignore-scripts && npm run regenerate      # regenerate after a spec bump (Node 22)
-cd codegen && npm test && npm run typecheck                      # the generator's own tests (vitest) and types
+cd codegen && npm ci --ignore-scripts && npm run regenerate
+cd codegen && npm test && npm run typecheck
 ```
+
+pyright runs strict over the generated code too; the benchmarks assert the
+generated method stays within 10 % of hand-written `httpx2` code; the security
+session runs bandit and safety as in CI; the sandbox runner sends every
+operation its embedded examples. The last two lines regenerate the SDK after a
+spec bump (Node 24) and run the generator's own vitest suite and type check.
 
 `codegen/spec/*.yaml`, `src/amzn_selling_partner/sdk` and `tests/petstore_sdk`
 are generated; edit the generator (`codegen/src/python`), the policy

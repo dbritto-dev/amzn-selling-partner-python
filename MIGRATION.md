@@ -49,7 +49,7 @@ from amzn_selling_partner import AsyncSellingPartner
 
 async with AsyncSellingPartner(region=Region.NA) as client:
     async for order in client.vendor_orders_v1.iter_list_purchase_orders(created_after="2024-01-01T00:00:00Z"):
-        ...                                # pages are followed automatically
+        ...
     report = await client.reports.get_report("...")
     content = await client.documents.download_report(report.report_document_id)
 ```
@@ -65,6 +65,7 @@ inject it:
 ```python
 import httpx2
 from amzn_selling_partner import SellingPartner
+from amzn_selling_partner.sdk.models.orders_v0 import OrderOrderStatus
 
 def handler(request: httpx2.Request) -> httpx2.Response:
     if request.url.path.endswith("/auth/o2/token"):
@@ -72,7 +73,7 @@ def handler(request: httpx2.Request) -> httpx2.Response:
     return httpx2.Response(200, json={"payload": {"AmazonOrderId": "1", "PurchaseDate": "2024-01-01T00:00:00Z", "LastUpdateDate": "2024-01-01T00:00:00Z", "OrderStatus": "Shipped"}})
 
 client = SellingPartner(transport=httpx2.MockTransport(handler), client_id="id", client_secret="s", refresh_token="r")
-assert client.orders_v0.get_order(order_id="1").payload.order_status == "Shipped"
+assert client.orders_v0.get_order("1").payload.order_status is OrderOrderStatus.SHIPPED
 ```
 
 The same transport serves the LWA token endpoint, the Tokens API and

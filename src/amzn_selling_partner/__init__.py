@@ -43,7 +43,7 @@ from .sdk.errors import (
 )
 
 if TYPE_CHECKING:
-    from .plugins.amazon_spapi import AsyncSellingPartner, SellingPartner
+    from .plugins.amazon_spapi import AsyncSellingPartner, Marketplace, Region, SellingPartner
     from .sdk.client import AsyncClient, Client
 
 #: 0.2.0 names of the status errors.
@@ -64,10 +64,12 @@ __all__ = [
     "Client",
     "ConflictError",
     "InternalServerError",
+    "Marketplace",
     "NotFoundError",
     "RateLimit",
     "RateLimitError",
     "RateLimitExceededError",
+    "Region",
     "RequestOptions",
     "SellingPartner",
     "ServerError",
@@ -84,6 +86,8 @@ _LAZY = {
     "AsyncClient": ".sdk.client",
     "SellingPartner": ".plugins.amazon_spapi",
     "AsyncSellingPartner": ".plugins.amazon_spapi",
+    "Marketplace": ".plugins.amazon_spapi",
+    "Region": ".plugins.amazon_spapi",
 }
 
 
