@@ -74,7 +74,7 @@ is now generated Python committed to the repository.
 ```
 codegen/                       the emitter project, laid out like `oagen init --lang python`
   package.json                 @workos/oagen 0.30.2, swagger2openapi; `sdk:generate`, `typecheck`, `test`
-  oagen.config.ts              consumer config: the plugin bundle + this repo's spec policy (CLI use)
+  oagen.config.ts              consumer config: the plugin bundle, this repo's spec policy, `emitterOptions.python` (CLI use)
   src/plugin.ts, src/index.ts  plugin bundle / barrel
   src/python/                  the `python` emitter (models, resources, apis, naming, types, pagination, ratelimits)
   src/generate.ts              driver: every model file + notification schema through the emitter
@@ -82,7 +82,7 @@ codegen/                       the emitter project, laid out like `oagen init --
   src/transform.ts             alias inlining, inline-object hoisting, name protection
   src/extras.ts                facts the IR drops, read from the converted document
   src/amazon.ts                api naming, aliases, pagination overrides
-  test/                        node --test unit tests for the emitter
+  test/                        node --test: helper unit tests + fixture-spec emitter tests
 src/amzn_selling_partner/
   models/<api>/<version>.py    pydantic v2 models, Literal enums (generated)
   models/notifications/*.py    notification payload models (generated)
@@ -97,6 +97,32 @@ tests/petstore_sdk/            the same emitter run over tests/fixtures (proves 
 The wheel ships only Python; the spec submodule is a generator input. Enums
 are always `Literal` types.
 
+### Against the WorkOS tutorial
+
+[How to build a custom SDK generator with oagen](https://workos.com/blog/build-a-custom-sdk-generator-with-oagen)
+is the reference for the layout. What it prescribes and this project follows:
+the `oagen init` scaffold (`src/python/index.ts` assembles the emitter from
+`types.ts`, `models.ts`, `resources.ts` and a client module; `src/plugin.ts`
+registers it; `oagen.config.ts` spreads the plugin), an exhaustive type
+renderer (`mapTypeRef` fails the build when oagen adds a `TypeRef` kind, the
+same guarantee as the tutorial's `assertNever` switch), per-run settings
+through oagen's `emitterOptions` channel (`ctx.emitterOptions`), and emitter
+tests over fixture specs. Where it deliberately differs:
+
+* Method names come from Amazon's `operationId`s (`getOrders` → `get_orders`)
+  instead of `ctx.resolvedOperations`: oagen's deriver renames 285 of 390
+  operations (`getOrders` → `list_orders`, `cancelInbound` →
+  `create_inbound_order_cancellation`) and collides 15 of them, and the RDT /
+  grantless tables and Amazon's documentation are keyed by `operationId`.
+* Models are pydantic v2 classes, not dataclasses, and enums are `Literal`
+  aliases, not `str, Enum` (decision 3).
+* Retry, timeout and throttling policy is hand-written in `runtime/` and the
+  Amazon plugin rather than generated from `ctx.spec.sdk`; the runtime is
+  shared by every generated module.
+* The generator runs from source with `tsx` (`npm run sdk:generate`); nothing
+  is published, so there is no `tsup` build step, and tests use `node --test`
+  instead of vitest to keep the toolchain to oagen itself.
+
 ### Generated code shape
 
 * Models: `class Order(SpecModel)` with snake_case attributes and wire aliases,
@@ -105,7 +131,7 @@ are always `Literal` types.
   parameter encoders, body kind, response/error model factories, rate limit,
   pagination), and one method per operation on `OrdersV0` / `AsyncOrdersV0` with
   an explicit keyword-only signature, so pyright and editors see the real types
-  without stubs. Methods build a kwargs dict and call the runtime `_call`, the
+  without stubs. Methods build a kwargs dict and call the runtime `call`, the
   same hot path as before.
 * `apis.py`: `class OrdersAPI` with `v0`, `v2026_01_01`, `latest`, `versions`
   and lazy imports; `class APIs` mixin with one typed attribute per API and the

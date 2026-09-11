@@ -13,44 +13,41 @@ export function resourceClassName(api: string, version: string): string {
 }
 
 /**
- * Per-spec settings (API name/version, Amazon policy, facts read from the
- * converted document). oagen calls the emitter once per `generate` run, so the
- * driver and `oagen.config.ts` fill this bag before each run.
+ * Per-spec settings travel through oagen's option bag: the driver passes them
+ * to `generateFiles({ emitterOptions })`, `oagen.config.ts` declares them under
+ * `emitterOptions.python`, and the CLI hands the active language's bag to the
+ * emitter as `ctx.emitterOptions`.
  */
-export const emitterOptions: EmitterOptions = {
-  packageName: 'amzn_selling_partner',
-  runtimePackage: 'amzn_selling_partner',
-  api: 'api',
-  version: 'v1',
-  amazon: false,
-  extras: {},
-};
-
-export function configure(opts: EmitterOptions): void {
-  Object.assign(emitterOptions, opts);
+export function optionsOf(ctx: EmitterContext): EmitterOptions {
+  const opts = ctx.emitterOptions as Partial<EmitterOptions> | undefined;
+  for (const key of ['packageName', 'runtimePackage', 'api', 'version'] as const) {
+    if (typeof opts?.[key] !== 'string') throw new Error(`python emitter: emitterOptions.${key} is required (see codegen/oagen.config.ts)`);
+  }
+  return { amazon: false, extras: {}, ...opts } as EmitterOptions;
 }
 
 /** The `python` target. */
 export const pythonEmitter: Emitter = {
   language: 'python',
   generateModels(_models: Model[], ctx: EmitterContext): GeneratedFile[] {
-    return generateModels(ctx.spec, ctx, emitterOptions);
+    return generateModels(ctx.spec, ctx, optionsOf(ctx));
   },
   generateEnums(_enums: Enum[], _ctx: EmitterContext): GeneratedFile[] {
     return []; // enums live in the models module
   },
   generateResources(_services: Service[], ctx: EmitterContext): GeneratedFile[] {
-    return generateResources(ctx.spec, ctx, emitterOptions, resourceClassName(emitterOptions.api, emitterOptions.version));
+    const opts = optionsOf(ctx);
+    return generateResources(ctx.spec, ctx, opts, resourceClassName(opts.api, opts.version));
   },
   generateClient(_spec: ApiSpec, _ctx: EmitterContext): GeneratedFile[] {
-      return []; // the driver writes apis.py once for every API version
-    },
-    generateErrors(_ctx: EmitterContext): GeneratedFile[] {
-      return []; // hand-written in runtime/_errors.py
-    },
-    generateTests(_spec: ApiSpec, _ctx: EmitterContext): GeneratedFile[] {
-      return [];
-    },
+    return []; // the driver writes apis.py once for every API version
+  },
+  generateErrors(_ctx: EmitterContext): GeneratedFile[] {
+    return []; // hand-written in runtime/_errors.py
+  },
+  generateTests(_spec: ApiSpec, _ctx: EmitterContext): GeneratedFile[] {
+    return [];
+  },
   fileHeader(): string {
     return FILE_HEADER;
   },

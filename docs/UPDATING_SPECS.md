@@ -98,7 +98,10 @@ and its IR drops a few things the Amazon files rely on, so the driver
    tables + sync/async classes), pagination detection, rate-limit parsing;
    `amazon.ts` holds the Amazon policy. Facts the IR does not carry (body
    `required`, response media types, the `default` error response, greedy path
-   parameters) come from the converted document (`extras.ts`).
+   parameters) come from the converted document (`extras.ts`). Per-spec
+   settings (package, API, version, Amazon policy, those extras) reach the
+   emitter through oagen's `emitterOptions` bag: the driver passes it to
+   `generateFiles`, `oagen.config.ts` declares it as `emitterOptions.python`.
 5. `apis.py` and the package `__init__` files are written once from the
    registry; `ruff` formats everything.
 

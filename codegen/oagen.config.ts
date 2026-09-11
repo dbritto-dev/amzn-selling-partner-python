@@ -20,15 +20,15 @@ import { DROP_PARAMS_ON_NEXT, paginationOverride } from './src/amazon.js';
 import type { JsonObject } from './src/convert.js';
 import { extractExtras, extractUnionAliases } from './src/extras.js';
 import { plugin } from './src/plugin.js';
-import { configure, emitterOptions } from './src/python/index.js';
-import { newReport } from './src/python/options.js';
+import { newReport, type EmitterOptions } from './src/python/options.js';
 import { schemaNameTransform, transformSpec } from './src/transform.js';
 
 const api = process.env.OAGEN_API ?? 'api';
 const version = process.env.OAGEN_VERSION ?? 'v1';
 const amazon = process.env.OAGEN_AMAZON !== '0';
 
-configure({
+/** The `python` emitter's option bag (`ctx.emitterOptions`), filled further by `transformSpec` below. */
+const python: EmitterOptions = {
   packageName: process.env.OAGEN_PACKAGE ?? 'amzn_selling_partner',
   runtimePackage: 'amzn_selling_partner',
   api,
@@ -38,7 +38,7 @@ configure({
   report: newReport(),
   paginationOverride: amazon ? (opId) => paginationOverride(api, version, opId) : undefined,
   dropParamsOnNext: amazon ? (opId) => DROP_PARAMS_ON_NEXT.has(`${api}.${opId}`) : undefined,
-});
+};
 
 const config: OagenConfig = {
   ...plugin,
@@ -47,10 +47,11 @@ const config: OagenConfig = {
   transformSpec: (doc) => {
     const document = doc as unknown as JsonObject;
     // the pre-IR transform runs once, on the converted document: harvest what the IR drops first
-    emitterOptions.extras = extractExtras(document);
-    emitterOptions.unionAliases = extractUnionAliases(document);
+    python.extras = extractExtras(document);
+    python.unionAliases = extractUnionAliases(document);
     return transformSpec(document) as never;
   },
+  emitterOptions: { python: python as unknown as Record<string, unknown> },
 };
 
 export default config;

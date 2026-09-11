@@ -16,7 +16,7 @@ import { fileURLToPath } from 'node:url';
 import { generateFiles, parseSpec, type ApiSpec, type GeneratedFile } from '@workos/oagen';
 import { toOpenApi3, wrapJsonSchema, type JsonObject } from './convert.js';
 import { schemaNameTransform, transformSpec } from './transform.js';
-import { configure, pythonEmitter, resourceClassName } from './python/index.js';
+import { pythonEmitter, resourceClassName } from './python/index.js';
 import { renderApisModule, type ApiVersionEntry } from './python/apis.js';
 import { newReport, type EmitterOptions } from './python/options.js';
 import { extractExtras, extractUnionAliases } from './extras.js';
@@ -88,8 +88,11 @@ async function generateOne(
     paginationOverride: target.amazon ? (opId) => paginationOverride(api, version, opId) : undefined,
     dropParamsOnNext: target.amazon ? (opId) => DROP_PARAMS_ON_NEXT.has(`${api}.${opId}`) : undefined,
   };
-  configure(opts);
-  const { files } = generateFiles(spec, pythonEmitter, { namespace: resourceClassName(api, version), outputDir: path.join(BUILD, 'out') });
+  const { files } = generateFiles(spec, pythonEmitter, {
+    namespace: resourceClassName(api, version),
+    outputDir: path.join(BUILD, 'out'),
+    emitterOptions: opts as unknown as Record<string, unknown>,
+  });
   reports[`${target.packageName}.${api}.${version}`] = report;
   const operations = spec.services.reduce((n, s) => n + s.operations.length, 0);
   return { entry: { api, version, title: spec.name, operations }, files };
