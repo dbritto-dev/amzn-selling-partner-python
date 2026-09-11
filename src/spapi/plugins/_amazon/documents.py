@@ -7,11 +7,11 @@ import gzip
 import os
 import zlib
 from collections.abc import AsyncIterator, Iterator
-from typing import Any
+from typing import Any, cast
 
 import httpx2
 
-from ...runtime._errors import APIConnectionError, APIStatusError, status_error_class
+from ...runtime._errors import APIConnectionError, status_error_class
 from .rdt import RESTRICTED_REPORT_TYPES
 
 CHUNK = 64 * 1024
@@ -165,7 +165,9 @@ async def async_download_document_to_file(
     return written
 
 
-async def async_upload_document(url: str, content: bytes | str, *, content_type: str, http_client: httpx2.AsyncClient | None = None) -> None:
+async def async_upload_document(
+    url: str, content: bytes | str, *, content_type: str, http_client: httpx2.AsyncClient | None = None
+) -> None:
     client = http_client or httpx2.AsyncClient(timeout=httpx2.Timeout(120.0, connect=10.0))
     try:
         body = content.encode() if isinstance(content, str) else content
@@ -184,8 +186,25 @@ async def async_upload_document(url: str, content: bytes | str, *, content_type:
 
 def _doc_fields(document: Any) -> tuple[str, str | None]:
     if isinstance(document, dict):
-        return str(document["url"]), document.get("compressionAlgorithm")
+        d = cast(dict[str, Any], document)
+        compression: Any = d.get("compressionAlgorithm")
+        return str(d["url"]), str(compression) if compression is not None else None
     return str(document.url), getattr(document, "compression_algorithm", None)
+
+
+def _url_and_id(doc: Any) -> tuple[str, str]:
+    if isinstance(doc, dict):
+        d = cast(dict[str, Any], doc)
+        return str(d["url"]), str(d["feedDocumentId"])
+    return str(doc.url), str(doc.feed_document_id)
+
+
+def _rdt_options(report_type: str | None) -> Any:
+    from ...runtime._types import RequestOptions
+
+    if report_type and report_type in RESTRICTED_REPORT_TYPES:
+        return RequestOptions(auth={"rdt": True})
+    return None
 
 
 class Documents:
@@ -194,18 +213,14 @@ class Documents:
     def __init__(self, client: Any) -> None:
         self._client = client
 
-    @staticmethod
-    def _rdt_options(report_type: str | None) -> Any:
-        from ...runtime._types import RequestOptions
-
-        if report_type and report_type in RESTRICTED_REPORT_TYPES:
-            return RequestOptions(auth={"rdt": True})
-        return None
-
     def get_report_document(self, report_document_id: str, *, report_type: str | None = None) -> Any:
-        return self._client.reports.latest.get_report_document(report_document_id=report_document_id, request_options=self._rdt_options(report_type))
+        return self._client.reports.latest.get_report_document(
+            report_document_id=report_document_id, request_options=_rdt_options(report_type)
+        )
 
-    def download_report(self, report_document_id: str, *, report_type: str | None = None, path: str | os.PathLike[str] | None = None) -> bytes | int:
+    def download_report(
+        self, report_document_id: str, *, report_type: str | None = None, path: str | os.PathLike[str] | None = None
+    ) -> bytes | int:
         doc = self.get_report_document(report_document_id, report_type=report_type)
         url, compression = _doc_fields(doc)
         http = self._client.http_client
@@ -224,11 +239,19 @@ class Documents:
     def upload_feed_document(self, content: bytes | str, *, content_type: str) -> str:
         """Create a feed document, upload ``content`` and return the feedDocumentId."""
         doc = self._client.feeds.latest.create_feed_document(body={"contentType": content_type})
-        url = doc["url"] if isinstance(doc, dict) else doc.url
-        upload_document(str(url), content, content_type=content_type, http_client=self._client.http_client)
-        return str(doc["feedDocumentId"] if isinstance(doc, dict) else doc.feed_document_id)
+        url, document_id = _url_and_id(doc)
+        upload_document(url, content, content_type=content_type, http_client=self._client.http_client)
+        return document_id
 
-    def create_feed(self, feed_type: str, marketplace_ids: list[str], content: bytes | str, *, content_type: str, feed_options: dict[str, str] | None = None) -> Any:
+    def create_feed(
+        self,
+        feed_type: str,
+        marketplace_ids: list[str],
+        content: bytes | str,
+        *,
+        content_type: str,
+        feed_options: dict[str, str] | None = None,
+    ) -> Any:
         """Upload ``content`` and create the feed; returns the createFeed response."""
         document_id = self.upload_feed_document(content, content_type=content_type)
         body: dict[str, Any] = {"feedType": feed_type, "marketplaceIds": marketplace_ids, "inputFeedDocumentId": document_id}
@@ -241,12 +264,14 @@ class AsyncDocuments:
     def __init__(self, client: Any) -> None:
         self._client = client
 
-    _rdt_options = staticmethod(Documents._rdt_options)
-
     async def get_report_document(self, report_document_id: str, *, report_type: str | None = None) -> Any:
-        return await self._client.reports.latest.get_report_document(report_document_id=report_document_id, request_options=self._rdt_options(report_type))
+        return await self._client.reports.latest.get_report_document(
+            report_document_id=report_document_id, request_options=_rdt_options(report_type)
+        )
 
-    async def download_report(self, report_document_id: str, *, report_type: str | None = None, path: str | os.PathLike[str] | None = None) -> bytes | int:
+    async def download_report(
+        self, report_document_id: str, *, report_type: str | None = None, path: str | os.PathLike[str] | None = None
+    ) -> bytes | int:
         doc = await self.get_report_document(report_document_id, report_type=report_type)
         url, compression = _doc_fields(doc)
         http = self._client.http_client
@@ -264,11 +289,19 @@ class AsyncDocuments:
 
     async def upload_feed_document(self, content: bytes | str, *, content_type: str) -> str:
         doc = await self._client.feeds.latest.create_feed_document(body={"contentType": content_type})
-        url = doc["url"] if isinstance(doc, dict) else doc.url
-        await async_upload_document(str(url), content, content_type=content_type, http_client=self._client.http_client)
-        return str(doc["feedDocumentId"] if isinstance(doc, dict) else doc.feed_document_id)
+        url, document_id = _url_and_id(doc)
+        await async_upload_document(url, content, content_type=content_type, http_client=self._client.http_client)
+        return document_id
 
-    async def create_feed(self, feed_type: str, marketplace_ids: list[str], content: bytes | str, *, content_type: str, feed_options: dict[str, str] | None = None) -> Any:
+    async def create_feed(
+        self,
+        feed_type: str,
+        marketplace_ids: list[str],
+        content: bytes | str,
+        *,
+        content_type: str,
+        feed_options: dict[str, str] | None = None,
+    ) -> Any:
         document_id = await self.upload_feed_document(content, content_type=content_type)
         body: dict[str, Any] = {"feedType": feed_type, "marketplaceIds": marketplace_ids, "inputFeedDocumentId": document_id}
         if feed_options:

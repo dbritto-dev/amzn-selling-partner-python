@@ -1,77 +1,68 @@
-import enum
-import os
+"""Compatibility ``BaseClient`` / ``SellingPartnerRegion``.
 
-import requests
+``BaseClient`` wraps :class:`spapi.SellingPartner`. The AWS keyword arguments
+of the old constructor are accepted and ignored (the Selling Partner API no
+longer requires AWS Signature V4).
+"""
+
+from __future__ import annotations
+
+import os
+import warnings
+from typing import Any
+
+from spapi.plugins.amazon_spapi import Region, SellingPartner
 
 from . import auth
 
-
-class SellingPartnerRegion(tuple, enum.Enum):
-    NORTH_AMERICA = (
-        "https://sellingpartnerapi-na.amazon.com",
-        "https://sandbox.sellingpartnerapi-na.amazon.com",
-        "us-east-1",
-    )
-    EUROPE = (
-        "https://sellingpartnerapi-eu.amazon.com",
-        "https://sandbox.sellingpartnerapi-eu.amazon.com",
-        "eu-west-1",
-    )
-    FAR_EAST = (
-        "https://sellingpartnerapi-fe.amazon.com",
-        "https://sandbox.sellingpartnerapi-fe.amazon.com",
-        "us-west-2",
-    )
-
-    @property
-    def api_endpoint(self):
-        return self.value[0]
-
-    @property
-    def api_sandbox_endpoint(self):
-        return self.value[1]
-
-    @property
-    def region_name(self):
-        return self.value[2]
+#: Same members as before (``NORTH_AMERICA`` / ``EUROPE`` / ``FAR_EAST``) with
+#: ``api_endpoint``, ``api_sandbox_endpoint`` and ``region_name`` properties.
+SellingPartnerRegion = Region
 
 
 class BaseClient:
+    """Old-style client: one instance per API resource.
+
+    ``sp`` is the underlying :class:`spapi.SellingPartner`; subclasses map
+    their old methods onto it.
+    """
+
     def __init__(
         self,
         *,
-        selling_partner_region: SellingPartnerRegion = SellingPartnerRegion.NORTH_AMERICA,
-        selling_partner_app_client_id: str = os.getenv("SELLING_PARTNER_APP_CLIENT_ID", ""),
-        selling_partner_app_client_secret: str = os.getenv(
-            "SELLING_PARTNER_APP_CLIENT_SECRET", ""
-        ),
-        selling_partner_app_refresh_token: str = os.getenv(
-            "SELLING_PARTNER_APP_REFRESH_TOKEN", ""
-        ),
-        aws_access_key_id: str = os.getenv("AWS_ACCESS_KEY_ID", ""),
-        aws_secret_access_key: str = os.getenv("AWS_SECRET_ACCESS_KEY", ""),
-        aws_selling_partner_role: str = os.getenv("AWS_SELLING_PARTNER_ROLE", ""),
-        aws_selling_partner_role_session_name: str = os.getenv(
-            "AWS_SELLING_PARTNER_ROLE_SESSION_NAME", ""
-        ),
+        selling_partner_region: Region = Region.NORTH_AMERICA,
+        selling_partner_app_client_id: str | None = None,
+        selling_partner_app_client_secret: str | None = None,
+        selling_partner_app_refresh_token: str | None = None,
+        aws_access_key_id: str | None = None,
+        aws_secret_access_key: str | None = None,
+        aws_selling_partner_role: str | None = None,
+        aws_selling_partner_role_session_name: str | None = None,
         sandbox: bool = False,
+        **spapi_options: Any,
     ) -> None:
+        if any((aws_access_key_id, aws_secret_access_key, aws_selling_partner_role, aws_selling_partner_role_session_name)):
+            warnings.warn(
+                "AWS credentials are no longer used by the Selling Partner API; the aws_* arguments are ignored",
+                DeprecationWarning,
+                stacklevel=2,
+            )
         self.region = selling_partner_region
         self.sandbox = sandbox
-        self.http_session = requests.Session()
-        self.http_session.auth = auth.ClientSessionAuth(
-            selling_partner_app_client_id=selling_partner_app_client_id,
-            selling_partner_app_client_secret=selling_partner_app_client_secret,
-            selling_partner_app_refresh_token=selling_partner_app_refresh_token,
-            aws_access_key_id=aws_access_key_id,
-            aws_secret_access_key=aws_secret_access_key,
-            aws_region=selling_partner_region.region_name,
-            aws_selling_partner_role=aws_selling_partner_role,
-            aws_selling_partner_role_session_name=aws_selling_partner_role_session_name,
+        client_id = selling_partner_app_client_id or os.getenv("SELLING_PARTNER_APP_CLIENT_ID")
+        client_secret = selling_partner_app_client_secret or os.getenv("SELLING_PARTNER_APP_CLIENT_SECRET")
+        refresh_token = selling_partner_app_refresh_token or os.getenv("SELLING_PARTNER_APP_REFRESH_TOKEN")
+        self.sp = SellingPartner(
+            region=selling_partner_region,
+            sandbox=sandbox,
+            client_id=client_id or None,
+            client_secret=client_secret or None,
+            refresh_token=refresh_token or None,
+            **spapi_options,
         )
 
     def get_api_endpoint(self) -> str:
-        return self.region.api_endpoint if not self.sandbox else self.region.api_sandbox_endpoint
+        return self.region.api_sandbox_endpoint if self.sandbox else self.region.api_endpoint
 
     def get_resource_path(self) -> str:
         raise NotImplementedError()
@@ -81,3 +72,9 @@ class BaseClient:
 
     def get_operation_endpoint(self, operation_method: str) -> str:
         return f"{self.get_resource_endpoint()}/{operation_method}"
+
+    def close(self) -> None:
+        self.sp.close()
+
+
+__all__ = ["BaseClient", "SellingPartnerRegion", "auth"]

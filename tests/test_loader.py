@@ -113,12 +113,25 @@ def test_extensions_preserved(tmp_path: pathlib.Path) -> None:
 
 
 def test_relative_external_refs(tmp_path: pathlib.Path) -> None:
-    (tmp_path / "common.json").write_text(json.dumps({"definitions": {"Money": {"type": "object", "properties": {"amount": {"type": "string"}}}, "Error": {"type": "string"}}}))
+    (tmp_path / "common.json").write_text(
+        json.dumps(
+            {"definitions": {"Money": {"type": "object", "properties": {"amount": {"type": "string"}}}, "Error": {"type": "string"}}}
+        )
+    )
     main = {
         "swagger": "2.0",
         "info": {"title": "t", "version": "1"},
-        "paths": {"/x": {"get": {"operationId": "getX", "responses": {"200": {"description": "ok", "schema": {"$ref": "common.json#/definitions/Money"}}}}}},
-        "definitions": {"Error": {"type": "object", "properties": {"msg": {"type": "string"}, "money": {"$ref": "./common.json#/definitions/Money"}}}},
+        "paths": {
+            "/x": {
+                "get": {
+                    "operationId": "getX",
+                    "responses": {"200": {"description": "ok", "schema": {"$ref": "common.json#/definitions/Money"}}},
+                }
+            }
+        },
+        "definitions": {
+            "Error": {"type": "object", "properties": {"msg": {"type": "string"}, "money": {"$ref": "./common.json#/definitions/Money"}}}
+        },
     }
     (tmp_path / "main.json").write_text(json.dumps(main))
     doc = load_document(tmp_path / "main.json", use_cache=False)
@@ -137,13 +150,24 @@ def test_ir_cache_roundtrip(tmp_path: pathlib.Path) -> None:
 
 
 def test_missing_operation_id_gets_synthetic_name() -> None:
-    raw = {"openapi": "3.1.0", "info": {"title": "t", "version": "1"}, "paths": {"/a/b": {"get": {"responses": {"204": {"description": "x"}}}}}}
+    raw = {
+        "openapi": "3.1.0",
+        "info": {"title": "t", "version": "1"},
+        "paths": {"/a/b": {"get": {"responses": {"204": {"description": "x"}}}}},
+    }
     doc = normalize(raw, source="mem.json", digest="x")
     assert doc.operations[0].operation_id == "get_/a/b"
 
 
 def test_jsonschema_document(tmp_path: pathlib.Path) -> None:
-    schema = {"$schema": "http://json-schema.org/draft-07/schema", "title": "Order Change", "type": "object", "required": ["id"], "properties": {"id": {"type": "string"}, "money": {"$ref": "#/definitions/Money"}}, "definitions": {"Money": {"type": "object", "properties": {"amount": {"type": "number"}}}}}
+    schema = {
+        "$schema": "http://json-schema.org/draft-07/schema",
+        "title": "Order Change",
+        "type": "object",
+        "required": ["id"],
+        "properties": {"id": {"type": "string"}, "money": {"$ref": "#/definitions/Money"}},
+        "definitions": {"Money": {"type": "object", "properties": {"amount": {"type": "number"}}}},
+    }
     p = tmp_path / "OrderChange.json"
     p.write_text(json.dumps(schema))
     doc = load_document(p, use_cache=False)

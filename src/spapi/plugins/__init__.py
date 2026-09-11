@@ -44,9 +44,10 @@ class OptionalHooks(Protocol):
 
 def run_plugins(document: Document, plugins: Iterable[Any]) -> Document:
     for plugin in plugins:
-        document = plugin.annotate(document)
-        if not isinstance(document, Document):
+        result: object = plugin.annotate(document)
+        if not isinstance(result, Document):
             raise TypeError(f"{type(plugin).__name__}.annotate() must return a Document")
+        document = result
     return document
 
 

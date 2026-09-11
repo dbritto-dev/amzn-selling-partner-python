@@ -15,8 +15,8 @@ import pathlib
 import re
 import threading
 import time
-from collections.abc import Iterable, Mapping
-from typing import Any
+from collections.abc import Iterable
+from typing import Any, cast
 
 from .compile.models import ModelNamespace, build_models
 from .compile.naming import identifier, snake_case
@@ -68,6 +68,10 @@ class APIVersion:
         self._resources: dict[str, Any] | None = None
         self._lock = threading.RLock()
         self.build_ms: float | None = None
+
+    @property
+    def is_compiled(self) -> bool:
+        return self._ops is not None
 
     @property
     def document(self) -> Document:
@@ -200,10 +204,14 @@ class _ClientCore:
         self._discover(specs)
 
     def _discover(self, specs: Any) -> None:
-        roots = [specs] if isinstance(specs, (str, os.PathLike)) else list(specs)
+        roots: list[str | os.PathLike[str]] = (
+            [cast(str | os.PathLike[str], specs)]
+            if isinstance(specs, (str, os.PathLike))
+            else list(cast(Iterable[str | os.PathLike[str]], specs))
+        )
         files: list[pathlib.Path] = []
-        for root in roots:
-            root = pathlib.Path(root)
+        for root_spec in roots:
+            root = pathlib.Path(root_spec)
             found: Iterable[pathlib.Path] | None = None
             for plugin in self.plugins:
                 hook = getattr(plugin, "spec_files", None)
@@ -280,7 +288,7 @@ class _ClientCore:
         return times
 
     def compiled_versions(self) -> list[APIVersion]:
-        return [c.version(v) for c in self._containers.values() for v in c.versions if c.version(v)._ops is not None]
+        return [c.version(v) for c in self._containers.values() for v in c.versions if c.version(v).is_compiled]
 
 
 class _AttrAccess:

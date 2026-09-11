@@ -126,7 +126,7 @@ class _ModelWriter:
                     out.append(f"    {py}: {ann}" + (f" = Field({alias})" if alias else ""))
                 else:
                     out.append(f"    {py}: {ann} = Field(default=None{', ' + alias if alias else ''})")
-            out.append(f"    def __init__(self, **data: Any) -> None: ...")
+            out.append("    def __init__(self, **data: Any) -> None: ...")
         out.append("\n# raw-mode shapes (``raw=True``)")
         for cls in self.order:
             schema = self.classes[cls]
@@ -144,7 +144,12 @@ class _ModelWriter:
             for name, expr in self.aliases.items():
                 out.append(f"{name} = {expr}")
         body = "\n".join(out) + "\n"
-        return HEADER + "from __future__ import annotations\n" + _imports(body, pydantic=("BaseModel", "Field"), typing=("Any", "Literal", "TypedDict")) + body
+        return (
+            HEADER
+            + "from __future__ import annotations\n"
+            + _imports(body, pydantic=("BaseModel", "Field"), typing=("Any", "Literal", "TypedDict"))
+            + body
+        )
 
 
 def _imports(body: str, *, typing: tuple[str, ...], pydantic: tuple[str, ...] = ()) -> str:
@@ -152,7 +157,20 @@ def _imports(body: str, *, typing: tuple[str, ...], pydantic: tuple[str, ...] = 
     lines: list[str] = []
     if "datetime." in body:
         lines.append("import datetime")
-    used_typing = [n for n in typing if (n + "[" in body or f"({n}" in body or f"@{n}" in body or f": {n}" in body or f"[{n}]" in body or f", {n}]" in body or f"| {n}" in body or f"-> {n}" in body)]
+    used_typing = [
+        n
+        for n in typing
+        if (
+            n + "[" in body
+            or f"({n}" in body
+            or f"@{n}" in body
+            or f": {n}" in body
+            or f"[{n}]" in body
+            or f", {n}]" in body
+            or f"| {n}" in body
+            or f"-> {n}" in body
+        )
+    ]
     if used_typing:
         lines.append(f"from typing import {', '.join(used_typing)}")
     used_pyd = [n for n in pydantic if n + "(" in body or f"({n})" in body]
@@ -248,7 +266,13 @@ def _render_method(document: Document, op: Operation, name: str, is_async: bool)
     for p in op.parameters:
         if p.location == "cookie":
             continue
-        params.append((unique(param_name(p.name)), type_expr(document, p.schema, pascal_case(p.name), model_prefix="models."), p.required or p.location == "path"))
+        params.append(
+            (
+                unique(param_name(p.name)),
+                type_expr(document, p.schema, pascal_case(p.name), model_prefix="models."),
+                p.required or p.location == "path",
+            )
+        )
     if op.request_body is not None:
         js = op.request_body.json_schema
         if js is not None:
@@ -260,7 +284,11 @@ def _render_method(document: Document, op: Operation, name: str, is_async: bool)
             ann = "str" if media.startswith("text/") else "bytes | dict[str, Any]" if "form" in media else "bytes"
         params.append(("body", ann, op.request_body.required))
     params.sort(key=lambda p: not p[2])
-    pagination = op.annotations.get("pagination", detect_pagination(op, document)) if "pagination" in op.annotations else detect_pagination(op, document)
+    pagination = (
+        op.annotations.get("pagination", detect_pagination(op, document))
+        if "pagination" in op.annotations
+        else detect_pagination(op, document)
+    )
     ret_model = _return_type(document, op, dict_suffix="")
     ret_dict = _return_type(document, op, dict_suffix="Dict")
     if ret_model == "Stream":
@@ -376,7 +404,9 @@ def check(out_dir: pathlib.Path, specs: list[tuple[str, str, pathlib.Path]], plu
             if not old.exists():
                 diffs.append(f"missing: {rel}")
             elif not filecmp.cmp(old, new, shallow=False):
-                delta = difflib.unified_diff(old.read_text().splitlines(), new.read_text().splitlines(), str(rel), str(rel), lineterm="", n=1)
+                delta = difflib.unified_diff(
+                    old.read_text().splitlines(), new.read_text().splitlines(), str(rel), str(rel), lineterm="", n=1
+                )
                 diffs.append("\n".join(list(delta)[:40]))
         for old in sorted(out_dir.rglob("*.pyi")):
             rel = old.relative_to(out_dir)
@@ -398,7 +428,7 @@ def main(argv: list[str] | None = None) -> int:
         from .plugins import default_spec_files
         from .spec.loader import load_document
 
-        triples = []
+        triples: list[tuple[str, str, pathlib.Path]] = []
         for root in args.specs:
             for path in default_spec_files(pathlib.Path(root)):
                 api, version = default_api_naming(path)

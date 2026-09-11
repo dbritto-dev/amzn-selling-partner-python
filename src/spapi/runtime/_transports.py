@@ -13,9 +13,10 @@ request).
 
 from __future__ import annotations
 
+import importlib.util
 import logging
 from collections.abc import AsyncIterator
-from typing import Any
+from typing import Any, cast
 
 import httpx2
 
@@ -38,11 +39,7 @@ def sync_transport(*, limits: httpx2.Limits = DEFAULT_LIMITS, verify: Any = True
 
 
 def aiohttp_available() -> bool:
-    try:
-        import httpx_aiohttp  # noqa: F401
-    except ImportError:
-        return False
-    return True
+    return importlib.util.find_spec("httpx_aiohttp") is not None
 
 
 def async_transport(
@@ -54,15 +51,20 @@ def async_transport(
 ) -> httpx2.AsyncBaseTransport:
     if prefer_aiohttp:
         try:
-            import httpx_aiohttp
             import httpx_aiohttp.transport as _hat
         except ImportError:
             pass
         else:
-            inner = httpx_aiohttp.AiohttpTransport(limits=limits, verify=verify)
-            if getattr(_hat, "httpx", None) is httpx2:  # alias_httpx() was called
-                return inner  # type: ignore[return-value]
-            return _HttpxBridgeTransport(inner, _hat.httpx)
+            hx: Any = getattr(_hat, "httpx")  # noqa: B009 - the httpx module httpx_aiohttp was written against
+            hx_limits = hx.Limits(
+                max_connections=limits.max_connections,
+                max_keepalive_connections=limits.max_keepalive_connections,
+                keepalive_expiry=limits.keepalive_expiry,
+            )
+            inner: Any = _hat.AiohttpTransport(limits=hx_limits, verify=verify)
+            if hx is httpx2:  # alias_httpx() was called
+                return cast(httpx2.AsyncBaseTransport, inner)
+            return _HttpxBridgeTransport(inner, hx)
     return httpx2.AsyncHTTPTransport(limits=limits, verify=verify, http2=http2)
 
 

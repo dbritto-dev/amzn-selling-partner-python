@@ -28,8 +28,9 @@ import httpx2
 from pydantic_core import from_json, to_json
 
 from ...runtime._errors import APIConnectionError, AuthenticationError
-from .regions import LWA_TOKEN_URL
+from ...spec._jsonutil import as_object
 from .rdt import RestrictedOperation
+from .regions import LWA_TOKEN_URL
 
 if TYPE_CHECKING:
     from ...compile.operations import CompiledOp
@@ -91,7 +92,7 @@ class LWACredentials:
             return None
         return cls(client_id=client_id, client_secret=client_secret, refresh_token=refresh_token or None)
 
-    def _fingerprint(self) -> str:
+    def fingerprint(self) -> str:
         h = hashlib.sha256(f"{self.client_id}:{self.refresh_token or ''}".encode()).hexdigest()
         return h[:16]
 
@@ -113,7 +114,7 @@ class _LWABase:
         self.base_url = base_url  # for the Tokens API (RDT); set by the client
         self._transport = transport
         self._leeway = leeway
-        self._fp = credentials._fingerprint()
+        self._fp = credentials.fingerprint()
 
     # -- keys ------------------------------------------------------------------------
 
@@ -142,8 +143,8 @@ class _LWABase:
         if scopes:
             return "grantless", tuple(scopes)
         rdt = op.annotations.get("rdt")
-        hints = request.extensions.get("spapi_auth") or {}
-        wanted = hints.get("rdt") if isinstance(hints, Mapping) else None
+        hints = as_object(request.extensions.get("spapi_auth")) or {}
+        wanted: Any = hints.get("rdt")
         if isinstance(rdt, RestrictedOperation):
             if rdt.data_elements is None:
                 return "rdt", ()
@@ -160,11 +161,21 @@ class _LWABase:
     def _grant_form(self, kind: str, scopes: tuple[str, ...]) -> bytes:
         c = self.credentials
         if kind == "grantless":
-            form = {"grant_type": "client_credentials", "scope": " ".join(scopes), "client_id": c.client_id, "client_secret": c.client_secret}
+            form = {
+                "grant_type": "client_credentials",
+                "scope": " ".join(scopes),
+                "client_id": c.client_id,
+                "client_secret": c.client_secret,
+            }
         else:
             if not c.refresh_token:
                 raise ValueError("a refresh token is required for non-grantless operations")
-            form = {"grant_type": "refresh_token", "refresh_token": c.refresh_token, "client_id": c.client_id, "client_secret": c.client_secret}
+            form = {
+                "grant_type": "refresh_token",
+                "refresh_token": c.refresh_token,
+                "client_id": c.client_id,
+                "client_secret": c.client_secret,
+            }
         return urlencode(form).encode()
 
     def _token_request(self, kind: str, scopes: tuple[str, ...]) -> httpx2.Request:
@@ -190,16 +201,18 @@ class _LWABase:
 
     @staticmethod
     def _parse(response: httpx2.Response, *, what: str) -> Token:
+        data: Any
         try:
             data = from_json(response.content) if response.content else {}
         except ValueError:
             data = response.text
-        if response.status_code >= 400 or not isinstance(data, Mapping):
+        payload = as_object(data)
+        if response.status_code >= 400 or payload is None:
             raise AuthenticationError(f"{what} request failed with HTTP {response.status_code}", response=response, body=data)
-        token = data.get("access_token") or data.get("restrictedDataToken")
+        token: Any = payload.get("access_token") or payload.get("restrictedDataToken")
         if not isinstance(token, str):
             raise AuthenticationError(f"{what} response has no token", response=response, body=data)
-        expires_in = data.get("expires_in", 3600)
+        expires_in: Any = payload.get("expires_in", 3600)
         try:
             ttl = float(expires_in)
         except (TypeError, ValueError):

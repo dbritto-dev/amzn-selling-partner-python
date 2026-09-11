@@ -15,7 +15,7 @@ node; ``Operation.annotations`` is the slot plugins fill via ``annotate``.
 
 from __future__ import annotations
 
-from collections.abc import Mapping
+from collections.abc import Callable, Mapping
 from dataclasses import dataclass, field, replace
 from typing import Any, Literal, TypeAlias
 
@@ -34,10 +34,14 @@ Style: TypeAlias = Literal[
 _EMPTY: Mapping[str, Any] = {}
 
 
+def _schemas() -> dict[str, Schema]:
+    return {}
+
+
 @dataclass(slots=True, frozen=True, kw_only=True)
 class Discriminator:
     property_name: str
-    mapping: Mapping[str, str] = field(default_factory=dict)  # value -> schema name
+    mapping: Mapping[str, str] = field(default_factory=dict[str, str])  # value -> schema name
 
 
 @dataclass(slots=True, frozen=True, kw_only=True)
@@ -57,7 +61,7 @@ class Schema:
     type: str | None = None
     format: str | None = None
     nullable: bool = False
-    properties: Mapping[str, Schema] = field(default_factory=dict)
+    properties: Mapping[str, Schema] = field(default_factory=_schemas)
     required: frozenset[str] = frozenset()
     items: Schema | None = None
     additional_properties: Schema | bool | None = None
@@ -74,7 +78,7 @@ class Schema:
     write_only: bool = False
     deprecated: bool = False
     example: Any = None
-    extensions: Mapping[str, Any] = field(default_factory=dict)
+    extensions: Mapping[str, Any] = field(default_factory=dict[str, Any])
 
     @property
     def is_ref(self) -> bool:
@@ -92,7 +96,7 @@ class Parameter:
     explode: bool = True
     allow_reserved: bool = False
     deprecated: bool = False
-    extensions: Mapping[str, Any] = field(default_factory=dict)
+    extensions: Mapping[str, Any] = field(default_factory=dict[str, Any])
 
 
 @dataclass(slots=True, frozen=True, kw_only=True)
@@ -100,7 +104,7 @@ class RequestBody:
     content: Mapping[str, Schema]  # media type -> schema
     required: bool = False
     description: str | None = None
-    extensions: Mapping[str, Any] = field(default_factory=dict)
+    extensions: Mapping[str, Any] = field(default_factory=dict[str, Any])
 
     @property
     def json_schema(self) -> Schema | None:
@@ -114,9 +118,9 @@ class RequestBody:
 class Response:
     status: str  # "200", "2XX", "default"
     description: str | None = None
-    content: Mapping[str, Schema] = field(default_factory=dict)
-    headers: Mapping[str, Schema] = field(default_factory=dict)
-    extensions: Mapping[str, Any] = field(default_factory=dict)
+    content: Mapping[str, Schema] = field(default_factory=_schemas)
+    headers: Mapping[str, Schema] = field(default_factory=_schemas)
+    extensions: Mapping[str, Any] = field(default_factory=dict[str, Any])
 
     @property
     def json_schema(self) -> Schema | None:
@@ -130,8 +134,8 @@ class Response:
 class Server:
     url: str
     description: str | None = None
-    variables: Mapping[str, str] = field(default_factory=dict)  # name -> default
-    extensions: Mapping[str, Any] = field(default_factory=dict)
+    variables: Mapping[str, str] = field(default_factory=dict[str, str])  # name -> default
+    extensions: Mapping[str, Any] = field(default_factory=dict[str, Any])
 
 
 @dataclass(slots=True, frozen=True, kw_only=True)
@@ -144,10 +148,10 @@ class Operation:
     tags: tuple[str, ...] = ()
     parameters: tuple[Parameter, ...] = ()
     request_body: RequestBody | None = None
-    responses: Mapping[str, Response] = field(default_factory=dict)
+    responses: Mapping[str, Response] = field(default_factory=dict[str, Response])
     deprecated: bool = False
-    extensions: Mapping[str, Any] = field(default_factory=dict)
-    annotations: Mapping[str, Any] = field(default_factory=dict)
+    extensions: Mapping[str, Any] = field(default_factory=dict[str, Any])
+    annotations: Mapping[str, Any] = field(default_factory=dict[str, Any])
 
     def annotated(self, **values: Any) -> Operation:
         """Return a copy with ``annotations`` updated (used by plugins)."""
@@ -169,9 +173,9 @@ class Document:
     description: str | None = None
     servers: tuple[Server, ...] = ()
     operations: tuple[Operation, ...] = ()
-    schemas: Mapping[str, Schema] = field(default_factory=dict)
-    extensions: Mapping[str, Any] = field(default_factory=dict)
-    annotations: Mapping[str, Any] = field(default_factory=dict)
+    schemas: Mapping[str, Schema] = field(default_factory=_schemas)
+    extensions: Mapping[str, Any] = field(default_factory=dict[str, Any])
+    annotations: Mapping[str, Any] = field(default_factory=dict[str, Any])
 
     def resolve(self, schema: Schema) -> Schema:
         """Follow ``ref`` pointers until a concrete schema is reached."""
@@ -195,7 +199,7 @@ class Document:
     def annotated(self, **values: Any) -> Document:
         return replace(self, annotations={**self.annotations, **values})
 
-    def map_operations(self, fn: Any) -> Document:
+    def map_operations(self, fn: Callable[[Operation], Operation]) -> Document:
         return replace(self, operations=tuple(fn(op) for op in self.operations))
 
 

@@ -24,9 +24,7 @@ class AuthHook(Protocol):
 
 @runtime_checkable
 class AsyncAuthHook(Protocol):
-    def before_request(
-        self, op: CompiledOp, request: httpx2.Request
-    ) -> Awaitable[Mapping[str, str] | None]: ...
+    def before_request(self, op: CompiledOp, request: httpx2.Request) -> Awaitable[Mapping[str, str] | None]: ...
 
 
 class NoAuth:

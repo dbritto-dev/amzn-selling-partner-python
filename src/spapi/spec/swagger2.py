@@ -2,9 +2,9 @@
 
 from __future__ import annotations
 
-from collections.abc import Mapping
 from typing import Any
 
+from ._jsonutil import JsonObject, as_list, as_object, obj, objects, strings, text
 from ._schema import SchemaConverter, extensions_of
 from .ir import Document, Operation, Parameter, RequestBody, Response, Schema, Server, Style
 from .refs import RefResolver
@@ -39,41 +39,40 @@ _PARAM_SCHEMA_KEYS = (
 )
 
 
-def normalize_swagger2(raw: Mapping[str, Any], *, source: str, digest: str) -> Document:
+def normalize_swagger2(raw: JsonObject, *, source: str, digest: str) -> Document:
     resolver = RefResolver(source, raw)
     conv = SchemaConverter(resolver)
-    conv.register_all(raw.get("definitions"), source, "/definitions")
+    conv.register_all(obj(raw, "definitions"), source, "/definitions")
 
-    info = raw.get("info") or {}
-    schemes = raw.get("schemes") or ["https"]
-    host = raw.get("host")
-    base_path = (raw.get("basePath") or "").rstrip("/")
+    info = obj(raw, "info")
+    schemes = list(strings(raw, "schemes")) or ["https"]
+    host = text(raw, "host")
+    base_path = (text(raw, "basePath") or "").rstrip("/")
     servers: tuple[Server, ...] = ()
     if host:
         servers = tuple(Server(url=f"{scheme}://{host}{base_path}") for scheme in schemes)
     elif base_path:
         servers = (Server(url=base_path),)
 
-    root_consumes = list(raw.get("consumes") or ["application/json"])
-    root_produces = list(raw.get("produces") or ["application/json"])
+    root_consumes = list(strings(raw, "consumes")) or ["application/json"]
+    root_produces = list(strings(raw, "produces")) or ["application/json"]
 
     operations: list[Operation] = []
-    for path, item in (raw.get("paths") or {}).items():
-        if not isinstance(item, Mapping):
-            continue
+    for path, item in objects(raw, "paths"):
         if "$ref" in item:
-            item = resolver.lookup(item["$ref"], source)[0]
-        path_params = [_deref_param(p, resolver, source) for p in item.get("parameters") or []]
+            item = resolver.lookup_object(str(item["$ref"]), source)[0]
+        path_params = [_deref(p, resolver, source) for p in as_list(item.get("parameters"))]
         for method in _METHODS:
-            op = item.get(method)
-            if not isinstance(op, Mapping):
+            op = as_object(item.get(method))
+            if op is None:
                 continue
-            op_params = [_deref_param(p, resolver, source) for p in op.get("parameters") or []]
-            merged: dict[tuple[str, str], Mapping[str, Any]] = {}
+            op_params = [_deref(p, resolver, source) for p in as_list(op.get("parameters"))]
+            merged: dict[tuple[str, str], JsonObject] = {}
             for p in [*path_params, *op_params]:
-                merged[(str(p.get("name")), str(p.get("in")))] = p
-            consumes = list(op.get("consumes") or root_consumes)
-            produces = list(op.get("produces") or root_produces)
+                if p is not None:
+                    merged[(str(p.get("name")), str(p.get("in")))] = p
+            consumes = list(strings(op, "consumes")) or root_consumes
+            produces = list(strings(op, "produces")) or root_produces
             params: list[Parameter] = []
             body: RequestBody | None = None
             form_props: dict[str, Schema] = {}
@@ -82,17 +81,18 @@ def normalize_swagger2(raw: Mapping[str, Any], *, source: str, digest: str) -> D
             for p in merged.values():
                 loc = p.get("in")
                 if loc == "body":
-                    schema = conv.convert(p.get("schema") or {}, source)
+                    schema = conv.convert(obj(p, "schema"), source)
                     body = RequestBody(
                         content={media: schema for media in consumes},
                         required=bool(p.get("required")),
-                        description=p.get("description"),
+                        description=text(p, "description"),
                         extensions=extensions_of(p),
                     )
                 elif loc == "formData":
-                    form_props[str(p["name"])] = _param_schema(p, conv, source)
+                    name = str(p["name"])
+                    form_props[name] = _param_schema(p, conv, source)
                     if p.get("required"):
-                        form_required.add(str(p["name"]))
+                        form_required.add(name)
                     form_has_file = form_has_file or p.get("type") == "file"
                 else:
                     params.append(_parameter(p, conv, source))
@@ -106,36 +106,31 @@ def normalize_swagger2(raw: Mapping[str, Any], *, source: str, digest: str) -> D
                     required=bool(form_required),
                 )
             responses: dict[str, Response] = {}
-            for code, resp in (op.get("responses") or {}).items():
-                if not isinstance(resp, Mapping):
-                    continue
+            for code, resp in objects(op, "responses"):
                 if "$ref" in resp:
-                    resp = resolver.lookup(resp["$ref"], source)[0]
+                    resp = resolver.lookup_object(str(resp["$ref"]), source)[0]
                 content: dict[str, Schema] = {}
-                if isinstance(resp.get("schema"), Mapping):
-                    schema = conv.convert(resp["schema"], source)
+                resp_schema = as_object(resp.get("schema"))
+                if resp_schema is not None:
+                    schema = conv.convert(resp_schema, source)
                     content = {media: schema for media in produces}
-                headers = {
-                    hname: _param_schema(h, conv, source)
-                    for hname, h in (resp.get("headers") or {}).items()
-                    if isinstance(h, Mapping)
-                }
-                responses[str(code)] = Response(
-                    status=str(code),
-                    description=resp.get("description"),
+                headers = {hname: _param_schema(h, conv, source) for hname, h in objects(resp, "headers")}
+                responses[code] = Response(
+                    status=code,
+                    description=text(resp, "description"),
                     content=content,
                     headers=headers,
                     extensions=extensions_of(resp),
                 )
-            operation_id = op.get("operationId") or f"{method}_{path}"
+            operation_id = text(op, "operationId") or f"{method}_{path}"
             operations.append(
                 Operation(
-                    operation_id=str(operation_id),
+                    operation_id=operation_id,
                     method=method,
-                    path=str(path),
-                    summary=op.get("summary"),
-                    description=op.get("description"),
-                    tags=tuple(str(t) for t in op.get("tags") or ()),
+                    path=path,
+                    summary=text(op, "summary"),
+                    description=text(op, "description"),
+                    tags=strings(op, "tags"),
                     parameters=tuple(params),
                     request_body=body,
                     responses=responses,
@@ -145,12 +140,12 @@ def normalize_swagger2(raw: Mapping[str, Any], *, source: str, digest: str) -> D
             )
 
     return Document(
-        title=str(info.get("title") or ""),
+        title=text(info, "title") or "",
         version=str(info.get("version") or ""),
         format="swagger2",
         source=source,
         hash=digest,
-        description=info.get("description"),
+        description=text(info, "description"),
         servers=servers,
         operations=tuple(operations),
         schemas=dict(conv.schemas),
@@ -158,20 +153,21 @@ def normalize_swagger2(raw: Mapping[str, Any], *, source: str, digest: str) -> D
     )
 
 
-def _deref_param(p: Any, resolver: RefResolver, source: str) -> Mapping[str, Any]:
-    if isinstance(p, Mapping) and "$ref" in p:
-        return resolver.lookup(p["$ref"], source)[0]
-    return p
+def _deref(p: Any, resolver: RefResolver, source: str) -> JsonObject | None:
+    node = as_object(p)
+    if node is not None and "$ref" in node:
+        return resolver.lookup_object(str(node["$ref"]), source)[0]
+    return node
 
 
-def _param_schema(p: Mapping[str, Any], conv: SchemaConverter, source: str) -> Schema:
-    node = {k: v for k, v in p.items() if k in _PARAM_SCHEMA_KEYS}
+def _param_schema(p: JsonObject, conv: SchemaConverter, source: str) -> Schema:
+    node: dict[str, Any] = {k: v for k, v in p.items() if k in _PARAM_SCHEMA_KEYS}
     if "description" in p:
         node["description"] = p["description"]
     return conv.convert(node, source)
 
 
-def _parameter(p: Mapping[str, Any], conv: SchemaConverter, source: str) -> Parameter:
+def _parameter(p: JsonObject, conv: SchemaConverter, source: str) -> Parameter:
     loc = str(p.get("in"))
     style, explode = _COLLECTION_FORMATS.get(str(p.get("collectionFormat") or "csv"), ("form", False))
     if loc in ("path", "header"):
@@ -184,7 +180,7 @@ def _parameter(p: Mapping[str, Any], conv: SchemaConverter, source: str) -> Para
         location=loc,  # type: ignore[arg-type]
         schema=_param_schema(p, conv, source),
         required=bool(p.get("required")) or loc == "path",
-        description=p.get("description"),
+        description=text(p, "description"),
         style=style,
         explode=explode,
         allow_reserved=bool(p.get("allowReserved")),

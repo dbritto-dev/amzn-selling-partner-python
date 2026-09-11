@@ -184,9 +184,9 @@ class ModelNamespace:
         ad = self._adapters.get(key)
         if ad is None:
             if isinstance(t, type) and issubclass(t, BaseModel):
-                ad = TypeAdapter(t)
+                ad = TypeAdapter[Any](cast(Any, t))
             else:
-                ad = TypeAdapter(t, config=ADAPTER_CONFIG)
+                ad = TypeAdapter[Any](cast(Any, t), config=ADAPTER_CONFIG)
             self._adapters[key] = ad
         return ad
 
@@ -339,14 +339,13 @@ class ModelNamespace:
                 ann = Optional[ann]  # noqa: UP045
                 info = Field(default=None, alias=wire) if wire != py else Field(default=None)
             fields[py] = (ann, info)
-        model = create_model(  # type: ignore[call-overload]
+        model: type[BaseModel] = create_model(  # type: ignore[call-overload]
             cls_name,
             __config__=MODEL_CONFIG,
             __module__=self.module.__name__,
             __doc__=schema.description or None,
             **fields,
         )
-        model = cast(type[BaseModel], model)
         if not schema.name or schema.name != name:
             # inline object: expose it in the module too so forward refs work
             setattr(self.module, cls_name, model)
@@ -364,9 +363,7 @@ def _has_forward_ref(ann: Any) -> bool:
     return False
 
 
-def build_models(
-    document: Document, *, key: str | None = None, enum_mode: Literal["literal", "plain"] = "literal"
-) -> ModelNamespace:
+def build_models(document: Document, *, key: str | None = None, enum_mode: Literal["literal", "plain"] = "literal") -> ModelNamespace:
     return ModelNamespace(document, key=key, enum_mode=enum_mode)
 
 

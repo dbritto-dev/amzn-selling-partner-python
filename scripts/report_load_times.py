@@ -1,6 +1,6 @@
 """Report per-API load + compile time for the Amazon models (cold and from the IR cache).
 
-    python scripts/report_load_times.py [--json out.json]
+python scripts/report_load_times.py [--json out.json]
 """
 
 from __future__ import annotations
@@ -9,7 +9,6 @@ import argparse
 import json
 import subprocess
 import sys
-import time
 
 
 def measure(label: str) -> dict[str, float]:

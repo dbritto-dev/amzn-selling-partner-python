@@ -13,11 +13,11 @@ import os
 import pathlib
 import re
 import time
-from collections.abc import Iterable, Mapping
-from typing import Any
+from collections.abc import Iterable
 
 from pydantic_core import from_json
 
+from ._jsonutil import JsonObject, as_object, obj, text
 from ._schema import SchemaConverter, extensions_of
 from .cache import load_cached, spec_hash, store_cached
 from .ir import Document
@@ -28,7 +28,7 @@ from .swagger2 import normalize_swagger2
 log = logging.getLogger("spapi.spec")
 
 
-def normalize(raw: Mapping[str, Any], *, source: str, digest: str) -> Document:
+def normalize(raw: JsonObject, *, source: str, digest: str) -> Document:
     if "swagger" in raw:
         return normalize_swagger2(raw, source=source, digest=digest)
     if "openapi" in raw:
@@ -36,13 +36,13 @@ def normalize(raw: Mapping[str, Any], *, source: str, digest: str) -> Document:
     return normalize_jsonschema(raw, source=source, digest=digest)
 
 
-def normalize_jsonschema(raw: Mapping[str, Any], *, source: str, digest: str) -> Document:
+def normalize_jsonschema(raw: JsonObject, *, source: str, digest: str) -> Document:
     """A standalone JSON Schema becomes a document with one root schema (named
     after ``title`` or the file stem) plus its ``definitions`` / ``$defs``."""
     resolver = RefResolver(source, raw)
     conv = SchemaConverter(resolver)
-    conv.register_all(raw.get("definitions"), source, "/definitions")
-    conv.register_all(raw.get("$defs"), source, "/$defs")
+    conv.register_all(obj(raw, "definitions"), source, "/definitions")
+    conv.register_all(obj(raw, "$defs"), source, "/$defs")
     stem = pathlib.Path(source).stem
     name = re.sub(r"[^0-9A-Za-z_]", "_", stem) or "Root"
     if name in conv.schemas:
@@ -54,7 +54,7 @@ def normalize_jsonschema(raw: Mapping[str, Any], *, source: str, digest: str) ->
         format="jsonschema",
         source=source,
         hash=digest,
-        description=raw.get("description"),
+        description=text(raw, "description"),
         schemas=dict(conv.schemas),
         extensions=extensions_of(raw),
         annotations={"root_schema": name},
@@ -72,8 +72,8 @@ def load_document(path: str | os.PathLike[str], *, use_cache: bool = True) -> Do
             log.debug("IR cache hit for %s", p)
             return cached
     started = time.perf_counter()
-    raw = from_json(data)
-    if not isinstance(raw, Mapping):
+    raw = as_object(from_json(data))
+    if raw is None:
         raise ValueError(f"{p}: top level of a spec must be a JSON object")
     doc = normalize(raw, source=str(p), digest=digest)
     log.debug(

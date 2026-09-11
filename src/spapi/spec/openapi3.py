@@ -2,9 +2,9 @@
 
 from __future__ import annotations
 
-from collections.abc import Mapping
 from typing import Any
 
+from ._jsonutil import JsonObject, as_list, as_object, obj, objects, strings, text
 from ._schema import SchemaConverter, extensions_of
 from .ir import Document, Operation, Parameter, RequestBody, Response, Schema, Server, Style
 from .refs import RefResolver
@@ -19,69 +19,64 @@ _DEFAULT_STYLE: dict[str, Style] = {
 }
 
 
-def normalize_openapi3(raw: Mapping[str, Any], *, source: str, digest: str) -> Document:
+def normalize_openapi3(raw: JsonObject, *, source: str, digest: str) -> Document:
     resolver = RefResolver(source, raw)
     conv = SchemaConverter(resolver)
-    components = raw.get("components") or {}
-    conv.register_all(components.get("schemas"), source, "/components/schemas")
+    components = obj(raw, "components")
+    conv.register_all(obj(components, "schemas"), source, "/components/schemas")
 
-    info = raw.get("info") or {}
-    servers = tuple(_server(s) for s in raw.get("servers") or () if isinstance(s, Mapping))
+    info = obj(raw, "info")
+    servers = tuple(_server(server) for raw_server in as_list(raw.get("servers")) if (server := as_object(raw_server)) is not None)
 
     operations: list[Operation] = []
-    for path, item in (raw.get("paths") or {}).items():
-        if not isinstance(item, Mapping):
-            continue
+    for path, item in objects(raw, "paths"):
         if "$ref" in item:
-            item = resolver.lookup(item["$ref"], source)[0]
-        path_params = [_deref(p, resolver, source) for p in item.get("parameters") or []]
+            item = resolver.lookup_object(str(item["$ref"]), source)[0]
+        path_params = [_deref(p, resolver, source) for p in as_list(item.get("parameters"))]
         for method in _METHODS:
-            op = item.get(method)
-            if not isinstance(op, Mapping):
+            op = as_object(item.get(method))
+            if op is None:
                 continue
-            op_params = [_deref(p, resolver, source) for p in op.get("parameters") or []]
-            merged: dict[tuple[str, str], Mapping[str, Any]] = {}
+            op_params = [_deref(p, resolver, source) for p in as_list(op.get("parameters"))]
+            merged: dict[tuple[str, str], JsonObject] = {}
             for p in [*path_params, *op_params]:
-                merged[(str(p.get("name")), str(p.get("in")))] = p
-            params = tuple(_parameter(p, conv, source, resolver) for p in merged.values())
+                if p is not None:
+                    merged[(str(p.get("name")), str(p.get("in")))] = p
+            params = tuple(_parameter(p, conv, source) for p in merged.values())
 
             body: RequestBody | None = None
-            rb = op.get("requestBody")
-            if isinstance(rb, Mapping):
-                rb = _deref(rb, resolver, source)
+            rb = _deref(op.get("requestBody"), resolver, source)
+            if rb is not None:
                 body = RequestBody(
                     content=_content(rb.get("content"), conv, source),
                     required=bool(rb.get("required")),
-                    description=rb.get("description"),
+                    description=text(rb, "description"),
                     extensions=extensions_of(rb),
                 )
 
             responses: dict[str, Response] = {}
-            for code, resp in (op.get("responses") or {}).items():
-                if not isinstance(resp, Mapping):
-                    continue
-                resp = _deref(resp, resolver, source)
+            for code, resp in objects(op, "responses"):
+                resp = _deref(resp, resolver, source) or resp
                 headers: dict[str, Schema] = {}
-                for hname, h in (resp.get("headers") or {}).items():
-                    if isinstance(h, Mapping):
-                        h = _deref(h, resolver, source)
-                        headers[hname] = conv.convert(h.get("schema") or {}, source)
-                responses[str(code)] = Response(
-                    status=str(code),
-                    description=resp.get("description"),
+                for hname, h in objects(resp, "headers"):
+                    h = _deref(h, resolver, source) or h
+                    headers[hname] = conv.convert(obj(h, "schema"), source)
+                responses[code] = Response(
+                    status=code,
+                    description=text(resp, "description"),
                     content=_content(resp.get("content"), conv, source),
                     headers=headers,
                     extensions=extensions_of(resp),
                 )
-            operation_id = op.get("operationId") or f"{method}_{path}"
+            operation_id = text(op, "operationId") or f"{method}_{path}"
             operations.append(
                 Operation(
-                    operation_id=str(operation_id),
+                    operation_id=operation_id,
                     method=method,
-                    path=str(path),
-                    summary=op.get("summary"),
-                    description=op.get("description"),
-                    tags=tuple(str(t) for t in op.get("tags") or ()),
+                    path=path,
+                    summary=text(op, "summary"),
+                    description=text(op, "description"),
+                    tags=strings(op, "tags"),
                     parameters=params,
                     request_body=body,
                     responses=responses,
@@ -91,12 +86,12 @@ def normalize_openapi3(raw: Mapping[str, Any], *, source: str, digest: str) -> D
             )
 
     return Document(
-        title=str(info.get("title") or ""),
+        title=text(info, "title") or "",
         version=str(info.get("version") or ""),
         format="openapi3",
         source=source,
         hash=digest,
-        description=info.get("description"),
+        description=text(info, "description"),
         servers=servers,
         operations=tuple(operations),
         schemas=dict(conv.schemas),
@@ -104,44 +99,41 @@ def normalize_openapi3(raw: Mapping[str, Any], *, source: str, digest: str) -> D
     )
 
 
-def _deref(node: Any, resolver: RefResolver, source: str) -> Mapping[str, Any]:
-    if isinstance(node, Mapping) and "$ref" in node:
-        return resolver.lookup(node["$ref"], source)[0]
-    return node
+def _deref(node: Any, resolver: RefResolver, source: str) -> JsonObject | None:
+    o = as_object(node)
+    if o is not None and "$ref" in o:
+        return resolver.lookup_object(str(o["$ref"]), source)[0]
+    return o
 
 
-def _server(s: Mapping[str, Any]) -> Server:
-    variables = {
-        name: str((v or {}).get("default", ""))
-        for name, v in (s.get("variables") or {}).items()
-        if isinstance(v, Mapping)
-    }
-    return Server(
-        url=str(s.get("url", "")),
-        description=s.get("description"),
-        variables=variables,
-        extensions=extensions_of(s),
-    )
+def _server(s: JsonObject) -> Server:
+    variables = {name: str(v.get("default", "")) for name, v in objects(s, "variables")}
+    return Server(url=text(s, "url") or "", description=text(s, "description"), variables=variables, extensions=extensions_of(s))
 
 
 def _content(content: Any, conv: SchemaConverter, source: str) -> dict[str, Schema]:
     out: dict[str, Schema] = {}
-    if isinstance(content, Mapping):
-        for media, mt in content.items():
-            if isinstance(mt, Mapping):
-                out[str(media)] = conv.convert(mt.get("schema") or {}, source)
+    node = as_object(content)
+    if node is not None:
+        for media, mt_raw in node.items():
+            mt = as_object(mt_raw)
+            if mt is not None:
+                out[str(media)] = conv.convert(obj(mt, "schema"), source)
     return out
 
 
-def _parameter(p: Mapping[str, Any], conv: SchemaConverter, source: str, resolver: RefResolver) -> Parameter:
+def _parameter(p: JsonObject, conv: SchemaConverter, source: str) -> Parameter:
     loc = str(p.get("in"))
-    if isinstance(p.get("schema"), (Mapping, bool)):
-        schema = conv.convert(p["schema"], source)
-    elif isinstance(p.get("content"), Mapping):
+    raw_schema = p.get("schema")
+    if isinstance(raw_schema, bool):
+        schema = conv.convert(raw_schema, source)
+    elif (schema_obj := as_object(raw_schema)) is not None:
+        schema = conv.convert(schema_obj, source)
+    elif as_object(p.get("content")) is not None:
         schema = next(iter(_content(p["content"], conv, source).values()), Schema())
     else:
         schema = Schema()
-    style: Style = p.get("style") or _DEFAULT_STYLE.get(loc, "form")  # type: ignore[assignment]
+    style: Style = text(p, "style") or _DEFAULT_STYLE.get(loc, "form")  # type: ignore[assignment]
     explode = p.get("explode")
     if explode is None:
         explode = style == "form"
@@ -150,7 +142,7 @@ def _parameter(p: Mapping[str, Any], conv: SchemaConverter, source: str, resolve
         location=loc,  # type: ignore[arg-type]
         schema=schema,
         required=bool(p.get("required")) or loc == "path",
-        description=p.get("description"),
+        description=text(p, "description"),
         style=style,
         explode=bool(explode),
         allow_reserved=bool(p.get("allowReserved")),

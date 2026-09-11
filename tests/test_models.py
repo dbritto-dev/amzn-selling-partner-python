@@ -2,7 +2,6 @@ from __future__ import annotations
 
 import datetime
 import json
-import pathlib
 
 import pytest
 from pydantic import BaseModel, TypeAdapter, ValidationError
@@ -31,7 +30,20 @@ def test_object_model_fields_and_aliases(ns) -> None:
 
 
 def test_decode_and_encode_roundtrip(ns) -> None:
-    body = {"id": 1, "name": "x", "tag": None, "status": "sold", "createdAt": "2020-01-01T00:00:00Z", "birthday": "2020-01-02", "photo": "aGVsbG8=", "metadata": {"k": "v"}, "owner": {"name": "o"}, "category": {"name": "c", "parent": {"name": "root"}}, "schema": "s", "extra": 5}
+    body = {
+        "id": 1,
+        "name": "x",
+        "tag": None,
+        "status": "sold",
+        "createdAt": "2020-01-01T00:00:00Z",
+        "birthday": "2020-01-02",
+        "photo": "aGVsbG8=",
+        "metadata": {"k": "v"},
+        "owner": {"name": "o"},
+        "category": {"name": "c", "parent": {"name": "root"}},
+        "schema": "s",
+        "extra": 5,
+    }
     pet = TypeAdapter(ns.Pet).validate_json(json.dumps(body).encode())
     assert pet.created_at == datetime.datetime(2020, 1, 1, tzinfo=datetime.UTC)
     assert pet.birthday == datetime.date(2020, 1, 2)
@@ -98,7 +110,9 @@ def test_swagger2_models() -> None:
     ns = build_models(load_document(SWAGGER2), key="test_sw2")
     assert ns.Decimal is str
     assert ns.PetList == list[ns.Pet]
-    resp = TypeAdapter(ns.GetPetsResponse).validate_json(b'{"payload":{"Pets":[{"Id":1,"Name":"n","Tag":null,"Price":"1.5","Parent":{"Id":2,"Name":"p"},"Attributes":{"a":[1]}}],"NextToken":"t"}}')
+    resp = TypeAdapter(ns.GetPetsResponse).validate_json(
+        b'{"payload":{"Pets":[{"Id":1,"Name":"n","Tag":null,"Price":"1.5","Parent":{"Id":2,"Name":"p"},"Attributes":{"a":[1]}}],"NextToken":"t"}}'
+    )
     assert resp.payload.pets[0].parent.id == 2 and resp.payload.pets[0].attributes == {"a": [1]}
     assert resp.payload.next_token == "t"
 
@@ -138,7 +152,14 @@ def test_build_all_and_dir(ns) -> None:
 
 
 def test_duplicate_python_field_names() -> None:
-    raw = {"openapi": "3.1.0", "info": {"title": "t", "version": "1"}, "paths": {}, "components": {"schemas": {"X": {"type": "object", "properties": {"marketplaceId": {"type": "string"}, "MarketplaceId": {"type": "integer"}}}}}}
+    raw = {
+        "openapi": "3.1.0",
+        "info": {"title": "t", "version": "1"},
+        "paths": {},
+        "components": {
+            "schemas": {"X": {"type": "object", "properties": {"marketplaceId": {"type": "string"}, "MarketplaceId": {"type": "integer"}}}}
+        },
+    }
     ns = build_models(normalize(raw, source="mem.json", digest="dup"), key="dup")
     fields = ns.X.model_fields
     assert set(fields) == {"marketplace_id", "marketplace_id_2"}
@@ -147,7 +168,23 @@ def test_duplicate_python_field_names() -> None:
 
 
 def test_reserved_class_names() -> None:
-    raw = {"openapi": "3.1.0", "info": {"title": "t", "version": "1"}, "paths": {}, "components": {"schemas": {"list": {"type": "object", "properties": {"a": {"type": "string"}}}, "Holder": {"type": "object", "properties": {"items": {"type": "array", "items": {"$ref": "#/components/schemas/list"}}, "me": {"$ref": "#/components/schemas/Holder"}}}}}}
+    raw = {
+        "openapi": "3.1.0",
+        "info": {"title": "t", "version": "1"},
+        "paths": {},
+        "components": {
+            "schemas": {
+                "list": {"type": "object", "properties": {"a": {"type": "string"}}},
+                "Holder": {
+                    "type": "object",
+                    "properties": {
+                        "items": {"type": "array", "items": {"$ref": "#/components/schemas/list"}},
+                        "me": {"$ref": "#/components/schemas/Holder"},
+                    },
+                },
+            }
+        },
+    }
     ns = build_models(normalize(raw, source="mem.json", digest="reserved"), key="reserved")
     ns.build_all()
     assert ns.get("list").__name__ == "list_"
@@ -161,5 +198,7 @@ def test_amazon_orders_models() -> None:
     ns.build_all()
     Order = ns.Order
     assert Order.model_fields["amazon_order_id"].alias == "AmazonOrderId"
-    order = Order.model_validate({"AmazonOrderId": "1", "PurchaseDate": "2020-01-01T00:00:00Z", "LastUpdateDate": "2020-01-01T00:00:00Z", "OrderStatus": "Shipped"})
+    order = Order.model_validate(
+        {"AmazonOrderId": "1", "PurchaseDate": "2020-01-01T00:00:00Z", "LastUpdateDate": "2020-01-01T00:00:00Z", "OrderStatus": "Shipped"}
+    )
     assert order.order_status == "Shipped"

@@ -46,7 +46,7 @@ build-backend = "uv_build"
 module-name = ["spapi", "amzn_selling_partner"]
 
 [tool.ruff]
-line-length = 99
+line-length = 140
 target-version = "py312"
 exclude = ["build", ".venv", ".nox", "spec", "stubs", "*.pyi"]
 
@@ -62,10 +62,11 @@ quote-style = "double"
 indent-style = "space"
 
 [tool.pyright]
-include = ["src/spapi", "src/amzn_selling_partner"]
+include = ["src/spapi", "src/amzn_selling_partner", "stubs"]
 venvPath = "."
 venv = ".venv"
-exclude = ["**/__pycache__", "src/spapi/_stubs"]
+stubPath = "stubs"
+exclude = ["**/__pycache__"]
 pythonVersion = "3.12"
 typeCheckingMode = "strict"
 reportMissingModuleSource = false

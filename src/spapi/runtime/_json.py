@@ -23,6 +23,8 @@ class PydanticJsonCodec:
     __slots__ = ()
 
     def loads(self, data: bytes | bytearray | memoryview | str, /) -> Any:
+        if isinstance(data, memoryview):
+            data = data.tobytes()
         return from_json(data)
 
     def dumps(self, obj: Any, /) -> bytes:

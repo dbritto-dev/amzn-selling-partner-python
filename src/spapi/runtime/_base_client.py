@@ -247,7 +247,9 @@ class BaseClient:
             try:
                 result = op.decoder_for(response.status_code).decode(body, lambda: response.text)
             except ValidationError as exc:
-                raise APIResponseValidationError(f"{op.operation_id}: response body does not match the spec: {exc}", response=response, cause=exc) from exc
+                raise APIResponseValidationError(
+                    f"{op.operation_id}: response body does not match the spec: {exc}", response=response, cause=exc
+                ) from exc
         pagination = self._pagination_for(op, options)
         if pagination is None:
             return result

@@ -12,7 +12,7 @@ from __future__ import annotations
 
 from collections.abc import AsyncIterator, Callable, Iterator
 from dataclasses import dataclass, field
-from typing import TYPE_CHECKING, Any, Generic, TypeVar
+from typing import TYPE_CHECKING, Any, cast
 
 from ._types import NOT_GIVEN, NotGiven
 
@@ -20,8 +20,6 @@ if TYPE_CHECKING:
     from ..compile.operations import CompiledOp
     from ._base_client import AsyncAPIClient, SyncAPIClient
     from ._types import RequestOptions
-
-T = TypeVar("T")
 
 
 @dataclass(slots=True, frozen=True, kw_only=True)
@@ -81,7 +79,7 @@ def make_getter(path: str, *, python_names: Callable[[str], str] | None = None) 
             if obj is None:
                 return None
             if isinstance(obj, dict):
-                return obj.get(a)
+                return cast(dict[str, Any], obj).get(a)
             return getattr(obj, a, None)
 
         return get1
@@ -90,13 +88,13 @@ def make_getter(path: str, *, python_names: Callable[[str], str] | None = None) 
         for p in parts:
             if obj is None:
                 return None
-            obj = obj.get(p) if isinstance(obj, dict) else getattr(obj, p, None)
+            obj = cast(dict[str, Any], obj).get(p) if isinstance(obj, dict) else getattr(obj, p, None)
         return obj
 
     return getn
 
 
-class _PageBase(Generic[T]):
+class _PageBase[T]:
     __slots__ = ("_client", "_kwargs", "_options", "_op", "_raw_mode", "_spec", "raw")
 
     raw: Any
@@ -155,7 +153,7 @@ class _PageBase(Generic[T]):
         return f"<{type(self).__name__} items={len(self.items)} has_next={self.has_next}>"
 
 
-class SyncPage(_PageBase[T]):
+class SyncPage[T](_PageBase[T]):
     __slots__ = ()
 
     _client: SyncAPIClient
@@ -180,7 +178,7 @@ class SyncPage(_PageBase[T]):
         return list(self)
 
 
-class AsyncPage(_PageBase[T]):
+class AsyncPage[T](_PageBase[T]):
     __slots__ = ()
 
     _client: AsyncAPIClient

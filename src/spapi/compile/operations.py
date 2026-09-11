@@ -27,7 +27,7 @@ import logging
 import re
 from collections.abc import Callable, Iterable
 from dataclasses import dataclass, field
-from typing import Any, Literal
+from typing import Any, Literal, cast
 from urllib.parse import urlencode
 
 from pydantic import BaseModel, TypeAdapter
@@ -35,7 +35,7 @@ from pydantic_core import to_json
 
 from ..runtime._pagination import CompiledPagination, Pagination, make_getter
 from ..runtime._throttle import RateLimit
-from ..runtime._types import NOT_GIVEN, NotGiven, RequestOptions
+from ..runtime._types import NOT_GIVEN
 from ..spec.ir import Document, Operation, Parameter, Response, Schema
 from ._serializers import Encoder, header_serializer, path_serializer, query_serializer
 from .models import ModelNamespace
@@ -196,9 +196,9 @@ class CompiledOp:
         if body.kind == "text":
             return (value if isinstance(value, bytes) else str(value).encode()), body.content_type
         if isinstance(value, (bytes, bytearray, memoryview)):
-            return bytes(value), body.content_type  # pre-encoded form/multipart payload
+            return bytes(cast(bytes, value)), body.content_type  # pre-encoded form/multipart payload
         if body.kind == "form" and isinstance(value, dict):
-            return urlencode(value, doseq=True).encode(), body.content_type
+            return urlencode(cast(dict[str, Any], value), doseq=True).encode(), body.content_type
         raise TypeError(f"{self.name}: a {body.kind!r} body must be passed as pre-encoded bytes")
 
     def check_kwargs(self, kwargs: dict[str, Any]) -> None:
@@ -269,13 +269,33 @@ def compile_operation(
         p = by_wire.get((wire, "path"))
         if p is None:
             p = Parameter(name=wire, location="path", schema=Schema(type="string"), required=True)
-        path_specs.append(ParamSpec(unique(param_name(wire)), wire, True, "path", path_serializer(p, resolve), ann(p.schema, pascal_case(wire))))
+        path_specs.append(
+            ParamSpec(unique(param_name(wire)), wire, True, "path", path_serializer(p, resolve), ann(p.schema, pascal_case(wire)))
+        )
         template = template.replace("{" + wire + "}", "{}", 1)
     for p in op.parameters:
         if p.location == "query":
-            query_specs.append(ParamSpec(unique(param_name(p.name)), p.name, p.required, "query", query_serializer(p, resolve), ann(p.schema, pascal_case(p.name))))
+            query_specs.append(
+                ParamSpec(
+                    unique(param_name(p.name)),
+                    p.name,
+                    p.required,
+                    "query",
+                    query_serializer(p, resolve),
+                    ann(p.schema, pascal_case(p.name)),
+                )
+            )
         elif p.location == "header":
-            header_specs.append(ParamSpec(unique(param_name(p.name)), p.name, p.required, "header", header_serializer(p, resolve), ann(p.schema, pascal_case(p.name))))
+            header_specs.append(
+                ParamSpec(
+                    unique(param_name(p.name)),
+                    p.name,
+                    p.required,
+                    "header",
+                    header_serializer(p, resolve),
+                    ann(p.schema, pascal_case(p.name)),
+                )
+            )
         elif p.location == "cookie":
             log.warning("%s.%s: cookie parameter %r is not supported and is ignored", key_prefix, op.operation_id, p.name)
 
@@ -342,7 +362,9 @@ def compile_operation(
         default = inspect.Parameter.empty if body_spec.required else NOT_GIVEN
         params.append(inspect.Parameter("body", inspect.Parameter.KEYWORD_ONLY, default=default, annotation=body_spec.annotation))
     params.append(inspect.Parameter("raw", inspect.Parameter.KEYWORD_ONLY, default=False, annotation="bool"))
-    params.append(inspect.Parameter("paginate", inspect.Parameter.KEYWORD_ONLY, default=NOT_GIVEN, annotation="Pagination | None | NotGiven"))
+    params.append(
+        inspect.Parameter("paginate", inspect.Parameter.KEYWORD_ONLY, default=NOT_GIVEN, annotation="Pagination | None | NotGiven")
+    )
     params.append(inspect.Parameter("request_options", inspect.Parameter.KEYWORD_ONLY, default=None, annotation="RequestOptions | None"))
     # keep signature parameters ordered: required first
     params.sort(key=lambda p: p.default is not inspect.Parameter.empty)
@@ -408,7 +430,9 @@ def compile_operations(document: Document, ns: ModelNamespace, *, key_prefix: st
             if name in seen:
                 seen[name] = seen.get(name, 0) + 1
                 name = f"{name}_{seen[name]}"
-            log.warning("%s: duplicate operationId %r; exposing %s %s as %s()", key_prefix, op.operation_id, op.method.upper(), op.path, name)
+            log.warning(
+                "%s: duplicate operationId %r; exposing %s %s as %s()", key_prefix, op.operation_id, op.method.upper(), op.path, name
+            )
         seen[name] = seen.get(name, 0) + 1
         out.append(compile_operation(op, document, ns, key_prefix=key_prefix, name=name))
     return out
@@ -477,15 +501,25 @@ def detect_pagination(op: Operation, document: Document, *, key: str = "") -> Pa
             items_prefix = prefix
         prev_field = next((n for n in props if n.lower() in ("prevtoken", "previoustoken", "previouspagetoken")), None)
         if len(arrays) == 1:
-            candidates.append((_join(prefix, token_field), _join(items_prefix, arrays[0]), _join(prefix, prev_field) if prev_field else None))
+            candidates.append(
+                (_join(prefix, token_field), _join(items_prefix, arrays[0]), _join(prefix, prev_field) if prev_field else None)
+            )
         else:
-            log.info("pagination: %s: token field %r found but %d array fields nearby (%s); left unpaginated", key, _join(prefix, token_field), len(arrays), ", ".join(arrays) or "none")
+            log.info(
+                "pagination: %s: token field %r found but %d array fields nearby (%s); left unpaginated",
+                key,
+                _join(prefix, token_field),
+                len(arrays),
+                ", ".join(arrays) or "none",
+            )
             return None
     if len(candidates) != 1:
         if candidates:
             log.info("pagination: %s: ambiguous (%d candidates); left unpaginated", key, len(candidates))
         else:
-            log.info("pagination: %s has a %s parameter but no matching token field in the response; left unpaginated", key, token_param.name)
+            log.info(
+                "pagination: %s has a %s parameter but no matching token field in the response; left unpaginated", key, token_param.name
+            )
         return None
     token_path, items_path, prev_path = candidates[0]
     return Pagination(

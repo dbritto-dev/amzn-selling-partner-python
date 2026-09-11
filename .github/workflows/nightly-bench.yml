@@ -1,0 +1,61 @@
+name: Nightly benchmark
+
+on:
+  schedule:
+    - cron: "17 3 * * *"
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  bench:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          submodules: true
+
+      - name: Set up uv
+        uses: astral-sh/setup-uv@v7
+        with:
+          python-version: "3.12"
+          enable-cache: true
+
+      - name: Install
+        run: uv sync --extra dev --extra aiohttp
+
+      - name: Restore previous baseline
+        id: baseline
+        uses: actions/cache/restore@v4
+        with:
+          path: benchmarks/baseline.json
+          key: bench-baseline-${{ github.ref_name }}-${{ github.run_id }}
+          restore-keys: |
+            bench-baseline-${{ github.ref_name }}-
+
+      - name: Run benchmarks (fail on >15% regression)
+        run: |
+          if [ -f benchmarks/baseline.json ]; then
+            uv run python benchmarks/bench.py --iterations 500 --json benchmarks/results.json --compare benchmarks/baseline.json --threshold 0.15 --strict-ratio
+          else
+            uv run python benchmarks/bench.py --iterations 500 --json benchmarks/results.json --strict-ratio
+          fi
+          cp benchmarks/results.json benchmarks/baseline.json
+
+      - name: Report load times
+        run: uv run python scripts/report_load_times.py
+
+      - name: Save baseline
+        if: always()
+        uses: actions/cache/save@v4
+        with:
+          path: benchmarks/baseline.json
+          key: bench-baseline-${{ github.ref_name }}-${{ github.run_id }}
+
+      - name: Upload results
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: bench-results
+          path: benchmarks/results.json

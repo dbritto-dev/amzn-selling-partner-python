@@ -21,7 +21,7 @@ import logging
 import sys
 from collections.abc import Callable, Iterable
 from dataclasses import dataclass, field
-from typing import Any
+from typing import Any, cast
 
 import httpx2
 from pydantic import ValidationError
@@ -31,6 +31,7 @@ from .compile.naming import param_name
 from .compile.operations import CompiledOp
 from .runtime._pagination import AsyncPage, SyncPage
 from .runtime._stream import AsyncStream, Stream
+from .spec._jsonutil import as_object
 from .spec.ir import Document
 
 log = logging.getLogger("spapi.sandbox_tests")
@@ -76,7 +77,18 @@ def cases_for(op: CompiledOp, document: Document, api: str, version: str) -> lis
             else:
                 kwargs["body"] = ex.body
         _fill_required(op, document, kwargs)
-        cases.append(Case(api=api, version=version, operation_id=op.operation_id, status=ex.status, kwargs=kwargs, response=ex.response, has_response=ex.has_response, source=ex.source))
+        cases.append(
+            Case(
+                api=api,
+                version=version,
+                operation_id=op.operation_id,
+                status=ex.status,
+                kwargs=kwargs,
+                response=ex.response,
+                has_response=ex.has_response,
+                source=ex.source,
+            )
+        )
     if cases:
         return cases
     # OpenAPI examples / synthetic
@@ -89,8 +101,8 @@ def cases_for(op: CompiledOp, document: Document, api: str, version: str) -> lis
         body: Any = None
         has_response = False
         js = resp.json_schema
-        examples = resp.extensions.get("x-examples") or {}
-        if isinstance(examples, dict) and examples:
+        examples = as_object(resp.extensions.get("x-examples")) or {}
+        if examples:
             body, has_response = next(iter(examples.values())), True
         elif js is not None:
             resolved = document.resolve(js)
@@ -98,7 +110,18 @@ def cases_for(op: CompiledOp, document: Document, api: str, version: str) -> lis
                 body, has_response = resolved.example, True
             else:
                 body, has_response = example_from_schema(document, js, all_fields=True), True
-        cases.append(Case(api=api, version=version, operation_id=op.operation_id, status=status, kwargs=kwargs, response=body, has_response=has_response, source="synthetic"))
+        cases.append(
+            Case(
+                api=api,
+                version=version,
+                operation_id=op.operation_id,
+                status=status,
+                kwargs=kwargs,
+                response=body,
+                has_response=has_response,
+                source="synthetic",
+            )
+        )
         break
     return cases
 
@@ -124,9 +147,9 @@ def make_transport(case: Case, op: CompiledOp) -> httpx2.MockTransport:
         if request.method != op.method:
             return httpx2.Response(405, json={"errors": [{"code": "MethodNotAllowed", "message": request.method}]})
         if case.has_response and case.response is not None:
-            if isinstance(case.response, (dict, list)):
-                return httpx2.Response(case.status, json=case.response)
-            return httpx2.Response(case.status, content=str(case.response).encode())
+            if isinstance(case.response, (str, bytes)):
+                return httpx2.Response(case.status, content=case.response if isinstance(case.response, bytes) else case.response.encode())
+            return httpx2.Response(case.status, json=case.response)
         return httpx2.Response(case.status)
 
     return httpx2.MockTransport(handler)
@@ -172,7 +195,7 @@ def run_case(client_factory: Callable[[httpx2.MockTransport], Any], case: Case, 
     if case.status >= 400:
         return Outcome(case=case, mode=mode, ok=False, error="expected an error response")
     if isinstance(result, (SyncPage, AsyncPage)):
-        result.items  # noqa: B018 - exercise the getters
+        _ = cast(Any, result).items  # exercise the getters
     return Outcome(case=case, mode=mode, ok=True, result=result)
 
 

@@ -59,7 +59,7 @@ def _success_response(doc: Any, op: Any) -> httpx2.Response:
                 return httpx2.Response(status)
             media = next(iter(resp.content))
             if media == "text/event-stream":
-                return httpx2.Response(status, content=b"event: ping\ndata: {\"a\":1}\n\n", headers={"content-type": media})
+                return httpx2.Response(status, content=b'event: ping\ndata: {"a":1}\n\n', headers={"content-type": media})
             return httpx2.Response(status, content=b"plain text", headers={"content-type": media})
     raise AssertionError("no success response")
 
@@ -229,7 +229,12 @@ def test_rate_hint_header_updates_bucket(monkeypatch: pytest.MonkeyPatch) -> Non
             return httpx2.Response(429, headers={"x-amzn-RateLimit-Limit": "0.5"})
         return httpx2.Response(200, json={"id": 1, "name": "n"})
 
-    client = Client(OAS31, transport=httpx2.MockTransport(handler), rate_hint_header="x-amzn-RateLimit-Limit", default_rate_limit=RateLimit(rate=100, burst=100))
+    client = Client(
+        OAS31,
+        transport=httpx2.MockTransport(handler),
+        rate_hint_header="x-amzn-RateLimit-Limit",
+        default_rate_limit=RateLimit(rate=100, burst=100),
+    )
     api = client.petstore_oas31.latest
     api.get_pet(pet_id=1)
     assert 2.0 <= sleeps[0] <= 2.5
@@ -317,7 +322,9 @@ def test_pagination_override_per_call_and_drop_params() -> None:
 
     api = _petstore(handler)
     assert isinstance(api.list_audit(), dict) is False  # model, not page (ambiguous detection)
-    page = api.list_audit(paginate=Pagination(items_path="events", next_token_path="nextToken", next_token_param="nextToken", drop_params_on_next=True))
+    page = api.list_audit(
+        paginate=Pagination(items_path="events", next_token_path="nextToken", next_token_param="nextToken", drop_params_on_next=True)
+    )
     assert list(page) == ["a", "b"]
     assert seen[-1].endswith("/audit?nextToken=n2")
 
@@ -394,7 +401,7 @@ def test_close_releases_pool() -> None:
 
 
 def test_streaming_sse_and_bytes() -> None:
-    body = b"data: one\n\nevent: two\ndata: {\"x\": 2}\nid: 7\n\n: comment\r\n\r\ndata: three\r\ndata: more\r\n\r\n"
+    body = b'data: one\n\nevent: two\ndata: {"x": 2}\nid: 7\n\n: comment\r\n\r\ndata: three\r\ndata: more\r\n\r\n'
     api = _petstore(lambda r: httpx2.Response(200, content=body, headers={"content-type": "text/event-stream"}))
     with api.stream_events() as stream:
         events = list(stream.iter_events())
@@ -429,9 +436,9 @@ def test_dir_and_introspection() -> None:
     assert api.operation("listPets").name == "list_pets" and api.operation("list_pets").operation_id == "listPets"
     assert api.list_pets.__doc__ and "GET /pets" in api.list_pets.__doc__
     with pytest.raises(AttributeError, match="no API named"):
-        client.nope
+        _ = client.nope
     with pytest.raises(AttributeError, match="no version"):
-        versions.v9
+        _ = versions.v9
 
 
 def test_preload_reports_times() -> None:

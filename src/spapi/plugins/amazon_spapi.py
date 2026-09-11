@@ -96,7 +96,9 @@ class AmazonPlugin:
         document, unparsed = annotate_rate_limits(document, key)
         self.unparsed_rate_limits[key] = unparsed
         ops = tuple(self._annotate_operation(op, document, api, version, key) for op in document.operations)
-        servers = (Server(url=self.region.base_url(sandbox=self.sandbox), description=f"{self.region.name}{' sandbox' if self.sandbox else ''}"),)
+        servers = (
+            Server(url=self.region.base_url(sandbox=self.sandbox), description=f"{self.region.name}{' sandbox' if self.sandbox else ''}"),
+        )
         return Document(
             title=document.title,
             version=document.version,

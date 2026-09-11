@@ -68,7 +68,7 @@ class AsyncResource(_ResourceBase):
 
 def _sync_method(op: CompiledOp) -> Callable[..., Any]:
     def method(self: SyncResource, **kwargs: Any) -> Any:
-        return self._client._call(op, kwargs)
+        return self._client._call(op, kwargs)  # pyright: ignore[reportPrivateUsage]
 
     _decorate(method, op)
     return method
@@ -76,7 +76,7 @@ def _sync_method(op: CompiledOp) -> Callable[..., Any]:
 
 def _async_method(op: CompiledOp) -> Callable[..., Any]:
     async def method(self: AsyncResource, **kwargs: Any) -> Any:
-        return await self._client._call(op, kwargs)
+        return await self._client._call(op, kwargs)  # pyright: ignore[reportPrivateUsage]
 
     _decorate(method, op)
     return method

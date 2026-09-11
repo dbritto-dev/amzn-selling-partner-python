@@ -12,7 +12,7 @@ from __future__ import annotations
 import pathlib
 import posixpath
 from collections.abc import Callable, Mapping
-from typing import Any
+from typing import Any, cast
 from urllib.parse import unquote, urlsplit
 
 from pydantic_core import from_json
@@ -26,18 +26,20 @@ def json_pointer(document: Any, pointer: str) -> Any:
     """Evaluate an RFC 6901 pointer (``/a/b/0``) against a decoded JSON value."""
     if pointer in ("", "/"):
         return document
-    node = document
+    node: Any = document
     for raw in pointer.lstrip("/").split("/"):
         token = unquote(raw).replace("~1", "/").replace("~0", "~")
         if isinstance(node, list):
+            items = cast(list[Any], node)
             try:
-                node = node[int(token)]
+                node = items[int(token)]
             except (ValueError, IndexError) as exc:
                 raise RefError(f"bad pointer segment {token!r} in {pointer!r}") from exc
         elif isinstance(node, Mapping):
-            if token not in node:
+            mapping = cast(Mapping[str, Any], node)
+            if token not in mapping:
                 raise RefError(f"pointer {pointer!r} not found (missing {token!r})")
-            node = node[token]
+            node = mapping[token]
         else:
             raise RefError(f"cannot descend into {type(node).__name__} at {token!r}")
     return node
@@ -61,18 +63,10 @@ class RefResolver:
         Callable used to fetch other documents by resolved location.
     """
 
-    def __init__(
-        self,
-        root_uri: str,
-        root: Any,
-        *,
-        reader: Callable[[str], Any] = read_json_file,
-    ) -> None:
+    def __init__(self, root_uri: str, root: Any, *, reader: Callable[[str], Any] = read_json_file) -> None:
         self.root_uri = root_uri
         self.documents: dict[str, Any] = {root_uri: root}
         self._reader = reader
-
-    # -- locating -----------------------------------------------------------------
 
     def split(self, ref: str, base_uri: str) -> tuple[str, str]:
         """Return ``(document uri, pointer)`` for ``ref`` seen from ``base_uri``."""
@@ -98,6 +92,12 @@ class RefResolver:
             return json_pointer(self.document(uri), pointer), uri
         except RefError as exc:
             raise RefError(f"cannot resolve {ref!r} from {base_uri!r}: {exc}") from exc
+
+    def lookup_object(self, ref: str, base_uri: str) -> tuple[Mapping[str, Any], str]:
+        node, uri = self.lookup(ref, base_uri)
+        if not isinstance(node, Mapping):
+            raise RefError(f"$ref {ref!r} does not point at an object")
+        return cast(Mapping[str, Any], node), uri
 
     def is_local(self, ref: str, base_uri: str) -> bool:
         return self.split(ref, base_uri)[0] == base_uri

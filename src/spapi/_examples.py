@@ -6,7 +6,7 @@ by the test-suite to synthesise request arguments and response bodies.
 
 from __future__ import annotations
 
-from typing import Any
+from typing import Any, cast
 
 from .spec.ir import Document, Schema
 
@@ -40,7 +40,7 @@ def example_from_schema(document: Document, schema: Schema, *, depth: int = 0, a
         for part in s.all_of:
             v = example_from_schema(document, part, depth=depth + 1, all_fields=all_fields)
             if isinstance(v, dict):
-                out.update(v)
+                out.update(cast(dict[str, Any], v))
         for name, prop in s.properties.items():
             if all_fields or name in s.required:
                 out[name] = example_from_schema(document, prop, depth=depth + 1, all_fields=all_fields)

@@ -18,7 +18,10 @@ from .conftest import LISTINGS_ITEMS, OAS31, ORDERS_V0, SWAGGER2, requires_amazo
 
 EXPECTED = {
     OAS31.name: {"listPets": ("items", "nextToken", "nextToken")},
-    SWAGGER2.name: {"listPets": ("payload.Pets", "payload.NextToken", "NextToken"), "getOrders": ("payload.orders", "payload.pagination.nextToken", "NextToken")},
+    SWAGGER2.name: {
+        "listPets": ("payload.Pets", "payload.NextToken", "NextToken"),
+        "getOrders": ("payload.orders", "payload.pagination.nextToken", "NextToken"),
+    },
 }
 EXPECTED_AMAZON = {
     ORDERS_V0.name: {"getOrders": "payload.Orders", "getOrderItems": "payload.OrderItems", "getOrderItemsBuyerInfo": "payload.OrderItems"},
@@ -100,7 +103,9 @@ def test_multi_page_order_sync_and_async_with_throttle(monkeypatch: pytest.Monke
 
 def test_drop_params_on_next_keeps_path_and_keep_params() -> None:
     doc = load_document(OAS31)
-    desc = Pagination(items_path="items", next_token_path="nextToken", next_token_param="nextToken", drop_params_on_next=True, keep_params=("limit",))
+    desc = Pagination(
+        items_path="items", next_token_path="nextToken", next_token_param="nextToken", drop_params_on_next=True, keep_params=("limit",)
+    )
     doc2 = doc.with_operations(tuple(op.annotated(pagination=desc) if op.operation_id == "listPets" else op for op in doc.operations))
     ops = {op.name: op for op in compile_operations(doc2, build_models(doc2, key="drop"), key_prefix="d")}
     p = ops["list_pets"].pagination
@@ -112,7 +117,11 @@ def test_prev_token_and_items_is_object() -> None:
     doc = load_document(OAS31)
     desc = Pagination(items_path="items", next_token_path="nextToken", next_token_param="nextToken", prev_token_path="total")
     doc2 = doc.with_operations(tuple(op.annotated(pagination=desc) if op.operation_id == "listPets" else op for op in doc.operations))
-    api = Client(doc2.source, transport=httpx2.MockTransport(lambda r: httpx2.Response(200, json={"items": [], "total": "prev"})), plugins=[type("P", (), {"annotate": staticmethod(lambda d: doc2)})()]).petstore_oas31.latest
+    api = Client(
+        doc2.source,
+        transport=httpx2.MockTransport(lambda r: httpx2.Response(200, json={"items": [], "total": "prev"})),
+        plugins=[type("P", (), {"annotate": staticmethod(lambda d: doc2)})()],
+    ).petstore_oas31.latest
     page = api.list_pets(raw=True)
     assert page.prev_token == "prev" and page.items == [] and not page.has_next
     obj = Pagination(items_path="", next_token_path="nextToken", next_token_param="nextToken", items_is_object=True)

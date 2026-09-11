@@ -1,169 +1,202 @@
-# Amazon Selling Partner Python Library
+# Amazon Selling Partner API for Python (`spapi`)
 
-The Amazon Selling Partner Python library provides convenient access to the Amazon Selling Partner
-API from applications written in the Python language. It includes a pre-defined set of classes for
-API resources and it is compatible with the latest versions of the Amazon Selling Partner API.
+A spec-driven client for the [Amazon Selling Partner API](https://developer-docs.amazon.com/sp-api).
+The bundled Swagger models are loaded at runtime and every operation becomes a
+typed method on a sync client and an async client; there is no code-generation
+step (optional `.pyi` stubs are provided for editors and type checkers).
 
-- **Discussions:** https://github.com/dbritto-dev/amzn-selling-partner-python/discussions
+The core (`spapi.spec`, `spapi.compile`, `spapi.runtime`) is API-agnostic: it
+loads any OpenAPI 3.x or Swagger 2.0 document. Everything Amazon-specific lives
+in `spapi.plugins.amazon_spapi`.
+
 - **Bug reports:** https://github.com/dbritto-dev/amzn-selling-partner-python/issues
-- **Source code:** https://github.com/dbritto-dev/amzn-selling-partner-python
-
-# Documentation
-
-- Tutorial: https://developer-docs.amazon.com/sp-api/docs/tutorial-create-a-private-selling-partner-api-application
-- AWS Lambda Demo: https://github.com/aws-quickstart/quickstart-amazon-selling-partner-api/blob/main/functions/source/ExampleLambda/lambda_function.py
-- Get AWS secret keys: https://docs.aws.amazon.com/powershell/latest/userguide/pstools-appendix-sign-up.html
-- Reports Tutorial: https://developer-docs.amazon.com/sp-api/docs/reports-api-v2021-06-30-tutorial-request-a-report
-- Report Types for Vendor: https://developer-docs.amazon.com/sp-api/docs/report-type-values-analytics#vendor-retail-analytics-reports
-- Market Place Ids: https://developer-docs.amazon.com/sp-api/docs/marketplace-ids
-- API Endpoints and Regions: https://developer-docs.amazon.com/sp-api/docs/sp-api-endpoints
-- API Endpoints and Regions (Sandbox): https://developer-docs.amazon.com/sp-api/docs/the-selling-partner-api-sandbox
+- **Migration from 0.1.x:** [MIGRATION.md](MIGRATION.md)
+- **Updating the bundled specs:** [docs/UPDATING_SPECS.md](docs/UPDATING_SPECS.md)
+- **Design notes:** [docs/PLAN.md](docs/PLAN.md)
 
 ## Installation
 
-### Install with uv
-
 ```sh
-uv sync
+pip install amzn-selling-partner            # httpx2 + pydantic
+pip install "amzn-selling-partner[aiohttp]"  # + aiohttp transport for the async client
 ```
 
-Install the development tools with:
+Python 3.12 or later. The import name is `spapi`.
 
-```sh
-uv sync --extra dev
-```
+## Authentication
 
-### Install from a GitHub private repo
-
-```sh
-TOKEN="<token>" pip install git+https://dbritto-dev:$TOKEN@github.com/dbritto-dev/amzn-selling-partner-python.git
-```
-
-### Install from source
-
-```sh
-uv pip install .
-```
-
-## Requirements
-
-- Python 3.10 or later (PyPy supported)
-
-## Usage
-
-This library needs to be configure with your account's secret keys: Selling Partner Keys and AWS
-Keys.
-
-Set up the next environment variables. We can use [dotenv](https://pypi.org/project/python-dotenv/)
-to load them locally.
-
-```
-# Fetch "client id" and "client secret" from your application in Seller Central
-# by clicking on "View" in front of your application ID.
-SELLING_PARTNER_APP_CLIENT_ID=
-SELLING_PARTNER_APP_CLIENT_SECRET=
-# In order to call an API for a seller, you will need to paste the
-# refresh_token for that particular seller below. You can get refresh token for
-# a seller using OAuth flow. Otherwise, you can self-authorize your application
-# by clicking on "Authorize" from the dropdown menu in front of your
-# application ID in seller central. Once you click on "Generate Refresh Token",
-# you would be able to receive a refresh token and paste it below.
-SELLING_PARTNER_APP_REFRESH_TOKEN=
-# Pull out "access key ID" and "secret access key" from IAM console by cliking on
-# "Users" navigation menu option and opening "Security Credentials" tab.
-AWS_ACCESS_KEY_ID=
-AWS_SECRET_ACCESS_KEY=
-# This role is necessary to create temporary credentials to the call Selling Partner API, to read
-# more about which policies and resources are needed for this role, here's the link (click on ->
-# `Select to expand the manual steps to create and configure IAM policies.` to read more about that)
-# https://developer-docs.amazon.com/sp-api/docs/tutorial-create-a-private-selling-partner-api-application#step-3-create-and-configure-iam-resources
-# The role session name is just the label that we set up for those temporary credentials
-AWS_SELLING_PARTNER_ROLE=
-AWS_SELLING_PARTNER_ROLE_SESSION_NAME=
-```
+Create an application in Seller Central and authorize it for the seller; the
+client needs the LWA client id, client secret and the seller's refresh token.
+They can be passed explicitly or read from the environment
+(`SPAPI_CLIENT_ID`, `SPAPI_CLIENT_SECRET`, `SPAPI_REFRESH_TOKEN`, or the old
+`SELLING_PARTNER_APP_*` names).
 
 ```python
-import amzn_selling_partner.vendor as sp
+from spapi import SellingPartner
 
-sp_vendor_orders_client = sp.vendor.orders.Client()
-
-purchase_orders = sp_vendor_orders_client.get_purchase_orders()
-print(purchase_orders)
-
-purchase_order = sp_vendor_orders_client.get_purchase_order("<purchase-order-number>")
-print(purchase_order)
-```
-
-### Handling exceptions
-
-Unsuccessful requests raise exceptions. The errors should handled as `Requests` library exceptions.
-To read more about that: https://requests.readthedocs.io/en/latest/user/quickstart/#errors-and-exceptions
-
-### Per-client configuration
-
-Configure individual clients with keyword arguments. For instance, you can make a request with a
-specific [selling partner region](https://developer-docs.amazon.com/sp-api/docs/sp-api-endpoints) or
-use sandbox.
-
-```python
-import amzn_selling_partner.vendor as sp
-
-na_sp_vendor_orders_client = sp.vendor.orders.Client(
-    selling_partner_region=client.SellingPartnerRegion.NORTH_AMERICA
-)
-
-eu_sp_vendor_orders_client = sp.vendor.orders.Client(
-    selling_partner_region=client.SellingPartnerRegion.EUROPE
-)
-
-fe_sp_vendor_orders_client = sp.vendor.orders.Client(
-    selling_partner_region=client.SellingPartnerRegion.FAR_EAST
+client = SellingPartner(
+    client_id="amzn1.application-oa2-client....",
+    client_secret="...",
+    refresh_token="Atzr|...",
 )
 ```
 
-### Enable Sandbox
+Access tokens are cached and refreshed once per process (single-flight);
+grantless operations use the `client_credentials` grant with the right scope,
+and operations that require a Restricted Data Token obtain one through the
+Tokens API automatically. Operations that return PII only on request take an
+explicit opt-in:
 
 ```python
-import amzn_selling_partner.vendor as sp
+from spapi.plugins.amazon_spapi import with_rdt
 
-sp_vendor_orders_client = sp.vendor.orders.Client(sandbox=True)
+orders = client.orders.v0.get_orders(
+    marketplace_ids=["ATVPDKIKX0DER"],
+    created_after="2024-01-01T00:00:00Z",
+    request_options=with_rdt("buyerInfo", "shippingAddress"),
+)
 ```
 
-> **Note:** some endpoints are not available on sandbox. To read more about that: https://developer-docs.amazon.com/sp-api/docs/the-selling-partner-api-sandbox
+A custom token store (for example Redis) is any object with `get(key)` and
+`set(key, token)`: `SellingPartner(token_store=MyStore())`.
+
+## Region, marketplace and sandbox
+
+```python
+from spapi.plugins.amazon_spapi import Marketplace, Region
+
+SellingPartner(region=Region.EU)                 # NA (default), EU, FE
+SellingPartner(marketplace=Marketplace.DE)        # region derived from the marketplace
+SellingPartner(region=Region.NA, sandbox=True)    # sandbox endpoint
+```
+
+`Marketplace` is a `StrEnum` of marketplace ids (`Marketplace.US == "ATVPDKIKX0DER"`)
+with `.region` and `.country_code`.
+
+## Calling operations
+
+APIs are attributes of the client, versions are attributes of the API, and
+`latest` is an alias for the newest version. Methods take keyword-only
+arguments named after the spec's parameters in snake_case; request bodies are
+passed as `body=` (a model or a plain dict).
+
+```python
+from spapi import SellingPartner
+
+client = SellingPartner()
+
+order = client.orders.v0.get_order(order_id="123-1234567-1234567")
+print(order.payload.order_status)
+
+item = client.listings_items.latest.get_listings_item(
+    seller_id="A1SELLER", sku="MY-SKU", marketplace_ids=["ATVPDKIKX0DER"]
+)
+
+client.feeds.latest.create_feed(body={"feedType": "POST_PRODUCT_DATA", "marketplaceIds": ["ATVPDKIKX0DER"], "inputFeedDocumentId": "..."})
+```
+
+Responses are frozen pydantic models generated from the spec (`client.orders.v0.models.Order`).
+Errors raise `spapi.APIStatusError` subclasses (`RateLimitError`, `NotFoundError`, ...)
+with `.status_code`, `.body` (the decoded error list), `.request_id` and `.response`.
+
+### Async
+
+```python
+import asyncio
+from spapi import AsyncSellingPartner
+
+async def main() -> None:
+    async with AsyncSellingPartner() as client:
+        page = await client.orders.v0.get_orders(marketplace_ids=["ATVPDKIKX0DER"], created_after="2024-01-01T00:00:00Z")
+        async for order in page:          # walks every page
+            print(order.amazon_order_id)
+
+asyncio.run(main())
+```
+
+The async client uses `httpx_aiohttp.AiohttpTransport` when the `aiohttp`
+extra is installed (pass `prefer_aiohttp=False` to opt out).
+
+### Pagination
+
+Paginated operations return a `SyncPage` / `AsyncPage`:
+
+```python
+page = client.orders.v0.get_orders(marketplace_ids=["ATVPDKIKX0DER"], created_after="2024-01-01T00:00:00Z")
+page.items          # this page's orders
+page.next_token     # the NextToken, or None
+page.next_page()    # the next SyncPage (None at the end)
+for order in page:  # iterates over every page, fetching as needed
+    ...
+page.all()          # every item as a list
+```
+
+Every page fetch goes through the normal request path (auth, retries,
+throttling). `paginate=None` disables page wrapping for one call; a
+`paginate=Pagination(...)` argument overrides the detected descriptor.
+
+### Raw mode
+
+`raw=True` returns the decoded JSON (`dict`/`list`) without building models:
+
+```python
+data = client.orders.v0.get_order(order_id="...", raw=True)
+data["payload"]["OrderStatus"]
+```
+
+### Throttling and retries
+
+Each operation has a token bucket seeded from the rate/burst table in the
+Amazon documentation; 429 and 5xx responses are retried with `Retry-After`
+or exponential backoff. Tune with `SellingPartner(max_retries=..., throttle=False, timeout=httpx2.Timeout(...))`
+or per call with `request_options=RequestOptions(timeout=5.0, max_retries=0)`.
+
+### Documents and notifications
+
+```python
+content = client.documents.download_report("amzn1.tortuga.4...")              # bytes, gunzipped
+client.documents.download_report("amzn1.tortuga.4...", path="report.tsv")     # streamed to disk
+feed = client.documents.create_feed("POST_PRODUCT_DATA", ["ATVPDKIKX0DER"], xml, content_type="text/xml; charset=UTF-8")
+
+message = client.notifications_models.parse(sqs_body)   # typed notification payload
+```
+
+### Injecting a custom HTTP client or transport
+
+```python
+import httpx2
+
+client = SellingPartner(http_client=httpx2.Client(proxy="http://proxy:3128"))
+client = SellingPartner(transport=httpx2.HTTPTransport(retries=1))
+client = SellingPartner(transport=httpx2.MockTransport(handler))   # tests
+```
+
+Connection limits: `SellingPartner(limits=httpx2.Limits(max_connections=100, max_keepalive_connections=50))`.
+
+## Using other APIs
+
+```python
+from spapi import Client
+
+client = Client("path/to/specs/", base_url="https://api.example.com")
+client.petstore.latest.list_pets(limit=10)
+```
+
+Plugins (`plugins=[...]`) supply API-specific knowledge through an
+`annotate(document) -> document` hook; see `spapi.plugins`.
 
 ## Development
 
-### Install from source
-
 ```sh
-uv sync --extra dev
+git clone --recurse-submodules https://github.com/dbritto-dev/amzn-selling-partner-python
+uv sync --extra dev --extra aiohttp
+uv run pytest
+uv run pyright
+uv run python -m spapi.stubgen --check     # stubs/ in sync with the specs
+uv run python benchmarks/bench.py         # needs uvicorn (dev extra)
+uv run python scripts/report_load_times.py
 ```
 
-### Type checking
-
-```sh
-uv run ty check src/amzn_selling_partner
-```
-
-### Lint and format
-
-```sh
-uv run nox -s lint
-```
-
-### Test
-
-```sh
-uv run nox -s test
-```
-
-### Security checks
-
-```sh
-uv run nox -s security_test
-```
-
-### CI
-
-Lint, tests, type checking, and security checks run automatically on every push and pull request
-via [GitHub Actions](.github/workflows/ci.yml), across Python 3.10 through 3.13.
+Type stubs live in `stubs/`; point your checker at them (`stubPath = "stubs"`
+for pyright, `mypy_path = stubs` for mypy) to get typed `client.orders.v0.get_orders(...)`
+signatures and models.

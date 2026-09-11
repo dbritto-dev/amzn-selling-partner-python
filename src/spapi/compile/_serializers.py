@@ -11,7 +11,7 @@ from __future__ import annotations
 
 import datetime
 from collections.abc import Callable, Mapping, Sequence
-from typing import Any
+from typing import Any, cast
 from urllib.parse import quote
 
 from ..spec.ir import Parameter, Schema
@@ -46,7 +46,13 @@ def scalar(value: Any) -> str:
 def _items(value: Any) -> list[Any]:
     if isinstance(value, (str, bytes)) or not isinstance(value, Sequence):
         return [value]
-    return list(value)
+    return list(cast(Sequence[Any], value))
+
+
+def _mapping(value: Any, name: str) -> Mapping[str, Any]:
+    if not isinstance(value, Mapping):
+        raise TypeError(f"parameter {name!r} expects a mapping")
+    return cast(Mapping[str, Any], value)
 
 
 _DELIMS = {"form": ",", "spaceDelimited": " ", "pipeDelimited": "|", "tabDelimited": "\t"}
@@ -75,27 +81,21 @@ def query_serializer(param: Parameter, resolve: Callable[[Schema], Schema]) -> E
         if style == "deepObject":
 
             def encode_deep(value: Any) -> str:
-                if not isinstance(value, Mapping):
-                    raise TypeError(f"parameter {param.name!r} expects a mapping")
-                return "&".join(
-                    f"{name}%5B{quote(str(k), safe='')}%5D={quote(scalar(v), safe=safe)}"
-                    for k, v in value.items()
-                )
+                mapping = _mapping(value, param.name)
+                return "&".join(f"{name}%5B{quote(str(k), safe='')}%5D={quote(scalar(v), safe=safe)}" for k, v in mapping.items())
 
             return encode_deep
         if param.explode:
 
             def encode_obj_exploded(value: Any) -> str:
-                if not isinstance(value, Mapping):
-                    raise TypeError(f"parameter {param.name!r} expects a mapping")
-                return "&".join(f"{quote(str(k), safe='')}={quote(scalar(v), safe=safe)}" for k, v in value.items())
+                mapping = _mapping(value, param.name)
+                return "&".join(f"{quote(str(k), safe='')}={quote(scalar(v), safe=safe)}" for k, v in mapping.items())
 
             return encode_obj_exploded
 
         def encode_obj(value: Any) -> str:
-            if not isinstance(value, Mapping):
-                raise TypeError(f"parameter {param.name!r} expects a mapping")
-            flat = ",".join(f"{quote(str(k), safe='')},{quote(scalar(v), safe=safe)}" for k, v in value.items())
+            mapping = _mapping(value, param.name)
+            flat = ",".join(f"{quote(str(k), safe='')},{quote(scalar(v), safe=safe)}" for k, v in mapping.items())
             return f"{name}={flat}"
 
         return encode_obj
@@ -132,10 +132,13 @@ def path_serializer(param: Parameter, resolve: Callable[[Schema], Schema]) -> En
         isep = sep if (param.explode or style != "simple") else ","
 
         def encode_object(value: Any) -> str:
-            if not isinstance(value, Mapping):
-                raise TypeError(f"parameter {param.name!r} expects a mapping")
-            body = isep.join(f"{quote(str(k), safe='')}{kv}{quote(scalar(v), safe=safe)}" for k, v in value.items())
-            return (prefix if style != "matrix" or param.explode else f";{param.name}=") + body if style != "matrix" or not param.explode else ";" + body
+            mapping = _mapping(value, param.name)
+            body = isep.join(f"{quote(str(k), safe='')}{kv}{quote(scalar(v), safe=safe)}" for k, v in mapping.items())
+            return (
+                (prefix if style != "matrix" or param.explode else f";{param.name}=") + body
+                if style != "matrix" or not param.explode
+                else ";" + body
+            )
 
         return encode_object
 
@@ -159,9 +162,8 @@ def header_serializer(param: Parameter, resolve: Callable[[Schema], Schema]) -> 
         kv = "=" if param.explode else ","
 
         def encode_object(value: Any) -> str:
-            if not isinstance(value, Mapping):
-                raise TypeError(f"parameter {param.name!r} expects a mapping")
-            return ",".join(f"{k}{kv}{scalar(v)}" for k, v in value.items())
+            mapping = _mapping(value, param.name)
+            return ",".join(f"{k}{kv}{scalar(v)}" for k, v in mapping.items())
 
         return encode_object
 

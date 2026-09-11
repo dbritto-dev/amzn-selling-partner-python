@@ -6,8 +6,9 @@ import logging
 import posixpath
 import re
 from collections.abc import Mapping
-from typing import Any
+from typing import Any, cast
 
+from ._jsonutil import JsonObject, as_list, as_object, obj, text
 from .ir import Discriminator, Schema
 from .refs import RefError, RefResolver
 
@@ -18,7 +19,13 @@ _SAFE_NAME = re.compile(r"[^A-Za-z0-9_]")
 
 
 def extensions_of(node: Mapping[str, Any]) -> dict[str, Any]:
-    return {k: v for k, v in node.items() if k.startswith("x-")}
+    return {str(k): v for k, v in node.items() if str(k).startswith("x-")}
+
+
+def _enum_values(value: Any) -> tuple[Any, ...] | None:
+    if not isinstance(value, list):
+        return None
+    return tuple(as_list(cast(Any, value)))
 
 
 class SchemaConverter:
@@ -34,7 +41,7 @@ class SchemaConverter:
 
     # -- named schemas -------------------------------------------------------------
 
-    def register_all(self, container: Mapping[str, Any] | None, uri: str, pointer_prefix: str) -> None:
+    def register_all(self, container: JsonObject | None, uri: str, pointer_prefix: str) -> None:
         """Register every schema of a ``definitions`` / ``components.schemas`` map."""
         if not container:
             return
@@ -58,9 +65,7 @@ class SchemaConverter:
         self._ref_names[key] = name
         self._in_progress.add(name)
         try:
-            node = self.resolver.lookup(f"#{pointer}", uri)[0]
-            if not isinstance(node, Mapping):
-                raise RefError(f"schema {pointer!r} in {uri!r} is not an object")
+            node = self.resolver.lookup_object(f"#{pointer}", uri)[0]
             self.schemas[name] = self.convert(node, uri, name=name)
         finally:
             self._in_progress.discard(name)
@@ -78,13 +83,15 @@ class SchemaConverter:
 
     # -- conversion ----------------------------------------------------------------
 
-    def convert(self, node: Mapping[str, Any] | bool, base_uri: str, *, name: str | None = None) -> Schema:
-        if node is True or node == {}:
+    def convert(self, node: JsonObject | bool, base_uri: str, *, name: str | None = None) -> Schema:
+        if node is True:
             return Schema(name=name)
         if node is False:
             return Schema(name=name, type="null")  # nothing validates; closest IR
+        if not node:
+            return Schema(name=name)
 
-        ref = node.get("$ref")
+        ref: Any = node.get("$ref")
         if ref is None and isinstance(node.get("#ref"), str):  # misspelled key seen in vendor schemas
             ref = node["#ref"]
             log.warning("%s: '#ref' used instead of '$ref' (%s); accepting it", base_uri, ref)
@@ -95,26 +102,26 @@ class SchemaConverter:
                 # dangling reference (seen in vendor schemas): keep loading, type as Any
                 log.warning("%s: %s; treating as untyped", base_uri, exc)
                 self.dangling_refs.append(ref)
-                return Schema(name=name, description=node.get("description"), extensions=extensions_of(node))
+                return Schema(name=name, description=text(node, "description"), extensions=extensions_of(node))
             if target_name is not None:
-                extra = {k: v for k, v in node.items() if k != "$ref"}
+                extra: dict[str, Any] = {k: v for k, v in node.items() if k != "$ref"}
                 return Schema(
                     ref=target_name,
                     name=name,
-                    description=extra.get("description"),
+                    description=text(extra, "description"),
                     nullable=bool(extra.get("nullable") or extra.get("x-nullable")),
                     extensions=extensions_of(extra),
                 )
-            target, target_uri = self.resolver.lookup(ref, base_uri)
-            if not isinstance(target, Mapping):
-                raise RefError(f"$ref {ref!r} does not point at a schema object")
+            target, target_uri = self.resolver.lookup_object(ref, base_uri)
             return self.convert(target, target_uri, name=name)
 
-        raw_type = node.get("type")
+        raw_type: Any = node.get("type")
         nullable = bool(node.get("nullable") or node.get("x-nullable"))
+        type_: Any
         if isinstance(raw_type, list):
-            types = [t for t in raw_type if t != "null"]
-            nullable = nullable or len(types) != len(raw_type)
+            type_list = as_list(cast(Any, raw_type))
+            types = [t for t in type_list if t != "null"]
+            nullable = nullable or len(types) != len(type_list)
             type_ = types[0] if len(types) == 1 else None
         else:
             type_ = raw_type
@@ -123,54 +130,55 @@ class SchemaConverter:
             type_, fmt = "string", "binary"
 
         properties: dict[str, Schema] = {}
-        props = node.get("properties")
-        if isinstance(props, Mapping):
-            for pname, pnode in props.items():
-                if isinstance(pnode, (Mapping, bool)):
-                    properties[pname] = self.convert(pnode, base_uri)
-        items = node.get("items")
+        for pname, pnode in obj(node, "properties").items():
+            sub = self._schema_node(pnode)
+            if sub is not None:
+                properties[str(pname)] = self.convert(sub, base_uri)
+        items_raw: Any = node.get("items")
         items_schema: Schema | None = None
-        if isinstance(items, (Mapping, bool)):
-            items_schema = self.convert(items, base_uri)
-        elif isinstance(items, list):  # tuple validation: not representable, keep Any
+        items_node = self._schema_node(items_raw)
+        if items_node is not None:
+            items_schema = self.convert(items_node, base_uri)
+        elif isinstance(items_raw, list):  # tuple validation: not representable, keep Any
             items_schema = Schema()
 
         additional: Schema | bool | None = None
-        ap = node.get("additionalProperties")
+        ap: Any = node.get("additionalProperties")
         if isinstance(ap, bool):
             additional = ap
-        elif isinstance(ap, Mapping):
-            additional = self.convert(ap, base_uri)
+        elif (ap_obj := as_object(ap)) is not None:
+            additional = self.convert(ap_obj, base_uri)
 
-        enum = node.get("enum")
-        required = node.get("required")
-        disc = node.get("discriminator")
+        enum: Any = node.get("enum")
+        required: Any = node.get("required")
+        disc: Any = node.get("discriminator")
         discriminator: Discriminator | None = None
         if isinstance(disc, str):
             discriminator = Discriminator(property_name=disc)
-        elif isinstance(disc, Mapping) and isinstance(disc.get("propertyName"), str):
+        elif (disc_obj := as_object(disc)) is not None and isinstance(disc_obj.get("propertyName"), str):
             mapping: dict[str, str] = {}
-            for value, target in (disc.get("mapping") or {}).items():
-                mapped = self.name_for_ref(str(target), base_uri) if isinstance(target, str) else None
+            for value, target in obj(disc_obj, "mapping").items():
+                mapped = self.name_for_ref(target, base_uri) if isinstance(target, str) else None
                 mapping[str(value)] = mapped if mapped is not None else str(target)
-            discriminator = Discriminator(property_name=disc["propertyName"], mapping=mapping)
+            discriminator = Discriminator(property_name=str(disc_obj["propertyName"]), mapping=mapping)
 
-        example = node.get("example")
-        if example is None and isinstance(node.get("examples"), list) and node["examples"]:
-            example = node["examples"][0]
+        example: Any = node.get("example")
+        examples = as_list(node.get("examples"))
+        if example is None and examples:
+            example = examples[0]
 
         return Schema(
             name=name,
-            title=node.get("title"),
-            description=node.get("description"),
+            title=text(node, "title"),
+            description=text(node, "description"),
             type=type_ if isinstance(type_, str) else None,
             format=fmt if isinstance(fmt, str) else None,
             nullable=nullable,
             properties=properties,
-            required=frozenset(str(r) for r in required) if isinstance(required, list) else frozenset(),
+            required=frozenset(str(r) for r in as_list(required)),
             items=items_schema,
             additional_properties=additional,
-            enum=tuple(enum) if isinstance(enum, list) else None,
+            enum=_enum_values(enum),
             const=node.get("const"),
             has_const="const" in node,
             default=node.get("default"),
@@ -187,9 +195,18 @@ class SchemaConverter:
         )
 
     def _convert_list(self, nodes: Any, base_uri: str) -> tuple[Schema, ...]:
-        if not isinstance(nodes, list):
-            return ()
-        return tuple(self.convert(n, base_uri) for n in nodes if isinstance(n, (Mapping, bool)))
+        out: list[Schema] = []
+        for n in as_list(nodes):
+            sub = self._schema_node(n)
+            if sub is not None:
+                out.append(self.convert(sub, base_uri))
+        return tuple(out)
+
+    @staticmethod
+    def _schema_node(value: Any) -> JsonObject | bool | None:
+        if isinstance(value, bool):
+            return value
+        return as_object(value)
 
 
 __all__ = ["SchemaConverter", "extensions_of"]

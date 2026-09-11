@@ -2,17 +2,17 @@
 
 from __future__ import annotations
 
-from collections.abc import Mapping
 from dataclasses import dataclass, field
 from typing import Any
 
+from ...spec._jsonutil import as_list, as_object, obj
 from ...spec.ir import Operation
 
 
 @dataclass(slots=True, frozen=True, kw_only=True)
 class SandboxExample:
     status: int
-    parameters: dict[str, Any] = field(default_factory=dict)  # wire parameter name -> value
+    parameters: dict[str, Any] = field(default_factory=dict[str, Any])  # wire parameter name -> value
     body: Any = None
     has_body: bool = False
     response: Any = None
@@ -30,24 +30,27 @@ def sandbox_examples(op: Operation) -> list[SandboxExample]:
             status = int(code)
         except ValueError:
             continue
-        static = resp.extensions.get("x-amzn-api-sandbox", {})
-        entries: list[Any] = []
+        static = obj(resp.extensions, "x-amzn-api-sandbox")
+        entries: list[Any]
         source = "x-amzn-api-sandbox"
-        if isinstance(static, Mapping) and isinstance(static.get("static"), list):
-            entries = list(static["static"])
+        if isinstance(static.get("static"), list):
+            entries = as_list(static.get("static"))
         elif isinstance(resp.extensions.get("x-amazon-spds-sandbox-behaviors"), list):
-            entries = list(resp.extensions["x-amazon-spds-sandbox-behaviors"])
+            entries = as_list(resp.extensions.get("x-amazon-spds-sandbox-behaviors"))
             source = "x-amazon-spds-sandbox-behaviors"
-        for entry in entries:
-            if not isinstance(entry, Mapping):
+        else:
+            entries = []
+        for raw_entry in entries:
+            entry = as_object(raw_entry)
+            if entry is None:
                 continue
-            request = entry.get("request") or {}
-            params_raw = request.get("parameters") or {}
+            request = obj(entry, "request")
             params: dict[str, Any] = {}
             body: Any = None
             has_body = False
-            for name, spec in params_raw.items():
-                value = spec.get("value") if isinstance(spec, Mapping) and "value" in spec else spec
+            for name, spec in obj(request, "parameters").items():
+                spec_obj = as_object(spec)
+                value: Any = spec_obj["value"] if spec_obj is not None and "value" in spec_obj else spec
                 if name == "body":
                     body, has_body = value, True
                 else:
@@ -67,8 +70,7 @@ def sandbox_examples(op: Operation) -> list[SandboxExample]:
 
 
 def is_dynamic_sandbox(op: Operation) -> bool:
-    ext = op.extensions.get("x-amzn-api-sandbox")
-    return isinstance(ext, Mapping) and "dynamic" in ext
+    return "dynamic" in obj(op.extensions, "x-amzn-api-sandbox")
 
 
 __all__ = ["SandboxExample", "is_dynamic_sandbox", "sandbox_examples"]

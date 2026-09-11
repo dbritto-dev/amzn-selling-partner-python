@@ -11,6 +11,7 @@ from pydantic import BaseModel
 from pydantic_core import from_json
 
 from ...compile.models import ModelNamespace, build_models
+from ...spec._jsonutil import as_object
 from ...spec.loader import load_document
 
 
@@ -65,7 +66,7 @@ class Notifications:
                         root = doc.schemas[doc.annotations["root_schema"]]
                         nt = root.properties.get("NotificationType")
                         pv = root.properties.get("PayloadVersion")
-                        types = list(nt.enum or ()) if nt else []
+                        types: list[Any] = list(nt.enum or ()) if nt else []
                         if nt is not None and nt.has_const:
                             types.append(nt.const)
                         if nt is not None and not types and isinstance(nt.example, str):
@@ -92,13 +93,14 @@ class Notifications:
         return self.model(name)
 
     def parse(self, data: bytes | str | Mapping[str, Any], *, notification_type: str | None = None) -> BaseModel:
-        payload: Any = data if isinstance(data, Mapping) else from_json(data)
-        if not isinstance(payload, Mapping):
+        decoded: Any = data if isinstance(data, Mapping) else from_json(data)
+        payload = as_object(decoded)
+        if payload is None:
             raise ValueError("notification payload must be a JSON object")
-        nt = notification_type or payload.get("NotificationType")
+        nt: Any = notification_type or payload.get("NotificationType")
         if not isinstance(nt, str):
             raise ValueError("notification payload has no NotificationType")
-        pv = payload.get("PayloadVersion")
+        pv: Any = payload.get("PayloadVersion")
         model = self.model_for_type(nt, str(pv) if pv is not None else None)
         return model.model_validate(payload)
 

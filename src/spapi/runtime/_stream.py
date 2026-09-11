@@ -134,9 +134,7 @@ class Stream:
     def __enter__(self) -> Self:
         return self
 
-    def __exit__(
-        self, exc_type: type[BaseException] | None, exc: BaseException | None, tb: TracebackType | None
-    ) -> None:
+    def __exit__(self, exc_type: type[BaseException] | None, exc: BaseException | None, tb: TracebackType | None) -> None:
         self.close()
 
 
@@ -173,9 +171,7 @@ class AsyncStream:
     async def __aenter__(self) -> Self:
         return self
 
-    async def __aexit__(
-        self, exc_type: type[BaseException] | None, exc: BaseException | None, tb: TracebackType | None
-    ) -> None:
+    async def __aexit__(self, exc_type: type[BaseException] | None, exc: BaseException | None, tb: TracebackType | None) -> None:
         await self.aclose()
 
 

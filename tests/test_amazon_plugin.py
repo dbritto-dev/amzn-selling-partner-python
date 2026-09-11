@@ -151,7 +151,11 @@ def test_pagination_annotations() -> None:
     p = orders.operation("getOrders").pagination
     assert p is not None and p.descriptor.drop_params_on_next and p.descriptor.items_path == "payload.Orders"
     listings = client.listings_items.v2021_08_01.operation("searchListingsItems").pagination
-    assert listings is not None and listings.descriptor.next_token_param == "pageToken" and listings.descriptor.prev_token_path == "pagination.previousToken"
+    assert (
+        listings is not None
+        and listings.descriptor.next_token_param == "pageToken"
+        and listings.descriptor.prev_token_path == "pagination.previousToken"
+    )
     fin = client.finances.v0.operation("listFinancialEvents").pagination
     assert fin is not None and fin.descriptor.items_is_object
     assert client.fba_inventory.v1.operation("getInventorySummaries").pagination is not None
@@ -271,9 +275,14 @@ def test_rdt_flow_sync_and_async() -> None:
     # dataElements only when requested
     client.orders.v0.get_orders(marketplace_ids=["ATVPDKIKX0DER"], created_after="2020-01-01T00:00:00Z")
     assert mock.by_path("/orders/v0/orders")[-1].headers["x-amz-access-token"] == "Atza|rt|1"
-    client.orders.v0.get_orders(marketplace_ids=["ATVPDKIKX0DER"], created_after="2020-01-01T00:00:00Z", request_options=with_rdt("buyerInfo", "shippingAddress"))
+    client.orders.v0.get_orders(
+        marketplace_ids=["ATVPDKIKX0DER"], created_after="2020-01-01T00:00:00Z", request_options=with_rdt("buyerInfo", "shippingAddress")
+    )
     assert mock.rdt_calls == 2
-    assert json.loads(mock.by_path("/restrictedDataToken")[-1].content)["restrictedResources"][0]["dataElements"] == ["buyerInfo", "shippingAddress"]
+    assert json.loads(mock.by_path("/restrictedDataToken")[-1].content)["restrictedResources"][0]["dataElements"] == [
+        "buyerInfo",
+        "shippingAddress",
+    ]
     assert mock.by_path("/orders/v0/orders")[-1].headers["x-amz-access-token"].startswith("RDT|GET|/orders/v0/orders|buyerInfo")
     # explicit token header wins
     client.orders.v0.get_order(order_id="9", request_options=RequestOptions(extra_headers={"x-amz-access-token": "MINE"}))
@@ -381,7 +390,10 @@ def test_document_download_gzip_and_upload(tmp_path: pathlib.Path) -> None:
     assert "x-amz-access-token" not in mock.by_path("/report.gz")[0].headers
     # restricted report type -> RDT on getReportDocument
     client.documents.download_report("doc-1", report_type="GET_FLAT_FILE_ORDER_REPORT_DATA_SHIPPING")
-    assert mock.by_path("/reports/2021-06-30/documents/doc-1")[-1].headers["x-amz-access-token"] == "RDT|GET|/reports/2021-06-30/documents/doc-1|"
+    assert (
+        mock.by_path("/reports/2021-06-30/documents/doc-1")[-1].headers["x-amz-access-token"]
+        == "RDT|GET|/reports/2021-06-30/documents/doc-1|"
+    )
     assert mock.by_path("/reports/2021-06-30/documents/doc-1")[0].headers["x-amz-access-token"].startswith("Atza|")
     feed = client.documents.create_feed("POST_PRODUCT_DATA", ["ATVPDKIKX0DER"], "<xml/>", content_type="text/xml; charset=UTF-8")
     assert feed.feed_id == "f-1"
@@ -395,7 +407,9 @@ def test_document_download_gzip_and_upload(tmp_path: pathlib.Path) -> None:
         out = tmp_path / "async.tsv"
         assert await aclient.documents.download_report("doc-1", path=out) == len(amock.report_bytes)
         assert out.read_bytes() == amock.report_bytes
-        assert (await aclient.documents.create_feed("POST_PRODUCT_DATA", ["ATVPDKIKX0DER"], b"<xml/>", content_type="text/xml")).feed_id == "f-1"
+        assert (
+            await aclient.documents.create_feed("POST_PRODUCT_DATA", ["ATVPDKIKX0DER"], b"<xml/>", content_type="text/xml")
+        ).feed_id == "f-1"
         await aclient.aclose()
 
     asyncio.run(go())
@@ -434,7 +448,7 @@ def test_notification_models() -> None:
     for name in models.names:  # every schema builds and validates its own examples
         try:
             model = models.model(name)
-            for i, example in enumerate(json.loads((schema_dir / f"{name}.json").read_text()).get("examples", [])):
+            for example in json.loads((schema_dir / f"{name}.json").read_text()).get("examples", []):
                 model.model_validate(example)
         except Exception as exc:  # noqa: BLE001
             failures.append(name)
@@ -471,7 +485,11 @@ def test_sandbox_runner(api: str) -> None:
     outcomes = sandbox_tests.run(sync_factory, async_factory, [api])
     failures = [f"{o.mode} {o.case.version}.{o.case.operation_id}[{o.case.status}]: {o.error}" for o in outcomes if not o.ok]
     ops = {o.case.operation_id for o in outcomes}
-    expected = {op.operation_id for path in AMAZON_MODELS.glob(f"{'orders-api-model' if api == 'orders' else 'listings-items-api-model'}/*.json") for op in load_document(path).operations}
+    expected = {
+        op.operation_id
+        for path in AMAZON_MODELS.glob(f"{'orders-api-model' if api == 'orders' else 'listings-items-api-model'}/*.json")
+        for op in load_document(path).operations
+    }
     assert ops == expected
     assert not failures, "\n".join(failures)
 

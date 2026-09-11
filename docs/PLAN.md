@@ -334,6 +334,16 @@ top-level `nextToken`, and any explicit `next_token_path`.
     per-file grouping, snake_cased if tag grouping is selected.
 12. `vendorShipments` uses `x-amazon-spds-sandbox-behaviors` instead of
     `x-amzn-api-sandbox` (§7).
+12a. Notification schemas: `ShipmentTrackingMilestoneChangedNotification.json`
+    is a dangling `"$ref": "#/definitions/Notification"` (no definitions at all),
+    `B2bAnyOfferChangedNotification.json` spells its root reference `"#ref"`,
+    and `ListingsItemStatusChangeNotification.json`'s own example uses
+    `LISTINGS_ITEM_STATUS_CHANGE` where the schema enum says
+    `LISTINGS_ITEM_STATUS_CHANGED`. The loader tolerates the first two (warning,
+    typed as `Any` / accepted); the third is a known example failure.
+12b. No `orders` operation carries a `dataElements` parameter any more, so the
+    "RDT only when PII is requested" rule became an explicit per-call opt-in
+    (`with_rdt(...)` / `RequestOptions(auth={"rdt": ...})`).
 13. Header parameters exist on 41 operations (`x-amzn-shipping-business-id` on all
     20 `shippingV2` ops, `x-amzn-fulfillment-service-id`, `x-amzn-IdempotencyKey`,
     `x-amzn-idempotency-token`, `destAccountDigitalSignature`,

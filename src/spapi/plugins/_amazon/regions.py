@@ -85,10 +85,9 @@ class Marketplace(enum.StrEnum):
 
 
 _MARKETPLACE_REGION: dict[Marketplace, Region] = {
-    **{m: Region.NA for m in (Marketplace.CA, Marketplace.US, Marketplace.MX, Marketplace.BR)},
-    **{
-        m: Region.EU
-        for m in (
+    **dict.fromkeys((Marketplace.CA, Marketplace.US, Marketplace.MX, Marketplace.BR), Region.NA),
+    **dict.fromkeys(
+        (
             Marketplace.IE,
             Marketplace.ES,
             Marketplace.UK,
@@ -105,9 +104,10 @@ _MARKETPLACE_REGION: dict[Marketplace, Region] = {
             Marketplace.SA,
             Marketplace.AE,
             Marketplace.IN,
-        )
-    },
-    **{m: Region.FE for m in (Marketplace.SG, Marketplace.AU, Marketplace.JP)},
+        ),
+        Region.EU,
+    ),
+    **dict.fromkeys((Marketplace.SG, Marketplace.AU, Marketplace.JP), Region.FE),
 }
 
 __all__ = ["LWA_TOKEN_URL", "Marketplace", "Region"]

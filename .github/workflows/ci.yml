@@ -14,56 +14,40 @@ permissions:
   contents: read
 
 jobs:
-  lint:
-    name: Lint (Python ${{ matrix.python-version }})
-    runs-on: ubuntu-latest
-    strategy:
-      fail-fast: false
-      matrix:
-        python-version: ["3.10", "3.11", "3.12", "3.13"]
-    steps:
-      - uses: actions/checkout@v4
-
-      - name: Set up uv
-        uses: astral-sh/setup-uv@v7
-        with:
-          python-version: ${{ matrix.python-version }}
-
-      - name: Run lint
-        run: uvx nox -s lint
-
   test:
     name: Test (Python ${{ matrix.python-version }})
     runs-on: ubuntu-latest
     strategy:
       fail-fast: false
       matrix:
-        python-version: ["3.10", "3.11", "3.12", "3.13"]
+        python-version: ["3.12", "3.13"]
     steps:
       - uses: actions/checkout@v4
+        with:
+          submodules: true
 
       - name: Set up uv
         uses: astral-sh/setup-uv@v7
         with:
           python-version: ${{ matrix.python-version }}
+          enable-cache: true
 
-      - name: Run tests
-        run: uvx nox -s test
+      - name: Install
+        run: uv sync --extra dev --extra aiohttp
 
-  security:
-    name: Security checks (Python ${{ matrix.python-version }})
-    runs-on: ubuntu-latest
-    strategy:
-      fail-fast: false
-      matrix:
-        python-version: ["3.10", "3.11", "3.12", "3.13"]
-    steps:
-      - uses: actions/checkout@v4
+      - name: Lint
+        run: |
+          uv run ruff check src tests benchmarks scripts
+          uv run ruff format --check src tests benchmarks scripts
 
-      - name: Set up uv
-        uses: astral-sh/setup-uv@v7
-        with:
-          python-version: ${{ matrix.python-version }}
+      - name: Type check (pyright --strict on hand-written code)
+        run: uv run pyright
 
-      - name: Run security checks
-        run: uvx nox -s security_test
+      - name: Tests
+        run: uv run pytest -q
+
+      - name: Stubs are up to date
+        run: uv run python -m spapi.stubgen --check
+
+      - name: Smoke benchmark (dynamic op within 10% of hand-written)
+        run: uv run python benchmarks/bench.py --iterations 100

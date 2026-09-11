@@ -5,12 +5,16 @@ from __future__ import annotations
 
 import gzip
 import json
-from typing import Any
 
 import httpx2
 
 TOKEN_URL_PATH = "/auth/o2/token"
-ORDER = {"AmazonOrderId": "902-1", "PurchaseDate": "2020-01-01T00:00:00Z", "LastUpdateDate": "2020-01-01T00:00:00Z", "OrderStatus": "Shipped"}
+ORDER = {
+    "AmazonOrderId": "902-1",
+    "PurchaseDate": "2020-01-01T00:00:00Z",
+    "LastUpdateDate": "2020-01-01T00:00:00Z",
+    "OrderStatus": "Shipped",
+}
 
 
 class AmazonMock:
@@ -34,12 +38,20 @@ class AmazonMock:
                 return httpx2.Response(400, json={"error": "invalid_grant", "error_description": "bad"})
             form = dict(p.split("=", 1) for p in request.content.decode().split("&"))
             kind = "cc" if form.get("grant_type") == "client_credentials" else "rt"
-            return httpx2.Response(200, json={"access_token": f"Atza|{kind}|{self.token_calls}", "expires_in": self.token_ttl, "token_type": "bearer"})
+            return httpx2.Response(
+                200, json={"access_token": f"Atza|{kind}|{self.token_calls}", "expires_in": self.token_ttl, "token_type": "bearer"}
+            )
         if path == "/tokens/2021-03-01/restrictedDataToken":
             self.rdt_calls += 1
             body = json.loads(request.content)
             res = body["restrictedResources"][0]
-            return httpx2.Response(200, json={"restrictedDataToken": f"RDT|{res['method']}|{res['path']}|{','.join(res.get('dataElements', []))}", "expiresIn": 3600})
+            return httpx2.Response(
+                200,
+                json={
+                    "restrictedDataToken": f"RDT|{res['method']}|{res['path']}|{','.join(res.get('dataElements', []))}",
+                    "expiresIn": 3600,
+                },
+            )
         if path == "/orders/v0/orders":
             token = request.url.params.get("NextToken")
             if token == "n2":
@@ -54,7 +66,9 @@ class AmazonMock:
         if path == "/notifications/v1/destinations":
             return httpx2.Response(200, json={"payload": []})
         if path.startswith("/reports/2021-06-30/documents/"):
-            return httpx2.Response(200, json={"reportDocumentId": "doc-1", "url": "https://s3.example/report.gz", "compressionAlgorithm": "GZIP"})
+            return httpx2.Response(
+                200, json={"reportDocumentId": "doc-1", "url": "https://s3.example/report.gz", "compressionAlgorithm": "GZIP"}
+            )
         if path == "/report.gz":
             return httpx2.Response(200, content=gzip.compress(self.report_bytes))
         if path == "/feeds/2021-06-30/documents" and request.method == "POST":

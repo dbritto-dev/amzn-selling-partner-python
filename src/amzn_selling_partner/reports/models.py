@@ -1,12 +1,15 @@
-# Built-in packages
+"""Enum values kept from the 0.1.x hand-written models plus access to the
+spec-generated pydantic models of the Reports API."""
+
+from __future__ import annotations
+
 import enum
-import typing
+from typing import Any
 
-# Third-party packages
-import pydantic
+from spapi.plugins.amazon_spapi import default_spec_dir
 
 
-class ReportType(str, enum.Enum):
+class ReportType(enum.StrEnum):
     VENDOR_REAL_TIME_INVENTORY_REPORT = "GET_VENDOR_REAL_TIME_INVENTORY_REPORT"
     VENDOR_REAL_TIME_TRAFFIC_REPORT = "GET_VENDOR_REAL_TIME_TRAFFIC_REPORT"
     VENDOR_REAL_TIME_SALES_REPORT = "GET_VENDOR_REAL_TIME_SALES_REPORT"
@@ -17,7 +20,7 @@ class ReportType(str, enum.Enum):
     VENDOR_INVENTORY_REPORT = "GET_VENDOR_INVENTORY_REPORT"
 
 
-class MarketPlaceId(str, enum.Enum):
+class MarketPlaceId(enum.StrEnum):
     CANADA = "A2EUQ1WTGCTBG2"
     UNITED_STATES_OF_AMERICA = "ATVPDKIKX0DER"
     MEXICO = "A1AM78C64UM0Y8"
@@ -41,7 +44,7 @@ class MarketPlaceId(str, enum.Enum):
     JAPAN = "A1VC38T7YXB528"
 
 
-class ProcessingStatus(str, enum.Enum):
+class ProcessingStatus(enum.StrEnum):
     CANCELLED = "CANCELLED"
     DONE = "DONE"
     FATAL = "FATAL"
@@ -49,11 +52,11 @@ class ProcessingStatus(str, enum.Enum):
     IN_QUEUE = "IN_QUEUE"
 
 
-class CompressionAlgorithm(str, enum.Enum):
+class CompressionAlgorithm(enum.StrEnum):
     GZIP = "GZIP"
 
 
-class SchedulePeriod(str, enum.Enum):
+class SchedulePeriod(enum.StrEnum):
     FIVE_MINUTES = "PT5M"
     FIFTEEN_MINUTES = "PT15M"
     THIRTY_MINUTES = "PT30M"
@@ -74,7 +77,7 @@ class SchedulePeriod(str, enum.Enum):
     ONE_MONTH = "P1M"
 
 
-class ReportPeriod(str, enum.Enum):
+class ReportPeriod(enum.StrEnum):
     DAY = "DAY"
     WEEK = "WEEK"
     MONTH = "MONTH"
@@ -82,93 +85,40 @@ class ReportPeriod(str, enum.Enum):
     YEAR = "YEAR"
 
 
-class DistributorView(str, enum.Enum):
+class DistributorView(enum.StrEnum):
     SOURCING = "SOURCING"
     MANUFACTURING = "MANUFACTURING"
 
 
-class SellingProgram(str, enum.Enum):
+class SellingProgram(enum.StrEnum):
     RETAIL = "RETAIL"
     BUSINESS = "BUSINESS"
     FRESH = "FRESH"
 
 
-class ReportOptions(pydantic.BaseModel):
-    reportPeriod: typing.Optional[ReportPeriod] = None
-    distributorView: typing.Optional[DistributorView] = None
-    sellingProgram: typing.Optional[SellingProgram] = None
-
-    class Config:
-        extra = "forbid"
+_namespace_cache: Any = None
 
 
-class CreateReportSpecification(pydantic.BaseModel):
-    reportType: ReportType
-    marketplaceIds: typing.List[MarketPlaceId]
-    reportOptions: typing.Optional[ReportOptions] = None
-    dataStartTime: typing.Optional[str] = None
-    dataEndTime: typing.Optional[str] = None
+def namespace() -> Any:
+    """The spec-generated model namespace for ``reports.v2021_06_30``."""
+    global _namespace_cache
+    if _namespace_cache is None:
+        from spapi.compile.models import build_models
+        from spapi.spec.loader import load_document
+
+        path = default_spec_dir() / "reports-api-model" / "reports_2021-06-30.json"
+        _namespace_cache = build_models(load_document(path), key="reports.v2021_06_30")
+    return _namespace_cache
 
 
-class CreateReportResponse(pydantic.BaseModel):
-    reportId: str
+def model(name: str) -> Any:
+    ns = namespace()
+    if name not in ns:
+        raise AttributeError(f"module 'amzn_selling_partner.reports' has no attribute {name!r}")
+    return ns.get(name)
 
 
-class CreateReportScheduleSpecification(pydantic.BaseModel):
-    reportType: ReportType
-    marketplaceIds: typing.List[MarketPlaceId]
-    period: SchedulePeriod
-    reportOptions: typing.Optional[ReportOptions] = None
-    nextReportCreationTime: typing.Optional[str] = None
-
-
-class CreateReportScheduleResponse(pydantic.BaseModel):
-    reportScheduleId: str
-
-
-class GetReportsQuery(pydantic.BaseModel):
-    reportTypes: typing.Optional[typing.List[ReportType]] = None
-    processingStatuses: typing.Optional[typing.List[ProcessingStatus]] = None
-    marketplaceIds: typing.Optional[typing.List[MarketPlaceId]] = None
-    pageSize: typing.Optional[int] = None
-    createdSince: typing.Optional[str] = None
-    createdUntil: typing.Optional[str] = None
-    nextToken: typing.Optional[str] = None
-
-
-class Report(pydantic.BaseModel):
-    reportId: str
-    reportType: ReportType
-    createdTime: str
-    processingStatus: ProcessingStatus
-    marketplaceIds: typing.Optional[typing.List[MarketPlaceId]] = None
-    dataStartTime: typing.Optional[str] = None
-    dataEndTime: typing.Optional[str] = None
-    reportScheduleId: typing.Optional[str] = None
-    processingStartTime: typing.Optional[str] = None
-    processingEndTime: typing.Optional[str] = None
-    reportDocumentId: typing.Optional[str] = None
-
-
-class GetReportsResponse(pydantic.BaseModel):
-    reports: typing.List[Report]
-    nextToken: typing.Optional[str] = None
-
-
-class ReportSchedule(pydantic.BaseModel):
-    reportScheduleId: str
-    reportType: ReportType
-    period: str
-    marketplaceIds: typing.Optional[typing.List[MarketPlaceId]] = None
-    reportOptions: typing.Optional[ReportOptions] = None
-    nextReportCreationTime: typing.Optional[str] = None
-
-
-class ReportScheduleList(pydantic.BaseModel):
-    reportSchedules: typing.List[ReportSchedule]
-
-
-class ReportDocument(pydantic.BaseModel):
-    reportDocumentId: str
-    url: str
-    compressionAlgorithm: typing.Optional[CompressionAlgorithm] = None
+def __getattr__(name: str) -> Any:
+    if name.startswith("_"):
+        raise AttributeError(name)
+    return model(name)
