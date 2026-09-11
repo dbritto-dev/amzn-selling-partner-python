@@ -27,7 +27,8 @@ npm run sdk:diff        # oagen diff: last committed spec -> working tree (--old
 ```
 
 `oagen diff` lists added/removed operations and parameter and schema changes.
-Then check the method names oagen derives for the new operations:
+(The build redacts the sample AWS access key IDs in Amazon's example URLs:
+GitHub's push protection rejects a commit containing one.) Then check the method names oagen derives for the new operations:
 
 ```sh
 npm run sdk:resolve -- --format table
