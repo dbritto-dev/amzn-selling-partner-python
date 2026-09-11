@@ -126,7 +126,7 @@ project never loads).
    type-checks the generator.
 5. **Diff two spec versions.** `npm run sdk:diff -- --old <previous> --new
    <current>` reports added/removed operations and parameter/schema changes
-   (see "Bumping the submodule" above).
+   (see "Review what changed in the specs" above).
 
 What the driver does per model file, because oagen only parses OpenAPI 3 and
 its IR drops a few things the Amazon files rely on:
