@@ -33,4 +33,5 @@ Pipeline per spec file (`src/generate.ts`):
    registry; `ruff` formats everything.
 
 `oagen.config.ts` registers the same emitter for the oagen CLI
-(`npx oagen generate --spec .build/specs/<file>.json --lang python --output out`).
+(`OAGEN_API=<api> OAGEN_VERSION=<version> npx oagen generate --spec .build/converted/<file>.json --lang python --output out`);
+the python target is the only registered emitter.

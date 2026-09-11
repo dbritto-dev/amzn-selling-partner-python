@@ -193,7 +193,7 @@ git clone --recurse-submodules https://github.com/dbritto-dev/amzn-selling-partn
 uv sync --extra dev --extra aiohttp
 uv run pytest
 uv run pyright                            # strict, generated code included
-uv run python benchmarks/bench.py         # needs uvicorn (dev extra)
+uv run pytest benchmarks                  # pytest-benchmark: generated method vs hand-written httpx2 code
 uv run python -m amzn_selling_partner.sandbox_tests   # every operation against its embedded examples
 
 cd codegen && npm ci --ignore-scripts && npm run generate   # regenerate after a spec bump (Node 22)

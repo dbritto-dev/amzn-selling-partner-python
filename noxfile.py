@@ -37,4 +37,4 @@ def codegen(session: nox.Session) -> None:
 @nox.session
 def bench(session: nox.Session) -> None:
     session.install("-e", ".[dev,aiohttp]")
-    session.run("python", "benchmarks/bench.py", *session.posargs)
+    session.run("pytest", "benchmarks", *session.posargs)

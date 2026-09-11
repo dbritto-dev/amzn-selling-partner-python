@@ -18,14 +18,14 @@ git -C spec/selling-partner-api-models rev-parse HEAD > spec/PINNED_COMMIT
 
 `oagen diff` classifies the changes of one API as additive, modified or
 breaking (Swagger 2.0 files must be converted first; the generator leaves the
-converted documents under `codegen/.build/specs`):
+converted documents under `codegen/.build/converted`):
 
 ```sh
 cd codegen
 npm ci --ignore-scripts
-npm run generate                                   # also refreshes codegen/.build/specs/*.json
+npm run generate                                   # also refreshes codegen/.build/converted/*.json
 git stash -- ../src ../tests/petstore_sdk          # keep the previous generation for the diff, if you want it
-npx oagen diff --old <previous converted spec> --new .build/specs/amzn_selling_partner__orders__v0.json
+npx oagen diff --old <previous converted spec> --new .build/converted/amzn_selling_partner__orders__v0.json
 ```
 
 `codegen/.build/report.json` lists, for the whole run, the spec repairs that were

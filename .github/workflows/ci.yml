@@ -87,8 +87,8 @@ jobs:
       - name: Tests
         run: uv run pytest -q
 
-      - name: Smoke benchmark (generated op within 10% of hand-written)
-        run: uv run python benchmarks/bench.py --iterations 100
+      - name: Benchmarks (pytest-benchmark; generated method within 10% of hand-written)
+        run: uv run pytest benchmarks -q -p no:cacheprovider --benchmark-min-rounds=20 --benchmark-columns=min,mean,ops
 
       - name: Wheel contains the generated APIs
         run: |

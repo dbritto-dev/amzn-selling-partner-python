@@ -581,9 +581,13 @@ imported by the generator, so their native builds are skipped.)
 | import one API version | 45 ms cached / 48 ms cold (worst) | 50 ms worst, 10 ms median (class creation only) |
 | import all 67 versions | 291 ms cached / 601 ms cold | 862 ms |
 | `SellingPartner()` + warm every adapter | – | 12 ms after the imports |
-| generated method vs hand-written httpx2 (bench (d)) | 0.89 / 1.08 / 1.05 | 0.93 sync / 0.98 async / 0.91 aiohttp |
+| generated method vs hand-written httpx2 (`pytest benchmarks`, best of rounds) | 0.89 / 1.08 / 1.05 | 0.93 sync / 0.96 async |
 | wheel | 115 spec JSON files + runtime | 3.0 MB of Python, no spec files |
 | pyright strict | hand-written code | hand-written + generated code, 0 errors |
 
 Every API version imports lazily on first attribute access, so a process that
 touches two APIs pays for two modules; `preload()` imports everything.
+
+Benchmarks are a [pytest-benchmark](https://pytest-benchmark.readthedocs.io/)
+suite (`benchmarks/test_benchmarks.py`) over `httpx2.MockTransport`; CI runs
+it on every push and asserts the 1.10x ratio; there is no nightly job.

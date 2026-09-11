@@ -18,7 +18,8 @@ import { toOpenApi3, wrapJsonSchema, type JsonObject } from './convert.js';
 import { schemaNameTransform, transformSpec } from './transform.js';
 import { pythonEmitter, resourceClassName } from './emitter/index.js';
 import { renderApisModule, type ApiVersionEntry } from './emitter/apis.js';
-import { newReport, type EmitterOptions, type OperationExtras, type UnionAlias } from './emitter/options.js';
+import { newReport, type EmitterOptions } from './emitter/options.js';
+import { extractExtras, extractUnionAliases } from './extras.js';
 import { ALIASES, apiNaming, compareVersions, DROP_PARAMS_ON_NEXT, paginationOverride } from './amazon.js';
 import { className, snakeCase, pyStr } from './emitter/naming.js';
 
@@ -37,56 +38,6 @@ const skipAmazon = args.includes('--skip-amazon');
 
 function isObject(v: unknown): v is JsonObject {
   return typeof v === 'object' && v !== null && !Array.isArray(v);
-}
-
-/** Component schemas that are a bare oneOf/anyOf of references (oagen emits them as empty models). */
-function extractUnionAliases(doc: JsonObject): Record<string, UnionAlias> {
-  const out: Record<string, UnionAlias> = {};
-  const schemas = isObject(doc.components) && isObject(doc.components.schemas) ? doc.components.schemas : {};
-  for (const [name, schema] of Object.entries(schemas)) {
-    if (!isObject(schema) || schema.properties || schema.allOf) continue;
-    const variants = (schema.oneOf ?? schema.anyOf) as unknown;
-    if (!Array.isArray(variants) || variants.length === 0) continue;
-    const refs = variants.map((v: unknown) => (isObject(v) && typeof v.$ref === 'string' ? v.$ref.split('/').pop()! : null));
-    if (refs.some((r) => r === null)) continue;
-    const disc = isObject(schema.discriminator) && typeof schema.discriminator.propertyName === 'string' ? schema.discriminator.propertyName : undefined;
-    out[name] = { variants: refs as string[], discriminator: disc, description: typeof schema.description === 'string' ? schema.description : undefined };
-  }
-  return out;
-}
-
-/** Facts the IR drops, read straight from the converted document. */
-function extractExtras(doc: JsonObject): Record<string, OperationExtras> {
-  const out: Record<string, OperationExtras> = {};
-  const paths = isObject(doc.paths) ? doc.paths : {};
-  for (const [p, item] of Object.entries(paths)) {
-    if (!isObject(item)) continue;
-    const shared = Array.isArray(item.parameters) ? item.parameters : [];
-    for (const [method, op] of Object.entries(item)) {
-      if (!isObject(op) || !['get', 'put', 'post', 'delete', 'patch', 'head', 'options', 'trace'].includes(method)) continue;
-      const extras: OperationExtras = {};
-      if (isObject(op.requestBody)) extras.bodyRequired = op.requestBody.required === true;
-      const codes: Record<string, boolean> = {};
-      const media: Record<string, string[]> = {};
-      for (const [code, resp] of Object.entries(isObject(op.responses) ? op.responses : {})) {
-        if (!/^2\d\d$/.test(code) || !isObject(resp)) continue;
-        const content = isObject(resp.content) ? resp.content : {};
-        codes[code] = Object.values(content).some((m) => isObject(m) && m.schema !== undefined);
-        media[code] = Object.keys(content);
-      }
-      extras.successCodes = codes;
-      extras.successMedia = media;
-      const params = [...shared, ...(Array.isArray(op.parameters) ? op.parameters : [])];
-      const greedy = params.filter((x) => isObject(x) && x.in === 'path' && x['x-amazon-spds-greedy-path-parameter']).map((x) => String((x as JsonObject).name));
-      if (greedy.length) extras.greedyPathParams = greedy;
-      if (typeof op.summary === 'string' && op.summary.trim()) extras.summary = op.summary;
-      const dflt = isObject(op.responses) && isObject(op.responses.default) ? op.responses.default : undefined;
-      const dfltSchema = dflt && isObject(dflt.content) ? Object.values(dflt.content).map((m) => (isObject(m) && isObject(m.schema) ? m.schema : undefined)).find(Boolean) : undefined;
-      if (dfltSchema && typeof dfltSchema.$ref === 'string') extras.defaultErrorRef = dfltSchema.$ref.split('/').pop();
-      out[`${method.toUpperCase()} ${p}`] = extras;
-    }
-  }
-  return out;
 }
 
 interface Target {
@@ -113,6 +64,10 @@ async function generateOne(
   warnings.push(...converted.warnings);
   const extras = extractExtras(converted.document);
   const unionAliases = extractUnionAliases(converted.document);
+  // .build/converted: OpenAPI 3 as the oagen CLI expects it (oagen.config.ts applies transformSpec itself);
+  // .build/specs: the same after the pre-IR transform, parsed below.
+  fs.mkdirSync(path.join(BUILD, 'converted'), { recursive: true });
+  fs.writeFileSync(path.join(BUILD, 'converted', `${target.packageName}__${api}__${version}.json`), JSON.stringify(converted.document, null, 1));
   const transformed = transformSpec(converted.document);
   fs.mkdirSync(path.join(BUILD, 'specs'), { recursive: true });
   const specPath = path.join(BUILD, 'specs', `${target.packageName}__${api}__${version}.json`);
