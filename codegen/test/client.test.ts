@@ -21,7 +21,7 @@ describe('generateClient', () => {
     const files = await emit(TASKS_SPEC, 'TasksClient');
     const init = files['__init__.py'] ?? '';
     expect(init).toContain('from .client import AsyncTasksClient, TasksClient');
-    expect(init).toContain('from ._http import RateLimit, RequestContext, RequestOptions');
+    expect(init).toContain('from ._http import DefaultAioHttpClient, RateLimit, RequestContext, RequestOptions');
     expect(init).toContain('NotFoundError');
   });
 

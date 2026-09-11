@@ -354,3 +354,17 @@ def test_user_supplied_http_client_keeps_its_defaults_like_the_openai_sdk() -> N
     assert client.http_client is mine
     client.close()
     assert not mine.is_closed  # not ours to close
+
+
+def test_aiohttp_is_explicit_like_the_openai_sdk() -> None:
+    from petstore_sdk import DefaultAioHttpClient
+
+    default = AsyncClient(base_url=BASE)
+    assert isinstance(default.http_client._transport, httpx2.AsyncHTTPTransport)  # httpx2 unless asked otherwise
+
+    aio = DefaultAioHttpClient(headers={"X-Tenant": "t1"})
+    assert isinstance(aio, httpx2.AsyncClient) and not isinstance(aio._transport, httpx2.AsyncHTTPTransport)
+    client = AsyncClient(base_url=BASE, http_client=aio)
+    assert client.http_client is aio
+    asyncio.run(default.aclose())
+    asyncio.run(aio.aclose())

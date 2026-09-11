@@ -117,7 +117,7 @@ export function renderClientModule(spec: ApiSpec, ctx: EmitterContext, opts: Emi
 export function renderInitModule(spec: ApiSpec, ctx: EmitterContext, opts: EmitterOptions): string {
   const name = ctx.namespacePascal || 'Client';
   const errors = [...errorClasses(opts), 'APIConnectionError', 'APIError', 'APIResponseValidationError', 'APIStatusError', 'APITimeoutError'].sort();
-  const http = ['RateLimit', 'RequestContext', 'RequestOptions'];
+  const http = ['DefaultAioHttpClient', 'RateLimit', 'RequestContext', 'RequestOptions'];
   const all = [`Async${name}`, name, ...errors, ...http].sort();
   return [
     `"""${spec.name} ${spec.version} SDK.`,
@@ -302,7 +302,6 @@ import asyncio
 import datetime
 import email.utils
 import enum
-import importlib.util
 import logging
 import os
 import random
@@ -935,21 +934,19 @@ class HttpClient(_BaseHttpClient):
 
 
 class AsyncHttpClient(_BaseHttpClient):
-    """Asynchronous HTTP client over \`\`httpx2.AsyncClient\`\` (\`\`httpx_aiohttp\`\` transport when installed)."""
+    """Asynchronous HTTP client over \`\`httpx2.AsyncClient\`\`; pass \`\`http_client=DefaultAioHttpClient()\`\` for aiohttp."""
 
     _auth: AsyncAuth | None
 
-    def __init__(self, *, prefer_aiohttp: bool = True, **kwargs: Any) -> None:
+    def __init__(self, **kwargs: Any) -> None:
         super().__init__(**kwargs)
-        self._options["prefer_aiohttp"] = prefer_aiohttp
-        self._prefer_aiohttp = prefer_aiohttp
         if self._throttle_enabled:
             self._throttler = Throttler(default=self._default_rate_limit, factory=AsyncTokenBucket)
 
     def _http(self) -> httpx2.AsyncClient:
         client = self._client
         if client is None:
-            transport = self._transport or async_transport(retries=self._connection_retries(), prefer_aiohttp=self._prefer_aiohttp, **self._httpx_kwargs)
+            transport = self._transport or httpx2.AsyncHTTPTransport(retries=self._connection_retries(), **self._httpx_kwargs)
             client = httpx2.AsyncClient(base_url=self._base_url, transport=transport, timeout=self._timeout)
             self._client = client
         return cast(httpx2.AsyncClient, client)
@@ -1129,26 +1126,23 @@ async def apaginate(
 # -- transports ---------------------------------------------------------------------------
 
 
-def aiohttp_available() -> bool:
-    return importlib.util.find_spec("httpx_aiohttp") is not None
+class DefaultAioHttpClient(httpx2.AsyncClient):
+    """An \`\`httpx2.AsyncClient\`\` on the aiohttp transport, for \`\`http_client=\`\` (as \`\`openai.DefaultAioHttpClient\`\`).
 
+    Needs the \`\`aiohttp\`\` extra. Keyword arguments go to \`\`httpx2.AsyncClient\`\`
+    (\`\`proxy\`\`, \`\`event_hooks\`\`, \`\`headers\`\`, ...); \`\`limits\`\` and \`\`verify\`\` configure the transport.
+    """
 
-def async_transport(*, retries: int = 0, prefer_aiohttp: bool = True, **kwargs: Any) -> httpx2.AsyncBaseTransport:
-    """\`\`httpx_aiohttp.AiohttpTransport\`\` when the \`\`aiohttp\`\` extra is installed, else \`\`httpx2.AsyncHTTPTransport\`\`."""
-    if prefer_aiohttp:
+    def __init__(self, *, limits: httpx2.Limits | None = None, verify: Any = True, **kwargs: Any) -> None:
         try:
             import httpx_aiohttp.transport as _hat
-        except ImportError:
-            pass
-        else:
-            hx: Any = getattr(_hat, "httpx")  # noqa: B009 - the httpx module httpx_aiohttp was written against
-            limits = kwargs.get("limits")
-            hx_limits = hx.Limits(max_connections=limits.max_connections, max_keepalive_connections=limits.max_keepalive_connections, keepalive_expiry=limits.keepalive_expiry) if limits is not None else hx.Limits()
-            inner: Any = _hat.AiohttpTransport(limits=hx_limits, verify=kwargs.get("verify", True))
-            if hx is httpx2:  # alias_httpx() was called
-                return cast(httpx2.AsyncBaseTransport, inner)
-            return _HttpxBridgeTransport(inner, hx)
-    return httpx2.AsyncHTTPTransport(retries=retries, **kwargs)
+        except ImportError as exc:
+            raise ImportError(f'DefaultAioHttpClient needs the aiohttp extra: pip install "{SDK_NAME.replace("_", "-")}[aiohttp]"') from exc
+        hx: Any = getattr(_hat, "httpx")  # noqa: B009 - the httpx module httpx_aiohttp was written against
+        hx_limits = hx.Limits(max_connections=limits.max_connections, max_keepalive_connections=limits.max_keepalive_connections, keepalive_expiry=limits.keepalive_expiry) if limits is not None else hx.Limits()
+        inner: Any = _hat.AiohttpTransport(limits=hx_limits, verify=verify)
+        transport = cast(httpx2.AsyncBaseTransport, inner) if hx is httpx2 else _HttpxBridgeTransport(inner, hx)  # alias_httpx() or not
+        super().__init__(transport=transport, **kwargs)
 
 
 class _BridgedStream(httpx2.AsyncByteStream):
@@ -1191,6 +1185,7 @@ __all__ = [
     "AsyncStaticHeaderAuth",
     "AsyncTokenBucket",
     "Auth",
+    "DefaultAioHttpClient",
     "HttpClient",
     "RateLimit",
     "RequestContext",
@@ -1198,9 +1193,7 @@ __all__ = [
     "StaticHeaderAuth",
     "Throttler",
     "TokenBucket",
-    "aiohttp_available",
     "apaginate",
-    "async_transport",
     "joined",
     "paginate",
     "path_segment",

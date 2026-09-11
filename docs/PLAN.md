@@ -138,7 +138,7 @@ modules assembled in `index.ts`, plus three small support modules.
   whose transport carries the connection retries; the module adds the
   status-code retries with backoff (constants from the SDK behavior in the
   IR), per-operation token buckets, the `Auth` hook, response decoding,
-  `paginate` / `apaginate` and the optional aiohttp transport.
+  `paginate` / `apaginate` and `DefaultAioHttpClient` (aiohttp as an httpx2 transport, opted into via `http_client=` as in the OpenAI SDK).
 * `index.ts` – assembles the `Emitter`; `naming.ts`, `pagination.ts`
   (token-parameter heuristic + the Amazon override table) and `ratelimits.ts`
   (usage-plan tables) support the above.

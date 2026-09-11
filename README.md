@@ -27,8 +27,7 @@ pip install "amzn-selling-partner[aiohttp]"
 ```
 
 The package depends on `httpx2` and `pydantic` only; the `aiohttp` extra adds
-the aiohttp transport the async client prefers when it is installed.
-Python 3.10 or later.
+the aiohttp transport for `DefaultAioHttpClient`. Python 3.10 or later.
 
 ## Authentication
 
@@ -129,9 +128,10 @@ async def main() -> None:
 asyncio.run(main())
 ```
 
-The async client uses `httpx_aiohttp.AiohttpTransport` when the `aiohttp`
-extra is installed (pass `prefer_aiohttp=False` to opt out); `async with`
-closes the connection pool, `await client.aclose()` does the same by hand.
+The async client runs on httpx2's own transport; as in the OpenAI SDK, aiohttp
+is opted into by passing a client on its transport (the `aiohttp` extra):
+`AsyncSellingPartner(http_client=DefaultAioHttpClient())`. `async with` closes
+the connection pool, `await client.aclose()` does the same by hand.
 
 Responses are frozen pydantic models generated from the spec
 (`amzn_selling_partner.sdk.models.orders_v0.Order`); enums are `str` enums.
@@ -229,6 +229,7 @@ any I/O.
 import httpx2
 
 client = AsyncSellingPartner(http_client=httpx2.AsyncClient(proxy="http://proxy:3128"))
+client = AsyncSellingPartner(http_client=DefaultAioHttpClient(proxy="http://proxy:3128"))
 client = AsyncSellingPartner(transport=httpx2.AsyncHTTPTransport(retries=1))
 client = AsyncSellingPartner(transport=httpx2.MockTransport(handler))
 client = SellingPartner(http_client=httpx2.Client(proxy="http://proxy:3128"))
