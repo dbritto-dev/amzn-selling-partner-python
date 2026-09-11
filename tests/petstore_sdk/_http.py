@@ -251,15 +251,17 @@ class RequestOptions:
     auth: Mapping[str, Any] | None = None
 
 
-@dataclass(slots=True, frozen=True, kw_only=True)
 class RequestContext:
     """What the auth hook and the throttler know about a call."""
 
-    operation: str  # operationId
-    service: str  # resource module name
-    method: str
-    path: str
-    options: RequestOptions | None
+    __slots__ = ("method", "operation", "options", "path", "service")
+
+    def __init__(self, *, operation: str, service: str, method: str, path: str, options: RequestOptions | None) -> None:
+        self.operation = operation  # operationId
+        self.service = service  # resource module name
+        self.method = method
+        self.path = path
+        self.options = options
 
 
 class Auth(Protocol):
@@ -387,6 +389,7 @@ class _BaseHttpClient:
             "User-Agent": user_agent or _user_agent(),
             **(default_headers or {}),
         }
+        self._timeout_extension = self._timeout.as_dict()
 
     @property
     def base_url(self) -> str:
@@ -407,9 +410,6 @@ class _BaseHttpClient:
     @property
     def timeout(self) -> httpx2.Timeout:
         return self._timeout
-
-    def set_base_url(self, url: str) -> None:
-        self._base_url = url.rstrip("/")
 
     def with_options(self, **overrides: Any) -> Self:
         """A copy with some constructor options changed, sharing this client's connection pool."""
@@ -447,37 +447,31 @@ class _BaseHttpClient:
         content_type: str | None,
         options: RequestOptions | None,
     ) -> httpx2.Request:
-        query = _query(params)
+        query = _query(params) if params else []
         if options is not None and options.extra_query:
             query.extend(_query(options.extra_query))
-        hdrs = {**self._default_headers, **_headers(headers)}
-        if options is not None and options.extra_headers:
-            hdrs.update(options.extra_headers)
+        hdrs: Mapping[str, str] = self._default_headers
         body: bytes | None = None
-        if json is not None:
-            body = _encode_json(json)
-            hdrs["Content-Type"] = content_type or "application/json"
-        elif content is not None:
-            body = content.encode() if isinstance(content, str) else content
-            hdrs["Content-Type"] = content_type or "application/octet-stream"
-        timeout = self._timeout if options is None or options.timeout is None else httpx2.Timeout(options.timeout)
-        extensions: dict[str, Any] = {"timeout": timeout.as_dict()}
+        if headers or json is not None or content is not None or (options is not None and options.extra_headers):
+            merged = {**self._default_headers, **_headers(headers)}
+            if options is not None and options.extra_headers:
+                merged.update(options.extra_headers)
+            if json is not None:
+                body = _encode_json(json)
+                merged["Content-Type"] = content_type or "application/json"
+            elif content is not None:
+                body = content.encode() if isinstance(content, str) else content
+                merged["Content-Type"] = content_type or "application/octet-stream"
+            hdrs = merged
+        extensions: dict[str, Any] = {
+            "timeout": self._timeout_extension if options is None or options.timeout is None else httpx2.Timeout(options.timeout).as_dict()
+        }
         if options is not None and options.auth is not None:
             extensions["auth_hints"] = options.auth
-        url = self._base_url + path
-        if self._owns_client:
-            # httpx2.Request encodes the URL, the query and the headers; nothing to merge from a client we created ourselves
-            return httpx2.Request(
-                method,
-                url,
-                params=tuple(query) if query else None,
-                headers=hdrs,
-                content=body,
-                data=cast(Any, data),
-                files=files,
-                extensions=extensions,
-            )
-        # a user-supplied client contributes its own defaults (headers, cookies, params), as with the OpenAI SDK's http_client=
+        # httpx2 joins the path onto the client's base_url and encodes the URL, the query and the
+        # headers; a user-supplied client (as with the OpenAI SDK's http_client=) also contributes
+        # its own defaults (headers, cookies, params) and gets the absolute URL since its base_url is its own.
+        url = path if self._owns_client else self._base_url + path
         request: httpx2.Request = self._http().build_request(
             method,
             url,
@@ -594,7 +588,7 @@ class HttpClient(_BaseHttpClient):
         client = self._client
         if client is None:
             transport = self._transport or httpx2.HTTPTransport(retries=self._connection_retries(), **self._httpx_kwargs)
-            client = httpx2.Client(transport=transport, timeout=self._timeout)
+            client = httpx2.Client(base_url=self._base_url, transport=transport, timeout=self._timeout)
             self._client = client
         return cast(httpx2.Client, client)
 
@@ -650,13 +644,6 @@ class HttpClient(_BaseHttpClient):
             content_type=content_type,
             options=options,
         )
-        resp = self._send(ctx, request, rate_limit, options, error)
-        python_type = responses.get(resp.status_code, response) if responses else response
-        return self._decode(ctx, resp, python_type, options)
-
-    def _send(
-        self, ctx: RequestContext, request: httpx2.Request, rate_limit: RateLimit | None, options: RequestOptions | None, error: Any
-    ) -> httpx2.Response:
         client = self._http()
         retries = self._max_retries if options is None or options.max_retries is None else options.max_retries
         bucket = self._bucket(f"{ctx.service}.{ctx.operation}", rate_limit)
@@ -670,7 +657,7 @@ class HttpClient(_BaseHttpClient):
                 if extra:
                     request.headers.update(extra)
             try:
-                response = client.send(request)
+                resp = client.send(request)
             except httpx2.TimeoutException as exc:
                 if not RETRY_ON_TIMEOUT or attempt >= retries:
                     raise APITimeoutError(request=request, cause=exc) from exc
@@ -681,17 +668,19 @@ class HttpClient(_BaseHttpClient):
                 continue
             except httpx2.TransportError as exc:
                 raise APIConnectionError(str(exc) or "Connection error.", request=request, cause=exc) from exc
-            status = response.status_code
+            status = resp.status_code
             if status < 400:
-                return response
+                break
             if status in self._retry_statuses and attempt < retries:
-                delay = self._retry_delay(attempt, response, bucket)
-                response.close()
+                delay = self._retry_delay(attempt, resp, bucket)
+                resp.close()
                 log.debug("%s: HTTP %d; retry %d/%d in %.2fs", ctx.operation, status, attempt + 1, retries, delay)
                 time.sleep(delay)
                 attempt += 1
                 continue
-            raise self._error(ctx, response, error)
+            raise self._error(ctx, resp, error)
+        python_type = responses.get(status, response) if responses else response
+        return self._decode(ctx, resp, python_type, options)
 
 
 class AsyncHttpClient(_BaseHttpClient):
@@ -712,7 +701,7 @@ class AsyncHttpClient(_BaseHttpClient):
             transport = self._transport or async_transport(
                 retries=self._connection_retries(), prefer_aiohttp=self._prefer_aiohttp, **self._httpx_kwargs
             )
-            client = httpx2.AsyncClient(transport=transport, timeout=self._timeout)
+            client = httpx2.AsyncClient(base_url=self._base_url, transport=transport, timeout=self._timeout)
             self._client = client
         return cast(httpx2.AsyncClient, client)
 
@@ -767,13 +756,6 @@ class AsyncHttpClient(_BaseHttpClient):
             content_type=content_type,
             options=options,
         )
-        resp = await self._send(ctx, request, rate_limit, options, error)
-        python_type = responses.get(resp.status_code, response) if responses else response
-        return self._decode(ctx, resp, python_type, options)
-
-    async def _send(
-        self, ctx: RequestContext, request: httpx2.Request, rate_limit: RateLimit | None, options: RequestOptions | None, error: Any
-    ) -> httpx2.Response:
         client = self._http()
         retries = self._max_retries if options is None or options.max_retries is None else options.max_retries
         bucket = self._bucket(f"{ctx.service}.{ctx.operation}", rate_limit)
@@ -787,7 +769,7 @@ class AsyncHttpClient(_BaseHttpClient):
                 if extra:
                     request.headers.update(extra)
             try:
-                response = await client.send(request)
+                resp = await client.send(request)
             except httpx2.TimeoutException as exc:
                 if not RETRY_ON_TIMEOUT or attempt >= retries:
                     raise APITimeoutError(request=request, cause=exc) from exc
@@ -798,17 +780,19 @@ class AsyncHttpClient(_BaseHttpClient):
                 continue
             except httpx2.TransportError as exc:
                 raise APIConnectionError(str(exc) or "Connection error.", request=request, cause=exc) from exc
-            status = response.status_code
+            status = resp.status_code
             if status < 400:
-                return response
+                break
             if status in self._retry_statuses and attempt < retries:
-                delay = self._retry_delay(attempt, response, bucket)
-                await response.aclose()
+                delay = self._retry_delay(attempt, resp, bucket)
+                await resp.aclose()
                 log.debug("%s: HTTP %d; retry %d/%d in %.2fs", ctx.operation, status, attempt + 1, retries, delay)
                 await asyncio.sleep(delay)
                 attempt += 1
                 continue
-            raise self._error(ctx, response, error)
+            raise self._error(ctx, resp, error)
+        python_type = responses.get(status, response) if responses else response
+        return self._decode(ctx, resp, python_type, options)
 
 
 # -- pagination ---------------------------------------------------------------------------

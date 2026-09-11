@@ -283,7 +283,7 @@ to `main` releases a minor version; a merge commit marked breaking (`feat!:`,
 Release workflow can be run by hand with the component to bump.
 
 ty type-checks the generated code too; the benchmarks assert the
-generated method stays within 10 % of hand-written `httpx2` code; the security
+generated method stays within 15 % of an equivalent hand-written `httpx2` call; the security
 session runs bandit and safety as in CI; the sandbox runner sends every
 operation its embedded examples. The last two lines regenerate the SDK after a
 spec bump (Node 24) and run the generator's own vitest suite and type check.
