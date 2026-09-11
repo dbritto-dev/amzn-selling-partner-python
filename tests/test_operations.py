@@ -71,13 +71,14 @@ def test_unexpected_and_missing_arguments(oas) -> None:
 
 
 def test_body_encoding(oas, sw2) -> None:
-    ns_pet = oas["create_pet"].body.annotation
+    ns_pet = oas["create_pet"].body.python_type
+    assert oas["create_pet"].body.annotation == "models.NewPet"
     assert oas["create_pet"].encode_body(ns_pet(name="n", tag=None)) == (b'{"name":"n"}', "application/json")
     assert oas["create_pet"].encode_body({"name": "n", "status": "sold"}) == (b'{"name":"n","status":"sold"}', "application/json")
     with pytest.raises(TypeError, match="missing required argument: 'body'"):
         oas["create_pet"].encode_body(NOT_GIVEN)
     assert oas["upload_photo"].encode_body(b"\x00\x01") == (b"\x00\x01", "application/octet-stream")
-    assert oas["upload_photo"].body.annotation is bytes
+    assert oas["upload_photo"].body.annotation == "bytes"
     assert sw2["upload_photo"].body.kind == "multipart"
     assert oas["get_pet"].encode_body(NOT_GIVEN) is None
 
@@ -88,11 +89,13 @@ def test_signature(oas) -> None:
     assert all(p.kind is inspect.Parameter.KEYWORD_ONLY for p in params)
     assert [p.name for p in params] == ["limit", "tags", "status", "next_token", "x_request_id", "raw", "paginate", "request_options"]
     assert sig.parameters["limit"].default is NOT_GIVEN
-    assert sig.parameters["limit"].annotation == int | type(NOT_GIVEN)
+    assert sig.parameters["limit"].annotation == "int | NotGiven"
+    assert sig.parameters["status"].annotation == "models.Status | NotGiven"
     gp = oas["get_pet"].signature
-    assert gp.parameters["pet_id"].default is inspect.Parameter.empty and gp.parameters["pet_id"].annotation is int
-    assert gp.return_annotation.__name__ == "Pet"
-    assert oas["delete_pet"].signature.return_annotation is None
+    assert gp.parameters["pet_id"].default is inspect.Parameter.empty and gp.parameters["pet_id"].annotation == "int"
+    assert gp.return_annotation == "models.Pet"
+    assert oas["list_pets"].signature.return_annotation == "models.PetList"
+    assert oas["delete_pet"].signature.return_annotation == "None"
     cp = oas["create_pet"].signature
     assert list(cp.parameters)[0] == "body" and cp.parameters["body"].default is inspect.Parameter.empty
 
@@ -102,6 +105,7 @@ def test_decoders(oas, sw2) -> None:
     assert oas["delete_pet"].decoders[204].kind == "none"
     assert oas["create_pet"].decoders[201].kind == "json" and oas["create_pet"].default_decoder.kind == "json"
     assert oas["create_pet"].default_decoder.decode(b'{"id":1,"name":"n"}', lambda: "").id == 1
+    assert oas["create_pet"].default_decoder.python_type.__name__ == "Pet"
     assert oas["stream_events"].stream_default is True
     assert sw2["get_report"].decoders[200].kind == "text"
     assert oas["get_pet"].error_decoders[404] is not None and oas["get_pet"].default_error is not None

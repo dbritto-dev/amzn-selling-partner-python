@@ -107,6 +107,21 @@ def test_binary_body_type(ns) -> None:
     assert ns.type_for(load_document(OAS31).operation("uploadPhoto").request_body.content["application/octet-stream"]) is bytes
 
 
+def test_type_expressions(ns) -> None:
+    from spapi.compile.typenames import type_expr
+
+    doc = ns.document
+    assert type_expr(doc, doc.schemas["Pet"].properties["tags"]) == "list[str]"
+    assert type_expr(doc, doc.schemas["Pet"].properties["tag"]) == "str | None"
+    assert type_expr(doc, doc.schemas["Pet"].properties["createdAt"]) == "datetime.datetime"
+    assert type_expr(doc, doc.schemas["Pet"].properties["metadata"]) == "dict[str, str]"
+    assert type_expr(doc, doc.schemas["Pet"].properties["owner"]) == "Owner | None"
+    assert type_expr(doc, doc.schemas["Animal"]) == "Dog | Cat"
+    assert type_expr(doc, doc.schemas["Status"]) == "Literal['available', 'pending', 'sold']"
+    assert type_expr(doc, doc.schemas["PetList"].properties["items"], model_prefix="m.") == "list[m.Pet]"
+    assert type_expr(doc, doc.schemas["PetList"].properties["items"], dict_suffix="Dict") == "list[PetDict]"
+
+
 def test_memoised_per_spec_hash() -> None:
     a = build_models(load_document(OAS31), key="memo_a")
     b = build_models(load_document(OAS31), key="memo_b")

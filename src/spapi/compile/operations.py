@@ -40,6 +40,7 @@ from ..spec.ir import Document, Operation, Parameter, Response, Schema
 from ._serializers import Encoder, header_serializer, path_serializer, query_serializer
 from .models import ModelNamespace
 from .naming import field_name, method_name, param_name, pascal_case
+from .typenames import type_expr
 
 log = logging.getLogger("spapi.compile.operations")
 
@@ -58,33 +59,69 @@ class ParamSpec:
     required: bool
     location: str
     encode: Encoder = field(repr=False)
-    annotation: Any = field(repr=False, default=Any)
+    annotation: str = field(repr=False, default="Any")
 
 
-@dataclass(slots=True, frozen=True)
+@dataclass(slots=True)
 class BodySpec:
     kind: BodyKind
     content_type: str
     required: bool
-    adapter: TypeAdapter[Any] | None = field(repr=False, default=None)
-    annotation: Any = field(repr=False, default=Any)
+    annotation: str = "Any"  # type expression for signatures/stubs
+    schema: Schema | None = field(repr=False, default=None)
+    ns: ModelNamespace | None = field(repr=False, default=None)
+    _type: Any = field(repr=False, default=None)
+
+    @property
+    def python_type(self) -> Any:
+        """The body's python type (models are built on first access)."""
+        if self._type is None:
+            assert self.ns is not None and self.schema is not None
+            self._type = self.ns.type_for(self.schema, name_hint=self.annotation)
+        return self._type
 
 
-@dataclass(slots=True, frozen=True)
+@dataclass(slots=True)
 class Decoder:
     kind: DecodeKind
-    adapter: TypeAdapter[Any] | None = field(repr=False, default=None)
-    annotation: Any = field(repr=False, default=Any)
+    annotation: str = "None"
+    schema: Schema | None = field(repr=False, default=None)
+    ns: ModelNamespace | None = field(repr=False, default=None)
+    hint: str = field(repr=False, default="Response")
+    _adapter: TypeAdapter[Any] | None = field(repr=False, default=None)
+
+    @property
+    def adapter(self) -> TypeAdapter[Any]:
+        """Prebuilt on first use: ``TypeAdapter`` over the response type."""
+        ad = self._adapter
+        if ad is None:
+            assert self.ns is not None and self.schema is not None
+            ad = self.ns.adapter(self.schema, name_hint=self.hint)
+            self._adapter = ad
+        return ad
+
+    @property
+    def python_type(self) -> Any:
+        if self.kind == "json":
+            assert self.ns is not None and self.schema is not None
+            return self.ns.type_for(self.schema, name_hint=self.hint)
+        return {"bytes": bytes, "text": str}.get(self.kind, type(None))
 
     def decode(self, body: bytes, text: Callable[[], str]) -> Any:
         if self.kind == "json":
-            assert self.adapter is not None
-            return self.adapter.validate_json(body)
+            ad = self._adapter
+            if ad is None:
+                ad = self.adapter
+            return ad.validate_json(body)
         if self.kind == "bytes":
             return body
         if self.kind == "text":
             return text()
         return None
+
+    def warm(self) -> None:
+        if self.kind == "json":
+            self.adapter  # noqa: B018
 
 
 @dataclass(slots=True, frozen=True, kw_only=True)
@@ -105,8 +142,8 @@ class CompiledOp:
     signature: inspect.Signature = field(repr=False)
     decoders: dict[int, Decoder] = field(repr=False)
     default_decoder: Decoder = field(repr=False)
-    error_decoders: dict[int, TypeAdapter[Any]] = field(repr=False)
-    default_error: TypeAdapter[Any] | None = field(repr=False)
+    error_decoders: dict[int, Decoder] = field(repr=False)
+    default_error: Decoder | None = field(repr=False)
     stream_default: bool
     rate_limit: RateLimit | None
     pagination: CompiledPagination | None
@@ -177,6 +214,18 @@ class CompiledOp:
         d = self.decoders.get(status)
         return d if d is not None else self.default_decoder
 
+    def warm(self) -> None:
+        """Build every adapter/model this operation needs (preload)."""
+        for d in self.decoders.values():
+            d.warm()
+        self.default_decoder.warm()
+        for d in self.error_decoders.values():
+            d.warm()
+        if self.default_error is not None:
+            self.default_error.warm()
+        if self.body is not None and self.body.kind == "json":
+            self.body.python_type  # noqa: B018
+
     @property
     def returns_page(self) -> bool:
         return self.pagination is not None
@@ -208,6 +257,10 @@ def compile_operation(
     path_specs: list[ParamSpec] = []
     query_specs: list[ParamSpec] = []
     header_specs: list[ParamSpec] = []
+
+    def ann(schema: Schema, hint: str) -> str:
+        return type_expr(document, schema, hint, model_prefix="models.")
+
     by_wire: dict[tuple[str, str], Parameter] = {(p.name, p.location): p for p in op.parameters}
     # path params in the order they appear in the template
     template = op.path
@@ -216,15 +269,13 @@ def compile_operation(
         p = by_wire.get((wire, "path"))
         if p is None:
             p = Parameter(name=wire, location="path", schema=Schema(type="string"), required=True)
-        path_specs.append(
-            ParamSpec(unique(param_name(wire)), wire, True, "path", path_serializer(p, resolve), ns.type_for(p.schema, name_hint=pascal_case(wire)))
-        )
+        path_specs.append(ParamSpec(unique(param_name(wire)), wire, True, "path", path_serializer(p, resolve), ann(p.schema, pascal_case(wire))))
         template = template.replace("{" + wire + "}", "{}", 1)
     for p in op.parameters:
         if p.location == "query":
-            query_specs.append(ParamSpec(unique(param_name(p.name)), p.name, p.required, "query", query_serializer(p, resolve), ns.type_for(p.schema, name_hint=pascal_case(p.name))))
+            query_specs.append(ParamSpec(unique(param_name(p.name)), p.name, p.required, "query", query_serializer(p, resolve), ann(p.schema, pascal_case(p.name))))
         elif p.location == "header":
-            header_specs.append(ParamSpec(unique(param_name(p.name)), p.name, p.required, "header", header_serializer(p, resolve), ns.type_for(p.schema, name_hint=pascal_case(p.name))))
+            header_specs.append(ParamSpec(unique(param_name(p.name)), p.name, p.required, "header", header_serializer(p, resolve), ann(p.schema, pascal_case(p.name))))
         elif p.location == "cookie":
             log.warning("%s.%s: cookie parameter %r is not supported and is ignored", key_prefix, op.operation_id, p.name)
 
@@ -235,37 +286,37 @@ def compile_operation(
             if "json" in m:
                 media, schema = m, s
                 break
+        hint = pascal_case(op.operation_id) + "Body"
         if "json" in media:
-            ann = ns.type_for(schema, name_hint=pascal_case(op.operation_id) + "Body")
-            body_spec = BodySpec("json", media, op.request_body.required, ns.adapter_for_type(ann), ann)
+            body_spec = BodySpec("json", media, op.request_body.required, ann(schema, hint), schema, ns)
         elif media == "multipart/form-data":
-            body_spec = BodySpec("multipart", media, op.request_body.required, None, dict[str, Any])
+            body_spec = BodySpec("multipart", media, op.request_body.required, "bytes | dict[str, Any]")
         elif media == "application/x-www-form-urlencoded":
-            body_spec = BodySpec("form", media, op.request_body.required, None, dict[str, Any])
+            body_spec = BodySpec("form", media, op.request_body.required, "bytes | dict[str, Any]")
         elif media.startswith("text/"):
-            body_spec = BodySpec("text", media, op.request_body.required, None, str)
+            body_spec = BodySpec("text", media, op.request_body.required, "str")
         else:
-            body_spec = BodySpec("binary", media, op.request_body.required, None, bytes)
+            body_spec = BodySpec("binary", media, op.request_body.required, "bytes")
         py_names.add("body")
 
     decoders: dict[int, Decoder] = {}
     default_decoder = Decoder("none")
-    error_decoders: dict[int, TypeAdapter[Any]] = {}
-    default_error: TypeAdapter[Any] | None = None
+    error_decoders: dict[int, Decoder] = {}
+    default_error: Decoder | None = None
     stream_default = False
     first_success: Decoder | None = None
     for code, resp in op.responses.items():
         if code == "default":
             js = resp.json_schema
             if js is not None:
-                default_error = ns.adapter(js, name_hint="Error")
+                default_error = Decoder("json", ann(js, "Error"), js, ns, "Error")
             continue
         try:
             status = int(code.replace("X", "0"))
         except ValueError:
             continue
         if 200 <= status < 300:
-            dec = _decoder(resp, ns, op.operation_id)
+            dec = _decoder(resp, ns, op.operation_id, document)
             if any(m == "text/event-stream" for m in resp.content) and first_success is None:
                 stream_default = True
             decoders[status] = dec
@@ -274,7 +325,7 @@ def compile_operation(
         else:
             js = resp.json_schema
             if js is not None:
-                error_decoders[status] = ns.adapter(js, name_hint="Error")
+                error_decoders[status] = Decoder("json", ann(js, "Error"), js, ns, "Error")
     if first_success is not None:
         default_decoder = first_success
     if default_error is None and error_decoders:
@@ -285,18 +336,17 @@ def compile_operation(
     params: list[inspect.Parameter] = []
     for spec in [*path_specs, *query_specs, *header_specs]:
         default = inspect.Parameter.empty if spec.required else NOT_GIVEN
-        ann = spec.annotation if spec.required else spec.annotation | NotGiven
-        params.append(inspect.Parameter(spec.py_name, inspect.Parameter.KEYWORD_ONLY, default=default, annotation=ann))
+        annotation = spec.annotation if spec.required else f"{spec.annotation} | NotGiven"
+        params.append(inspect.Parameter(spec.py_name, inspect.Parameter.KEYWORD_ONLY, default=default, annotation=annotation))
     if body_spec is not None:
         default = inspect.Parameter.empty if body_spec.required else NOT_GIVEN
         params.append(inspect.Parameter("body", inspect.Parameter.KEYWORD_ONLY, default=default, annotation=body_spec.annotation))
-    params.append(inspect.Parameter("raw", inspect.Parameter.KEYWORD_ONLY, default=False, annotation=bool))
-    params.append(inspect.Parameter("paginate", inspect.Parameter.KEYWORD_ONLY, default=NOT_GIVEN, annotation=Pagination | None | NotGiven))
-    params.append(inspect.Parameter("request_options", inspect.Parameter.KEYWORD_ONLY, default=None, annotation=RequestOptions | None))
+    params.append(inspect.Parameter("raw", inspect.Parameter.KEYWORD_ONLY, default=False, annotation="bool"))
+    params.append(inspect.Parameter("paginate", inspect.Parameter.KEYWORD_ONLY, default=NOT_GIVEN, annotation="Pagination | None | NotGiven"))
+    params.append(inspect.Parameter("request_options", inspect.Parameter.KEYWORD_ONLY, default=None, annotation="RequestOptions | None"))
     # keep signature parameters ordered: required first
     params.sort(key=lambda p: p.default is not inspect.Parameter.empty)
-    return_ann = default_decoder.annotation if default_decoder.kind == "json" else (bytes if default_decoder.kind == "bytes" else (str if default_decoder.kind == "text" else None))
-    signature = inspect.Signature(params, return_annotation=return_ann)
+    signature = inspect.Signature(params, return_annotation=default_decoder.annotation)
 
     required = tuple(s.py_name for s in [*path_specs, *query_specs, *header_specs] if s.required)
     if body_spec is not None and body_spec.required:
@@ -364,17 +414,17 @@ def compile_operations(document: Document, ns: ModelNamespace, *, key_prefix: st
     return out
 
 
-def _decoder(resp: Response, ns: ModelNamespace, op_id: str) -> Decoder:
+def _decoder(resp: Response, ns: ModelNamespace, op_id: str, document: Document) -> Decoder:
     js = resp.json_schema
     if js is not None:
-        ann = ns.type_for(js, name_hint=pascal_case(op_id) + "Response")
-        return Decoder("json", ns.adapter_for_type(ann), ann)
+        hint = pascal_case(op_id) + "Response"
+        return Decoder("json", type_expr(document, js, hint, model_prefix="models."), js, ns, hint)
     if not resp.content:
         return Decoder("none")
     media = next(iter(resp.content))
     if media.startswith("text/"):
-        return Decoder("text", None, str)
-    return Decoder("bytes", None, bytes)
+        return Decoder("text", "str")
+    return Decoder("bytes", "bytes")
 
 
 def _docstring(op: Operation) -> str:

@@ -63,6 +63,8 @@ indent-style = "space"
 
 [tool.pyright]
 include = ["src/spapi", "src/amzn_selling_partner"]
+venvPath = "."
+venv = ".venv"
 exclude = ["**/__pycache__", "src/spapi/_stubs"]
 pythonVersion = "3.12"
 typeCheckingMode = "strict"

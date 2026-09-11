@@ -272,7 +272,8 @@ class _ClientCore:
             for version in container.versions:
                 av = container.version(version)
                 started = time.perf_counter()
-                av.operations
+                for op in av.operations:
+                    op.warm()
                 av.models.build_all()
                 av.resources()
                 times[av.key] = (time.perf_counter() - started) * 1000

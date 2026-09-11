@@ -272,10 +272,10 @@ class BaseClient:
         body = response.content
         parsed: Any = None
         if body:
-            adapter = op.error_decoders.get(status) or op.default_error
-            if adapter is not None:
+            decoder = op.error_decoders.get(status) or op.default_error
+            if decoder is not None:
                 try:
-                    parsed = adapter.validate_json(body)
+                    parsed = decoder.adapter.validate_json(body)
                 except ValidationError:
                     parsed = None
             if parsed is None:
