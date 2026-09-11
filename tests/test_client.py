@@ -327,3 +327,30 @@ def test_with_options_shares_the_pool_and_drops_cached_resources() -> None:
     assert calls == ["b", "-"]
     derived.close()  # does not close the shared pool
     assert not client.http.is_closed
+
+
+def test_user_supplied_http_client_keeps_its_defaults_like_the_openai_sdk() -> None:
+    seen: list[httpx2.Request] = []
+
+    def handler(request: httpx2.Request) -> httpx2.Response:
+        seen.append(request)
+        return httpx2.Response(200, json={"id": 1, "name": "n"})
+
+    hooks: list[str] = []
+    mine = httpx2.Client(
+        transport=httpx2.MockTransport(handler),
+        headers={"X-Tenant": "t1", "Accept": "text/plain"},
+        cookies={"session": "s"},
+        event_hooks={"request": [lambda r: hooks.append(r.url.path)]},
+        timeout=3.0,
+    )
+    client = Client(base_url=BASE, http_client=mine, throttle=False)
+    client.petstore_v3.get_pet(pet_id=1)
+    request = seen[-1]
+    assert request.headers["x-tenant"] == "t1" and request.headers["cookie"] == "session=s"  # the client's defaults apply
+    assert request.headers["accept"] == "application/json"  # ours win where they overlap
+    assert hooks == ["/v3/pets/1"]  # and its event hooks run
+    assert request.extensions["timeout"]["read"] == 30.0  # the SDK's timeout, not the client's, as with the OpenAI SDK
+    assert client.http_client is mine
+    client.close()
+    assert not mine.is_closed  # not ours to close

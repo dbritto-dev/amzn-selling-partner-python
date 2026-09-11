@@ -464,11 +464,23 @@ class _BaseHttpClient:
         extensions: dict[str, Any] = {"timeout": timeout.as_dict()}
         if options is not None and options.auth is not None:
             extensions["auth_hints"] = options.auth
-        # httpx2.Request encodes the URL, the query and the headers; the client-level
-        # merging of build_request() (cookies, base URL, default headers) is not needed.
-        return httpx2.Request(
+        url = self._base_url + path
+        if self._owns_client:
+            # httpx2.Request encodes the URL, the query and the headers; nothing to merge from a client we created ourselves
+            return httpx2.Request(
+                method,
+                url,
+                params=tuple(query) if query else None,
+                headers=hdrs,
+                content=body,
+                data=cast(Any, data),
+                files=files,
+                extensions=extensions,
+            )
+        # a user-supplied client contributes its own defaults (headers, cookies, params), as with the OpenAI SDK's http_client=
+        request: httpx2.Request = self._http().build_request(
             method,
-            self._base_url + path,
+            url,
             params=tuple(query) if query else None,
             headers=hdrs,
             content=body,
@@ -476,6 +488,7 @@ class _BaseHttpClient:
             files=files,
             extensions=extensions,
         )
+        return request
 
     # -- retry policy (status codes; connection retries are httpx2's) ----------------------
 

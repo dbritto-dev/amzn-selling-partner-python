@@ -238,6 +238,9 @@ The sync client takes the `httpx2.Client` counterparts; a `MockTransport` is
 how the tests run without a network. Any other httpx2 transport option
 (`limits`, `verify`, `proxy`, `http2`, ...) is passed through:
 `AsyncSellingPartner(limits=httpx2.Limits(max_connections=100), http2=True)`.
+`http_client=` works as in the OpenAI SDK: the client you pass is used as is
+(its transport, proxies, event hooks, auth, default headers and cookies apply;
+the base URL, timeout and retries are the SDK's) and is yours to close.
 
 
 ## Using other APIs
