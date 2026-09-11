@@ -213,7 +213,7 @@ class IneligibilityReasonCode(str, Enum):
 
 class InputType(str, Enum):
     TEXTBOX = "TEXTBOX"
-    PASSWORD = "PASSWORD"
+    PASSWORD = "PASSWORD"  # nosec B105
 
     __str__ = str.__str__
 

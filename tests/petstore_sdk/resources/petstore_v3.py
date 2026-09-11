@@ -82,7 +82,7 @@ class PetstoreV3Resource:
             },
             items=("items",),
             token=("next_token",),
-            token_param="next_token",
+            token_param="next_token",  # nosec B106
             wire_items=("items",),
             wire_token=("nextToken",),
         )
@@ -310,7 +310,7 @@ class AsyncPetstoreV3Resource:
             },
             items=("items",),
             token=("next_token",),
-            token_param="next_token",
+            token_param="next_token",  # nosec B106
             wire_items=("items",),
             wire_token=("nextToken",),
         )

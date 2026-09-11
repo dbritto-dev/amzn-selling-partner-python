@@ -75,7 +75,7 @@ class VehiclesV20241101Resource:
             },
             items=("vehicles",),
             token=("pagination", "next_token"),
-            token_param="page_token",
+            token_param="page_token",  # nosec B106
             wire_items=("vehicles",),
             wire_token=("pagination", "nextToken"),
         )
@@ -140,7 +140,7 @@ class AsyncVehiclesV20241101Resource:
             },
             items=("vehicles",),
             token=("pagination", "next_token"),
-            token_param="page_token",
+            token_param="page_token",  # nosec B106
             wire_items=("vehicles",),
             wire_token=("pagination", "nextToken"),
         )

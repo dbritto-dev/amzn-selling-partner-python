@@ -124,7 +124,7 @@ class PromotionsV20251201Resource:
             },
             items=("promotions",),
             token=("pagination", "next_token"),
-            token_param="pagination_token",
+            token_param="pagination_token",  # nosec B106
             wire_items=("promotions",),
             wire_token=("pagination", "nextToken"),
         )
@@ -214,7 +214,7 @@ class PromotionsV20251201Resource:
             },
             items=("selection", "selection_details", "items"),
             token=("selection", "selection_details", "pagination", "next_token"),
-            token_param="pagination_token",
+            token_param="pagination_token",  # nosec B106
             wire_items=("selection", "selectionDetails", "items"),
             wire_token=("selection", "selectionDetails", "pagination", "nextToken"),
         )
@@ -327,7 +327,7 @@ class AsyncPromotionsV20251201Resource:
             },
             items=("promotions",),
             token=("pagination", "next_token"),
-            token_param="pagination_token",
+            token_param="pagination_token",  # nosec B106
             wire_items=("promotions",),
             wire_token=("pagination", "nextToken"),
         )
@@ -417,7 +417,7 @@ class AsyncPromotionsV20251201Resource:
             },
             items=("selection", "selection_details", "items"),
             token=("selection", "selection_details", "pagination", "next_token"),
-            token_param="pagination_token",
+            token_param="pagination_token",  # nosec B106
             wire_items=("selection", "selectionDetails", "items"),
             wire_token=("selection", "selectionDetails", "pagination", "nextToken"),
         )

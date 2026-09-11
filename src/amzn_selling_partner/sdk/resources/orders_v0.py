@@ -158,7 +158,7 @@ class OrdersV0Resource:
             },
             items=("payload", "orders"),
             token=("payload", "next_token"),
-            token_param="next_token",
+            token_param="next_token",  # nosec B106
             wire_items=("payload", "Orders"),
             wire_token=("payload", "NextToken"),
             drop_params_on_next=True,
@@ -306,7 +306,7 @@ class OrdersV0Resource:
             {"order_id": order_id, "next_token": next_token, "request_options": request_options},
             items=("payload", "order_items"),
             token=("payload", "next_token"),
-            token_param="next_token",
+            token_param="next_token",  # nosec B106
             wire_items=("payload", "OrderItems"),
             wire_token=("payload", "NextToken"),
             drop_params_on_next=True,
@@ -359,7 +359,7 @@ class OrdersV0Resource:
             {"order_id": order_id, "next_token": next_token, "request_options": request_options},
             items=("payload", "order_items"),
             token=("payload", "next_token"),
-            token_param="next_token",
+            token_param="next_token",  # nosec B106
             wire_items=("payload", "OrderItems"),
             wire_token=("payload", "NextToken"),
             drop_params_on_next=True,
@@ -627,7 +627,7 @@ class AsyncOrdersV0Resource:
             },
             items=("payload", "orders"),
             token=("payload", "next_token"),
-            token_param="next_token",
+            token_param="next_token",  # nosec B106
             wire_items=("payload", "Orders"),
             wire_token=("payload", "NextToken"),
             drop_params_on_next=True,
@@ -775,7 +775,7 @@ class AsyncOrdersV0Resource:
             {"order_id": order_id, "next_token": next_token, "request_options": request_options},
             items=("payload", "order_items"),
             token=("payload", "next_token"),
-            token_param="next_token",
+            token_param="next_token",  # nosec B106
             wire_items=("payload", "OrderItems"),
             wire_token=("payload", "NextToken"),
             drop_params_on_next=True,
@@ -828,7 +828,7 @@ class AsyncOrdersV0Resource:
             {"order_id": order_id, "next_token": next_token, "request_options": request_options},
             items=("payload", "order_items"),
             token=("payload", "next_token"),
-            token_param="next_token",
+            token_param="next_token",  # nosec B106
             wire_items=("payload", "OrderItems"),
             wire_token=("payload", "NextToken"),
             drop_params_on_next=True,

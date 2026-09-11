@@ -36,6 +36,7 @@ dev = [
   "ruff>=0.16",
   "pytest-benchmark>=5",
 ]
+security-test = ["bandit==1.9.4", "safety==2.3.4", "setuptools<81"]
 
 [build-system]
 requires = ["uv_build>=0.8,<0.13"]

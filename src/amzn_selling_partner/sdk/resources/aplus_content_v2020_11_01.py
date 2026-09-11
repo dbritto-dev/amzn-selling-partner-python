@@ -69,7 +69,7 @@ class AplusContentV20201101Resource:
             {"marketplace_id": marketplace_id, "page_token": page_token, "request_options": request_options},
             items=("content_metadata_records",),
             token=("next_page_token",),
-            token_param="page_token",
+            token_param="page_token",  # nosec B106
             wire_items=("contentMetadataRecords",),
             wire_token=("nextPageToken",),
         )
@@ -237,7 +237,7 @@ class AplusContentV20201101Resource:
             },
             items=("asin_metadata_set",),
             token=("next_page_token",),
-            token_param="page_token",
+            token_param="page_token",  # nosec B106
             wire_items=("asinMetadataSet",),
             wire_token=("nextPageToken",),
         )
@@ -357,7 +357,7 @@ class AplusContentV20201101Resource:
             {"marketplace_id": marketplace_id, "asin": asin, "page_token": page_token, "request_options": request_options},
             items=("publish_record_list",),
             token=("next_page_token",),
-            token_param="page_token",
+            token_param="page_token",  # nosec B106
             wire_items=("publishRecordList",),
             wire_token=("nextPageToken",),
         )
@@ -480,7 +480,7 @@ class AsyncAplusContentV20201101Resource:
             {"marketplace_id": marketplace_id, "page_token": page_token, "request_options": request_options},
             items=("content_metadata_records",),
             token=("next_page_token",),
-            token_param="page_token",
+            token_param="page_token",  # nosec B106
             wire_items=("contentMetadataRecords",),
             wire_token=("nextPageToken",),
         )
@@ -648,7 +648,7 @@ class AsyncAplusContentV20201101Resource:
             },
             items=("asin_metadata_set",),
             token=("next_page_token",),
-            token_param="page_token",
+            token_param="page_token",  # nosec B106
             wire_items=("asinMetadataSet",),
             wire_token=("nextPageToken",),
         )
@@ -768,7 +768,7 @@ class AsyncAplusContentV20201101Resource:
             {"marketplace_id": marketplace_id, "asin": asin, "page_token": page_token, "request_options": request_options},
             items=("publish_record_list",),
             token=("next_page_token",),
-            token_param="page_token",
+            token_param="page_token",  # nosec B106
             wire_items=("publishRecordList",),
             wire_token=("nextPageToken",),
         )

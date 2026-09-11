@@ -4,7 +4,7 @@ from __future__ import annotations
 
 import enum
 
-LWA_TOKEN_URL = "https://api.amazon.com/auth/o2/token"
+LWA_TOKEN_URL = "https://api.amazon.com/auth/o2/token"  # nosec B105
 
 
 class Region(enum.Enum):

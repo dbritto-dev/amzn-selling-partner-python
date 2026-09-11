@@ -88,7 +88,7 @@ class FulfillmentInboundV20240320Resource:
             },
             items=("inbound_plans",),
             token=("pagination", "next_token"),
-            token_param="pagination_token",
+            token_param="pagination_token",  # nosec B106
             wire_items=("inboundPlans",),
             wire_token=("pagination", "nextToken"),
         )
@@ -204,7 +204,7 @@ class FulfillmentInboundV20240320Resource:
             },
             items=("boxes",),
             token=("pagination", "next_token"),
-            token_param="pagination_token",
+            token_param="pagination_token",  # nosec B106
             wire_items=("boxes",),
             wire_token=("pagination", "nextToken"),
         )
@@ -290,7 +290,7 @@ class FulfillmentInboundV20240320Resource:
             },
             items=("items",),
             token=("pagination", "next_token"),
-            token_param="pagination_token",
+            token_param="pagination_token",  # nosec B106
             wire_items=("items",),
             wire_token=("pagination", "nextToken"),
         )
@@ -380,7 +380,7 @@ class FulfillmentInboundV20240320Resource:
             },
             items=("boxes",),
             token=("pagination", "next_token"),
-            token_param="pagination_token",
+            token_param="pagination_token",  # nosec B106
             wire_items=("boxes",),
             wire_token=("pagination", "nextToken"),
         )
@@ -440,7 +440,7 @@ class FulfillmentInboundV20240320Resource:
             },
             items=("items",),
             token=("pagination", "next_token"),
-            token_param="pagination_token",
+            token_param="pagination_token",  # nosec B106
             wire_items=("items",),
             wire_token=("pagination", "nextToken"),
         )
@@ -528,7 +528,7 @@ class FulfillmentInboundV20240320Resource:
             },
             items=("packing_options",),
             token=("pagination", "next_token"),
-            token_param="pagination_token",
+            token_param="pagination_token",  # nosec B106
             wire_items=("packingOptions",),
             wire_token=("pagination", "nextToken"),
         )
@@ -644,7 +644,7 @@ class FulfillmentInboundV20240320Resource:
             },
             items=("pallets",),
             token=("pagination", "next_token"),
-            token_param="pagination_token",
+            token_param="pagination_token",  # nosec B106
             wire_items=("pallets",),
             wire_token=("pagination", "nextToken"),
         )
@@ -701,7 +701,7 @@ class FulfillmentInboundV20240320Resource:
             },
             items=("placement_options",),
             token=("pagination", "next_token"),
-            token_param="pagination_token",
+            token_param="pagination_token",  # nosec B106
             wire_items=("placementOptions",),
             wire_token=("pagination", "nextToken"),
         )
@@ -852,7 +852,7 @@ class FulfillmentInboundV20240320Resource:
             },
             items=("boxes",),
             token=("pagination", "next_token"),
-            token_param="pagination_token",
+            token_param="pagination_token",  # nosec B106
             wire_items=("boxes",),
             wire_token=("pagination", "nextToken"),
         )
@@ -912,7 +912,7 @@ class FulfillmentInboundV20240320Resource:
             },
             items=("content_update_previews",),
             token=("pagination", "next_token"),
-            token_param="pagination_token",
+            token_param="pagination_token",  # nosec B106
             wire_items=("contentUpdatePreviews",),
             wire_token=("pagination", "nextToken"),
         )
@@ -1096,7 +1096,7 @@ class FulfillmentInboundV20240320Resource:
             },
             items=("delivery_window_options",),
             token=("pagination", "next_token"),
-            token_param="pagination_token",
+            token_param="pagination_token",  # nosec B106
             wire_items=("deliveryWindowOptions",),
             wire_token=("pagination", "nextToken"),
         )
@@ -1217,7 +1217,7 @@ class FulfillmentInboundV20240320Resource:
             },
             items=("items",),
             token=("pagination", "next_token"),
-            token_param="pagination_token",
+            token_param="pagination_token",  # nosec B106
             wire_items=("items",),
             wire_token=("pagination", "nextToken"),
         )
@@ -1308,7 +1308,7 @@ class FulfillmentInboundV20240320Resource:
             },
             items=("pallets",),
             token=("pagination", "next_token"),
-            token_param="pagination_token",
+            token_param="pagination_token",  # nosec B106
             wire_items=("pallets",),
             wire_token=("pagination", "nextToken"),
         )
@@ -1398,7 +1398,7 @@ class FulfillmentInboundV20240320Resource:
             },
             items=("self_ship_appointment_slots_availability", "slots"),
             token=("pagination", "next_token"),
-            token_param="pagination_token",
+            token_param="pagination_token",  # nosec B106
             wire_items=("selfShipAppointmentSlotsAvailability", "slots"),
             wire_token=("pagination", "nextToken"),
         )
@@ -1593,7 +1593,7 @@ class FulfillmentInboundV20240320Resource:
             },
             items=("transportation_options",),
             token=("pagination", "next_token"),
-            token_param="pagination_token",
+            token_param="pagination_token",  # nosec B106
             wire_items=("transportationOptions",),
             wire_token=("pagination", "nextToken"),
         )
@@ -1938,7 +1938,7 @@ class AsyncFulfillmentInboundV20240320Resource:
             },
             items=("inbound_plans",),
             token=("pagination", "next_token"),
-            token_param="pagination_token",
+            token_param="pagination_token",  # nosec B106
             wire_items=("inboundPlans",),
             wire_token=("pagination", "nextToken"),
         )
@@ -2054,7 +2054,7 @@ class AsyncFulfillmentInboundV20240320Resource:
             },
             items=("boxes",),
             token=("pagination", "next_token"),
-            token_param="pagination_token",
+            token_param="pagination_token",  # nosec B106
             wire_items=("boxes",),
             wire_token=("pagination", "nextToken"),
         )
@@ -2140,7 +2140,7 @@ class AsyncFulfillmentInboundV20240320Resource:
             },
             items=("items",),
             token=("pagination", "next_token"),
-            token_param="pagination_token",
+            token_param="pagination_token",  # nosec B106
             wire_items=("items",),
             wire_token=("pagination", "nextToken"),
         )
@@ -2230,7 +2230,7 @@ class AsyncFulfillmentInboundV20240320Resource:
             },
             items=("boxes",),
             token=("pagination", "next_token"),
-            token_param="pagination_token",
+            token_param="pagination_token",  # nosec B106
             wire_items=("boxes",),
             wire_token=("pagination", "nextToken"),
         )
@@ -2290,7 +2290,7 @@ class AsyncFulfillmentInboundV20240320Resource:
             },
             items=("items",),
             token=("pagination", "next_token"),
-            token_param="pagination_token",
+            token_param="pagination_token",  # nosec B106
             wire_items=("items",),
             wire_token=("pagination", "nextToken"),
         )
@@ -2378,7 +2378,7 @@ class AsyncFulfillmentInboundV20240320Resource:
             },
             items=("packing_options",),
             token=("pagination", "next_token"),
-            token_param="pagination_token",
+            token_param="pagination_token",  # nosec B106
             wire_items=("packingOptions",),
             wire_token=("pagination", "nextToken"),
         )
@@ -2494,7 +2494,7 @@ class AsyncFulfillmentInboundV20240320Resource:
             },
             items=("pallets",),
             token=("pagination", "next_token"),
-            token_param="pagination_token",
+            token_param="pagination_token",  # nosec B106
             wire_items=("pallets",),
             wire_token=("pagination", "nextToken"),
         )
@@ -2551,7 +2551,7 @@ class AsyncFulfillmentInboundV20240320Resource:
             },
             items=("placement_options",),
             token=("pagination", "next_token"),
-            token_param="pagination_token",
+            token_param="pagination_token",  # nosec B106
             wire_items=("placementOptions",),
             wire_token=("pagination", "nextToken"),
         )
@@ -2702,7 +2702,7 @@ class AsyncFulfillmentInboundV20240320Resource:
             },
             items=("boxes",),
             token=("pagination", "next_token"),
-            token_param="pagination_token",
+            token_param="pagination_token",  # nosec B106
             wire_items=("boxes",),
             wire_token=("pagination", "nextToken"),
         )
@@ -2762,7 +2762,7 @@ class AsyncFulfillmentInboundV20240320Resource:
             },
             items=("content_update_previews",),
             token=("pagination", "next_token"),
-            token_param="pagination_token",
+            token_param="pagination_token",  # nosec B106
             wire_items=("contentUpdatePreviews",),
             wire_token=("pagination", "nextToken"),
         )
@@ -2946,7 +2946,7 @@ class AsyncFulfillmentInboundV20240320Resource:
             },
             items=("delivery_window_options",),
             token=("pagination", "next_token"),
-            token_param="pagination_token",
+            token_param="pagination_token",  # nosec B106
             wire_items=("deliveryWindowOptions",),
             wire_token=("pagination", "nextToken"),
         )
@@ -3067,7 +3067,7 @@ class AsyncFulfillmentInboundV20240320Resource:
             },
             items=("items",),
             token=("pagination", "next_token"),
-            token_param="pagination_token",
+            token_param="pagination_token",  # nosec B106
             wire_items=("items",),
             wire_token=("pagination", "nextToken"),
         )
@@ -3158,7 +3158,7 @@ class AsyncFulfillmentInboundV20240320Resource:
             },
             items=("pallets",),
             token=("pagination", "next_token"),
-            token_param="pagination_token",
+            token_param="pagination_token",  # nosec B106
             wire_items=("pallets",),
             wire_token=("pagination", "nextToken"),
         )
@@ -3248,7 +3248,7 @@ class AsyncFulfillmentInboundV20240320Resource:
             },
             items=("self_ship_appointment_slots_availability", "slots"),
             token=("pagination", "next_token"),
-            token_param="pagination_token",
+            token_param="pagination_token",  # nosec B106
             wire_items=("selfShipAppointmentSlotsAvailability", "slots"),
             wire_token=("pagination", "nextToken"),
         )
@@ -3443,7 +3443,7 @@ class AsyncFulfillmentInboundV20240320Resource:
             },
             items=("transportation_options",),
             token=("pagination", "next_token"),
-            token_param="pagination_token",
+            token_param="pagination_token",  # nosec B106
             wire_items=("transportationOptions",),
             wire_token=("pagination", "nextToken"),
         )

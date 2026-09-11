@@ -214,6 +214,7 @@ uv sync --extra dev --extra aiohttp
 uv run pytest
 uv run pyright                            # strict, generated code included
 uv run pytest benchmarks                  # pytest-benchmark: generated method vs hand-written httpx2 code
+uvx nox -s security_test                  # bandit + safety, as in CI
 uv run python -m amzn_selling_partner.sandbox_tests   # every operation against its embedded examples
 
 cd codegen && npm ci --ignore-scripts && npm run regenerate      # regenerate after a spec bump (Node 22)

@@ -303,7 +303,7 @@ class ListingsItemsV20210801Resource:
             },
             items=("items",),
             token=("pagination", "next_token"),
-            token_param="page_token",
+            token_param="page_token",  # nosec B106
             wire_items=("items",),
             wire_token=("pagination", "nextToken"),
         )
@@ -595,7 +595,7 @@ class AsyncListingsItemsV20210801Resource:
             },
             items=("items",),
             token=("pagination", "next_token"),
-            token_param="page_token",
+            token_param="page_token",  # nosec B106
             wire_items=("items",),
             wire_token=("pagination", "nextToken"),
         )

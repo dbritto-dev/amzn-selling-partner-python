@@ -93,7 +93,7 @@ class VendorDirectFulfillmentShippingV1Resource:
             },
             items=("payload", "shipping_labels"),
             token=("payload", "pagination", "next_token"),
-            token_param="next_token",
+            token_param="next_token",  # nosec B106
             wire_items=("payload", "shippingLabels"),
             wire_token=("payload", "pagination", "nextToken"),
         )
@@ -285,7 +285,7 @@ class VendorDirectFulfillmentShippingV1Resource:
             },
             items=("payload", "customer_invoices"),
             token=("payload", "pagination", "next_token"),
-            token_param="next_token",
+            token_param="next_token",  # nosec B106
             wire_items=("payload", "customerInvoices"),
             wire_token=("payload", "pagination", "nextToken"),
         )
@@ -387,7 +387,7 @@ class VendorDirectFulfillmentShippingV1Resource:
             },
             items=("payload", "packing_slips"),
             token=("payload", "pagination", "next_token"),
-            token_param="next_token",
+            token_param="next_token",  # nosec B106
             wire_items=("payload", "packingSlips"),
             wire_token=("payload", "pagination", "nextToken"),
         )
@@ -498,7 +498,7 @@ class AsyncVendorDirectFulfillmentShippingV1Resource:
             },
             items=("payload", "shipping_labels"),
             token=("payload", "pagination", "next_token"),
-            token_param="next_token",
+            token_param="next_token",  # nosec B106
             wire_items=("payload", "shippingLabels"),
             wire_token=("payload", "pagination", "nextToken"),
         )
@@ -690,7 +690,7 @@ class AsyncVendorDirectFulfillmentShippingV1Resource:
             },
             items=("payload", "customer_invoices"),
             token=("payload", "pagination", "next_token"),
-            token_param="next_token",
+            token_param="next_token",  # nosec B106
             wire_items=("payload", "customerInvoices"),
             wire_token=("payload", "pagination", "nextToken"),
         )
@@ -792,7 +792,7 @@ class AsyncVendorDirectFulfillmentShippingV1Resource:
             },
             items=("payload", "packing_slips"),
             token=("payload", "pagination", "next_token"),
-            token_param="next_token",
+            token_param="next_token",  # nosec B106
             wire_items=("payload", "packingSlips"),
             wire_token=("payload", "pagination", "nextToken"),
         )

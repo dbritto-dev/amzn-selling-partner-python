@@ -117,7 +117,7 @@ class VendorOrdersV1Resource:
             },
             items=("payload", "orders"),
             token=("payload", "pagination", "next_token"),
-            token_param="next_token",
+            token_param="next_token",  # nosec B106
             wire_items=("payload", "orders"),
             wire_token=("payload", "pagination", "nextToken"),
         )
@@ -277,7 +277,7 @@ class VendorOrdersV1Resource:
             },
             items=("payload", "orders_status"),
             token=("payload", "pagination", "next_token"),
-            token_param="next_token",
+            token_param="next_token",  # nosec B106
             wire_items=("payload", "ordersStatus"),
             wire_token=("payload", "pagination", "nextToken"),
         )
@@ -383,7 +383,7 @@ class AsyncVendorOrdersV1Resource:
             },
             items=("payload", "orders"),
             token=("payload", "pagination", "next_token"),
-            token_param="next_token",
+            token_param="next_token",  # nosec B106
             wire_items=("payload", "orders"),
             wire_token=("payload", "pagination", "nextToken"),
         )
@@ -543,7 +543,7 @@ class AsyncVendorOrdersV1Resource:
             },
             items=("payload", "orders_status"),
             token=("payload", "pagination", "next_token"),
-            token_param="next_token",
+            token_param="next_token",  # nosec B106
             wire_items=("payload", "ordersStatus"),
             wire_token=("payload", "pagination", "nextToken"),
         )

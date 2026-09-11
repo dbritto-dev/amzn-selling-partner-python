@@ -108,7 +108,7 @@ class FbaInventoryV1Resource:
             },
             items=("payload", "inventory_summaries"),
             token=("pagination", "next_token"),
-            token_param="next_token",
+            token_param="next_token",  # nosec B106
             wire_items=("payload", "inventorySummaries"),
             wire_token=("pagination", "nextToken"),
             drop_params_on_next=True,
@@ -274,7 +274,7 @@ class AsyncFbaInventoryV1Resource:
             },
             items=("payload", "inventory_summaries"),
             token=("pagination", "next_token"),
-            token_param="next_token",
+            token_param="next_token",  # nosec B106
             wire_items=("payload", "inventorySummaries"),
             wire_token=("pagination", "nextToken"),
             drop_params_on_next=True,

@@ -209,7 +209,7 @@ class FulfillmentInboundV0Resource:
             },
             items=("payload", "shipment_data"),
             token=("payload", "next_token"),
-            token_param="next_token",
+            token_param="next_token",  # nosec B106
             wire_items=("payload", "ShipmentData"),
             wire_token=("payload", "NextToken"),
         )
@@ -310,7 +310,7 @@ class FulfillmentInboundV0Resource:
             },
             items=("payload", "item_data"),
             token=("payload", "next_token"),
-            token_param="next_token",
+            token_param="next_token",  # nosec B106
             wire_items=("payload", "ItemData"),
             wire_token=("payload", "NextToken"),
         )
@@ -508,7 +508,7 @@ class AsyncFulfillmentInboundV0Resource:
             },
             items=("payload", "shipment_data"),
             token=("payload", "next_token"),
-            token_param="next_token",
+            token_param="next_token",  # nosec B106
             wire_items=("payload", "ShipmentData"),
             wire_token=("payload", "NextToken"),
         )
@@ -609,7 +609,7 @@ class AsyncFulfillmentInboundV0Resource:
             },
             items=("payload", "item_data"),
             token=("payload", "next_token"),
-            token_param="next_token",
+            token_param="next_token",  # nosec B106
             wire_items=("payload", "ItemData"),
             wire_token=("payload", "NextToken"),
         )

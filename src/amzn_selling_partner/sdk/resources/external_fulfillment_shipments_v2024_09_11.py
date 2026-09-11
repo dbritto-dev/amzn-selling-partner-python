@@ -92,7 +92,7 @@ class ExternalFulfillmentShipmentsV20240911Resource:
             },
             items=("shipments",),
             token=("pagination", "next_token"),
-            token_param="pagination_token",
+            token_param="pagination_token",  # nosec B106
             wire_items=("shipments",),
             wire_token=("pagination", "nextToken"),
         )
@@ -371,7 +371,7 @@ class AsyncExternalFulfillmentShipmentsV20240911Resource:
             },
             items=("shipments",),
             token=("pagination", "next_token"),
-            token_param="pagination_token",
+            token_param="pagination_token",  # nosec B106
             wire_items=("shipments",),
             wire_token=("pagination", "nextToken"),
         )

@@ -97,7 +97,7 @@ class FeedsV20210630Resource:
             },
             items=("feeds",),
             token=("next_token",),
-            token_param="next_token",
+            token_param="next_token",  # nosec B106
             wire_items=("feeds",),
             wire_token=("nextToken",),
             drop_params_on_next=True,
@@ -335,7 +335,7 @@ class AsyncFeedsV20210630Resource:
             },
             items=("feeds",),
             token=("next_token",),
-            token_param="next_token",
+            token_param="next_token",  # nosec B106
             wire_items=("feeds",),
             wire_token=("nextToken",),
             drop_params_on_next=True,

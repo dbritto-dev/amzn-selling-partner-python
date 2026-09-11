@@ -251,11 +251,11 @@ function renderIterMethod(plan: OpPlan, isAsync: boolean): string[] {
   lines.push(...docstring(`${what} of \`\`${plan.name}\`\`, following \`\`${pg.nextTokenPath}\`\` -> \`\`${pg.nextTokenParam}\`\`.`, '        '));
   const kwargs = [...plan.params.map((p) => `${pyStr(p.py)}: ${p.py}`), ...(plan.body ? ['"body": body'] : []), '"request_options": request_options'];
   const tuple = (xs: string[]) => `(${xs.map(pyStr).join(', ')}${xs.length === 1 ? ',' : ''})`;
-  const args = [`self.${plan.name}`, `{${kwargs.join(', ')}}`, `items=${tuple(pg.items)}`, `token=${tuple(pg.token)}`, `token_param=${pyStr(pg.nextTokenParam)}`, `wire_items=${tuple(pg.itemsPath.split('.'))}`, `wire_token=${tuple(pg.nextTokenPath.split('.'))}`];
+  const args = [`self.${plan.name}`, `{${kwargs.join(', ')}}`, `items=${tuple(pg.items)}`, `token=${tuple(pg.token)}`, `token_param=${pyStr(pg.nextTokenParam)},  # nosec B106`, `wire_items=${tuple(pg.itemsPath.split('.'))}`, `wire_token=${tuple(pg.nextTokenPath.split('.'))}`];
   if (pg.dropParamsOnNext) args.push('drop_params_on_next=True');
   if (pg.keepParams?.length) args.push(`keep_params=${tuple(pg.keepParams.map((k) => paramName(k)))}`);
   if (pg.itemsIsObject) args.push('single=True');
-  lines.push(`        return ${isAsync ? 'apaginate' : 'paginate'}(`, ...args.map((a) => `            ${a},`), '        )');
+  lines.push(`        return ${isAsync ? 'apaginate' : 'paginate'}(`, ...args.map((a) => (a.includes('# nosec') ? `            ${a}` : `            ${a},`)), '        )');
   return lines;
 }
 

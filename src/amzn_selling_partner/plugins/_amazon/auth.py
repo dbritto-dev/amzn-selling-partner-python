@@ -37,7 +37,7 @@ if TYPE_CHECKING:
 
 log = logging.getLogger("amzn_selling_partner.plugins.amazon.auth")
 
-ACCESS_TOKEN_HEADER = "x-amz-access-token"
+ACCESS_TOKEN_HEADER = "x-amz-access-token"  # nosec B105
 RDT_PATH = "/tokens/2021-03-01/restrictedDataToken"
 
 

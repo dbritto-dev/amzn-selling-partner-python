@@ -79,7 +79,7 @@ class PetstoreV2Resource:
             {"limit": limit, "tags": tags, "ids": ids, "codes": codes, "next_token": next_token, "request_options": request_options},
             items=("payload", "pets"),
             token=("payload", "next_token"),
-            token_param="next_token",
+            token_param="next_token",  # nosec B106
             wire_items=("payload", "Pets"),
             wire_token=("payload", "NextToken"),
         )
@@ -183,7 +183,7 @@ class PetstoreV2Resource:
             {"next_token": next_token, "created_after": created_after, "request_options": request_options},
             items=("payload", "orders"),
             token=("payload", "pagination", "next_token"),
-            token_param="next_token",
+            token_param="next_token",  # nosec B106
             wire_items=("payload", "orders"),
             wire_token=("payload", "pagination", "nextToken"),
         )
@@ -267,7 +267,7 @@ class AsyncPetstoreV2Resource:
             {"limit": limit, "tags": tags, "ids": ids, "codes": codes, "next_token": next_token, "request_options": request_options},
             items=("payload", "pets"),
             token=("payload", "next_token"),
-            token_param="next_token",
+            token_param="next_token",  # nosec B106
             wire_items=("payload", "Pets"),
             wire_token=("payload", "NextToken"),
         )
@@ -371,7 +371,7 @@ class AsyncPetstoreV2Resource:
             {"next_token": next_token, "created_after": created_after, "request_options": request_options},
             items=("payload", "orders"),
             token=("payload", "pagination", "next_token"),
-            token_param="next_token",
+            token_param="next_token",  # nosec B106
             wire_items=("payload", "orders"),
             wire_token=("payload", "pagination", "nextToken"),
         )

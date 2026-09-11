@@ -116,7 +116,7 @@ class CatalogItemsV20220401Resource:
             },
             items=("items",),
             token=("pagination", "next_token"),
-            token_param="page_token",
+            token_param="page_token",  # nosec B106
             wire_items=("items",),
             wire_token=("pagination", "nextToken"),
         )
@@ -260,7 +260,7 @@ class AsyncCatalogItemsV20220401Resource:
             },
             items=("items",),
             token=("pagination", "next_token"),
-            token_param="page_token",
+            token_param="page_token",  # nosec B106
             wire_items=("items",),
             wire_token=("pagination", "nextToken"),
         )

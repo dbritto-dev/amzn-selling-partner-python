@@ -88,7 +88,7 @@ class NotificationsV1Resource:
             },
             items=("payload", "subscriptions"),
             token=("payload", "next_token"),
-            token_param="next_token",
+            token_param="next_token",  # nosec B106
             wire_items=("payload", "subscriptions"),
             wire_token=("payload", "nextToken"),
             drop_params_on_next=True,
@@ -437,7 +437,7 @@ class AsyncNotificationsV1Resource:
             },
             items=("payload", "subscriptions"),
             token=("payload", "next_token"),
-            token_param="next_token",
+            token_param="next_token",  # nosec B106
             wire_items=("payload", "subscriptions"),
             wire_token=("payload", "nextToken"),
             drop_params_on_next=True,

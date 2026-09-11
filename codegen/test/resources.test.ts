@@ -78,6 +78,36 @@ paths:
     expect(content).toContain('files=body,');
   });
 
+  it('marks the pagination token keyword for bandit (a parameter name, not a secret)', async () => {
+    const files = await emit(TASKS_SPEC);
+    const petstore = Object.values(files).join('\n');
+    // the tasks spec has no paginated operation; the marker is rendered by the iter_ helper
+    expect(petstore).not.toContain('token_param=');
+    const paged = await emitInline(`
+openapi: "3.0.3"
+info: { title: Paged API, version: "1.0.0" }
+servers: [{ url: https://paged.example.com }]
+components:
+  schemas:
+    Page:
+      type: object
+      required: [items]
+      properties:
+        items: { type: array, items: { type: string } }
+        nextToken: { type: string }
+paths:
+  /things:
+    get:
+      operationId: listThings
+      tags: [Things]
+      parameters:
+        - { name: nextToken, in: query, schema: { type: string } }
+      responses:
+        "200": { content: { application/json: { schema: { $ref: "#/components/schemas/Page" } } } }
+`);
+    expect(paged['resources/things.py']).toContain('token_param="next_token",  # nosec B106');
+  });
+
   it('writes the resources registry', async () => {
     const files = await emit(TASKS_SPEC);
     const init = files['resources/__init__.py'] ?? '';

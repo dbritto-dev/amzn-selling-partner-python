@@ -230,7 +230,7 @@ class ServicesV1Resource:
             },
             items=("payload", "jobs"),
             token=("payload", "next_page_token"),
-            token_param="page_token",
+            token_param="page_token",  # nosec B106
             wire_items=("payload", "jobs"),
             wire_token=("payload", "nextPageToken"),
         )
@@ -885,7 +885,7 @@ class AsyncServicesV1Resource:
             },
             items=("payload", "jobs"),
             token=("payload", "next_page_token"),
-            token_param="page_token",
+            token_param="page_token",  # nosec B106
             wire_items=("payload", "jobs"),
             wire_token=("payload", "nextPageToken"),
         )

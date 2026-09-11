@@ -101,7 +101,7 @@ class VendorDirectFulfillmentOrdersV20211228Resource:
             },
             items=("orders",),
             token=("pagination", "next_token"),
-            token_param="next_token",
+            token_param="next_token",  # nosec B106
             wire_items=("orders",),
             wire_token=("pagination", "nextToken"),
         )
@@ -250,7 +250,7 @@ class AsyncVendorDirectFulfillmentOrdersV20211228Resource:
             },
             items=("orders",),
             token=("pagination", "next_token"),
-            token_param="next_token",
+            token_param="next_token",  # nosec B106
             wire_items=("orders",),
             wire_token=("pagination", "nextToken"),
         )

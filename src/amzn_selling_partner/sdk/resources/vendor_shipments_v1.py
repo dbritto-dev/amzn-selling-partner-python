@@ -199,7 +199,7 @@ class VendorShipmentsV1Resource:
             },
             items=("payload", "shipments"),
             token=("payload", "pagination", "next_token"),
-            token_param="next_token",
+            token_param="next_token",  # nosec B106
             wire_items=("payload", "shipments"),
             wire_token=("payload", "pagination", "nextToken"),
         )
@@ -312,7 +312,7 @@ class VendorShipmentsV1Resource:
             },
             items=("payload", "transport_labels"),
             token=("payload", "pagination", "next_token"),
-            token_param="next_token",
+            token_param="next_token",  # nosec B106
             wire_items=("payload", "transportLabels"),
             wire_token=("payload", "pagination", "nextToken"),
         )
@@ -500,7 +500,7 @@ class AsyncVendorShipmentsV1Resource:
             },
             items=("payload", "shipments"),
             token=("payload", "pagination", "next_token"),
-            token_param="next_token",
+            token_param="next_token",  # nosec B106
             wire_items=("payload", "shipments"),
             wire_token=("payload", "pagination", "nextToken"),
         )
@@ -613,7 +613,7 @@ class AsyncVendorShipmentsV1Resource:
             },
             items=("payload", "transport_labels"),
             token=("payload", "pagination", "next_token"),
-            token_param="next_token",
+            token_param="next_token",  # nosec B106
             wire_items=("payload", "transportLabels"),
             wire_token=("payload", "pagination", "nextToken"),
         )

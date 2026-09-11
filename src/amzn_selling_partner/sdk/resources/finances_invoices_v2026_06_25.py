@@ -80,7 +80,7 @@ class FinancesInvoicesV20260625Resource:
             },
             items=("invoices",),
             token=("next_token",),
-            token_param="next_token",
+            token_param="next_token",  # nosec B106
             wire_items=("invoices",),
             wire_token=("nextToken",),
         )
@@ -173,7 +173,7 @@ class AsyncFinancesInvoicesV20260625Resource:
             },
             items=("invoices",),
             token=("next_token",),
-            token_param="next_token",
+            token_param="next_token",  # nosec B106
             wire_items=("invoices",),
             wire_token=("nextToken",),
         )

@@ -108,7 +108,7 @@ class ExternalFulfillmentReturnsV20240911Resource:
             },
             items=("returns",),
             token=("next_token",),
-            token_param="next_token",
+            token_param="next_token",  # nosec B106
             wire_items=("returns",),
             wire_token=("nextToken",),
         )
@@ -225,7 +225,7 @@ class AsyncExternalFulfillmentReturnsV20240911Resource:
             },
             items=("returns",),
             token=("next_token",),
-            token_param="next_token",
+            token_param="next_token",  # nosec B106
             wire_items=("returns",),
             wire_token=("nextToken",),
         )

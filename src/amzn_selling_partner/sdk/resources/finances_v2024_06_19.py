@@ -97,7 +97,7 @@ class FinancesV20240619Resource:
             },
             items=("payload", "transactions"),
             token=("payload", "next_token"),
-            token_param="next_token",
+            token_param="next_token",  # nosec B106
             wire_items=("payload", "transactions"),
             wire_token=("payload", "nextToken"),
         )
@@ -166,7 +166,7 @@ class FinancesV20240619Resource:
             },
             items=("balances",),
             token=("next_token",),
-            token_param="next_token",
+            token_param="next_token",  # nosec B106
             wire_items=("balances",),
             wire_token=("nextToken",),
         )
@@ -243,7 +243,7 @@ class FinancesV20240619Resource:
             },
             items=("summaries",),
             token=("next_token",),
-            token_param="next_token",
+            token_param="next_token",  # nosec B106
             wire_items=("summaries",),
             wire_token=("nextToken",),
         )
@@ -329,7 +329,7 @@ class AsyncFinancesV20240619Resource:
             },
             items=("payload", "transactions"),
             token=("payload", "next_token"),
-            token_param="next_token",
+            token_param="next_token",  # nosec B106
             wire_items=("payload", "transactions"),
             wire_token=("payload", "nextToken"),
         )
@@ -398,7 +398,7 @@ class AsyncFinancesV20240619Resource:
             },
             items=("balances",),
             token=("next_token",),
-            token_param="next_token",
+            token_param="next_token",  # nosec B106
             wire_items=("balances",),
             wire_token=("nextToken",),
         )
@@ -475,7 +475,7 @@ class AsyncFinancesV20240619Resource:
             },
             items=("summaries",),
             token=("next_token",),
-            token_param="next_token",
+            token_param="next_token",  # nosec B106
             wire_items=("summaries",),
             wire_token=("nextToken",),
         )

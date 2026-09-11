@@ -126,7 +126,7 @@ class InvoicesApiModelV20240619Resource:
             },
             items=("exports",),
             token=("next_token",),
-            token_param="next_token",
+            token_param="next_token",  # nosec B106
             wire_items=("exports",),
             wire_token=("nextToken",),
         )
@@ -348,7 +348,7 @@ class InvoicesApiModelV20240619Resource:
             },
             items=("invoices",),
             token=("next_token",),
-            token_param="next_token",
+            token_param="next_token",  # nosec B106
             wire_items=("invoices",),
             wire_token=("nextToken",),
         )
@@ -487,7 +487,7 @@ class AsyncInvoicesApiModelV20240619Resource:
             },
             items=("exports",),
             token=("next_token",),
-            token_param="next_token",
+            token_param="next_token",  # nosec B106
             wire_items=("exports",),
             wire_token=("nextToken",),
         )
@@ -709,7 +709,7 @@ class AsyncInvoicesApiModelV20240619Resource:
             },
             items=("invoices",),
             token=("next_token",),
-            token_param="next_token",
+            token_param="next_token",  # nosec B106
             wire_items=("invoices",),
             wire_token=("nextToken",),
         )

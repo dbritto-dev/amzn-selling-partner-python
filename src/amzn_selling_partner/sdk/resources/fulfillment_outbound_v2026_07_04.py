@@ -298,7 +298,7 @@ class FulfillmentOutboundV20260704Resource:
             },
             items=("orders",),
             token=("pagination", "next_token"),
-            token_param="page_token",
+            token_param="page_token",  # nosec B106
             wire_items=("orders",),
             wire_token=("pagination", "nextToken"),
         )
@@ -622,7 +622,7 @@ class AsyncFulfillmentOutboundV20260704Resource:
             },
             items=("orders",),
             token=("pagination", "next_token"),
-            token_param="page_token",
+            token_param="page_token",  # nosec B106
             wire_items=("orders",),
             wire_token=("pagination", "nextToken"),
         )

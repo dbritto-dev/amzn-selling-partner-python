@@ -95,7 +95,7 @@ class VendorDirectFulfillmentShippingV20211228Resource:
             },
             items=("shipping_labels",),
             token=("pagination", "next_token"),
-            token_param="next_token",
+            token_param="next_token",  # nosec B106
             wire_items=("shippingLabels",),
             wire_token=("pagination", "nextToken"),
         )
@@ -330,7 +330,7 @@ class VendorDirectFulfillmentShippingV20211228Resource:
             },
             items=("customer_invoices",),
             token=("pagination", "next_token"),
-            token_param="next_token",
+            token_param="next_token",  # nosec B106
             wire_items=("customerInvoices",),
             wire_token=("pagination", "nextToken"),
         )
@@ -436,7 +436,7 @@ class VendorDirectFulfillmentShippingV20211228Resource:
             },
             items=("packing_slips",),
             token=("pagination", "next_token"),
-            token_param="next_token",
+            token_param="next_token",  # nosec B106
             wire_items=("packingSlips",),
             wire_token=("pagination", "nextToken"),
         )
@@ -583,7 +583,7 @@ class AsyncVendorDirectFulfillmentShippingV20211228Resource:
             },
             items=("shipping_labels",),
             token=("pagination", "next_token"),
-            token_param="next_token",
+            token_param="next_token",  # nosec B106
             wire_items=("shippingLabels",),
             wire_token=("pagination", "nextToken"),
         )
@@ -818,7 +818,7 @@ class AsyncVendorDirectFulfillmentShippingV20211228Resource:
             },
             items=("customer_invoices",),
             token=("pagination", "next_token"),
-            token_param="next_token",
+            token_param="next_token",  # nosec B106
             wire_items=("customerInvoices",),
             wire_token=("pagination", "nextToken"),
         )
@@ -924,7 +924,7 @@ class AsyncVendorDirectFulfillmentShippingV20211228Resource:
             },
             items=("packing_slips",),
             token=("pagination", "next_token"),
-            token_param="next_token",
+            token_param="next_token",  # nosec B106
             wire_items=("packingSlips",),
             wire_token=("pagination", "nextToken"),
         )

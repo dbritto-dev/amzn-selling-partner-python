@@ -93,7 +93,7 @@ class TransfersV20240601Resource:
             },
             items=("payouts",),
             token=("next_token",),
-            token_param="next_token",
+            token_param="next_token",  # nosec B106
             wire_items=("payouts",),
             wire_token=("nextToken",),
         )
@@ -212,7 +212,7 @@ class TransfersV20240601Resource:
             },
             items=("expected_payouts",),
             token=("next_token",),
-            token_param="next_token",
+            token_param="next_token",  # nosec B106
             wire_items=("expectedPayouts",),
             wire_token=("nextToken",),
         )
@@ -294,7 +294,7 @@ class AsyncTransfersV20240601Resource:
             },
             items=("payouts",),
             token=("next_token",),
-            token_param="next_token",
+            token_param="next_token",  # nosec B106
             wire_items=("payouts",),
             wire_token=("nextToken",),
         )
@@ -413,7 +413,7 @@ class AsyncTransfersV20240601Resource:
             },
             items=("expected_payouts",),
             token=("next_token",),
-            token_param="next_token",
+            token_param="next_token",  # nosec B106
             wire_items=("expectedPayouts",),
             wire_token=("nextToken",),
         )

@@ -97,7 +97,7 @@ class ReportsV20210630Resource:
             },
             items=("reports",),
             token=("next_token",),
-            token_param="next_token",
+            token_param="next_token",  # nosec B106
             wire_items=("reports",),
             wire_token=("nextToken",),
             drop_params_on_next=True,
@@ -421,7 +421,7 @@ class AsyncReportsV20210630Resource:
             },
             items=("reports",),
             token=("next_token",),
-            token_param="next_token",
+            token_param="next_token",  # nosec B106
             wire_items=("reports",),
             wire_token=("nextToken",),
             drop_params_on_next=True,

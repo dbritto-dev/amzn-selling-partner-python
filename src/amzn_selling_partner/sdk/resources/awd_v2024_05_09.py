@@ -396,7 +396,7 @@ class AwdV20240509Resource:
             },
             items=("shipments",),
             token=("next_token",),
-            token_param="next_token",
+            token_param="next_token",  # nosec B106
             wire_items=("shipments",),
             wire_token=("nextToken",),
         )
@@ -465,7 +465,7 @@ class AwdV20240509Resource:
             },
             items=("inventory",),
             token=("next_token",),
-            token_param="next_token",
+            token_param="next_token",  # nosec B106
             wire_items=("inventory",),
             wire_token=("nextToken",),
         )
@@ -534,7 +534,7 @@ class AwdV20240509Resource:
             },
             items=("outbound_orders",),
             token=("next_token",),
-            token_param="next_token",
+            token_param="next_token",  # nosec B106
             wire_items=("outboundOrders",),
             wire_token=("nextToken",),
         )
@@ -713,7 +713,7 @@ class AwdV20240509Resource:
             },
             items=("orders",),
             token=("next_token",),
-            token_param="next_token",
+            token_param="next_token",  # nosec B106
             wire_items=("orders",),
             wire_token=("nextToken",),
         )
@@ -1161,7 +1161,7 @@ class AsyncAwdV20240509Resource:
             },
             items=("shipments",),
             token=("next_token",),
-            token_param="next_token",
+            token_param="next_token",  # nosec B106
             wire_items=("shipments",),
             wire_token=("nextToken",),
         )
@@ -1230,7 +1230,7 @@ class AsyncAwdV20240509Resource:
             },
             items=("inventory",),
             token=("next_token",),
-            token_param="next_token",
+            token_param="next_token",  # nosec B106
             wire_items=("inventory",),
             wire_token=("nextToken",),
         )
@@ -1299,7 +1299,7 @@ class AsyncAwdV20240509Resource:
             },
             items=("outbound_orders",),
             token=("next_token",),
-            token_param="next_token",
+            token_param="next_token",  # nosec B106
             wire_items=("outboundOrders",),
             wire_token=("nextToken",),
         )
@@ -1478,7 +1478,7 @@ class AsyncAwdV20240509Resource:
             },
             items=("orders",),
             token=("next_token",),
-            token_param="next_token",
+            token_param="next_token",  # nosec B106
             wire_items=("orders",),
             wire_token=("nextToken",),
         )

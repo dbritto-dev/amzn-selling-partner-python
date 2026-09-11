@@ -84,8 +84,14 @@ Look at:
 uv run ruff check src tests benchmarks && uv run ruff format --check src tests benchmarks
 uv run pyright
 uv run pytest
+uvx nox -s security_test                              # bandit over the package (generated code included) + safety
 uv run python -m amzn_selling_partner.sandbox_tests   # every operation against its embedded examples
 ```
+
+bandit runs over the generated code too: the emitter marks the three kinds of
+false positives it produces (`token_param="next_token"` in the `iter_` helpers,
+enum members named like credentials, the jitter randomness in `_http.py`) with
+targeted `# nosec` comments, so a real finding still fails the job.
 
 Commit the submodule bump and the regenerated code together. CI regenerates
 from the submodule and fails on any drift.

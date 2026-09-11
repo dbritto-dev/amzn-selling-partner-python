@@ -89,7 +89,7 @@ class DataKioskV20231115Resource:
             },
             items=("queries",),
             token=("pagination", "next_token"),
-            token_param="pagination_token",
+            token_param="pagination_token",  # nosec B106
             wire_items=("queries",),
             wire_token=("pagination", "nextToken"),
             drop_params_on_next=True,
@@ -286,7 +286,7 @@ class AsyncDataKioskV20231115Resource:
             },
             items=("queries",),
             token=("pagination", "next_token"),
-            token_param="pagination_token",
+            token_param="pagination_token",  # nosec B106
             wire_items=("queries",),
             wire_token=("pagination", "nextToken"),
             drop_params_on_next=True,

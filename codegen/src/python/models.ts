@@ -155,7 +155,12 @@ export function renderEnum(e: Enum, cls: string): string[] {
   const base = numeric ? 'int' : 'str';
   const lines = [`class ${cls}(${base}, Enum):`];
   const used = new Uniquer(['name', 'value', 'mro']);
-  for (const v of values) lines.push(`    ${memberName(v, used)} = ${numeric ? String(v) : pyStr(String(v))}`);
+  for (const v of values) {
+    const name = memberName(v, used);
+    // bandit B105 flags assignments whose target name looks like a credential; an enum value is a wire constant
+    const nosec = /pas+wo?r?d|pass|pwd|token|secret/i.test(name) ? '  # nosec B105' : '';
+    lines.push(`    ${name} = ${numeric ? String(v) : pyStr(String(v))}${nosec}`);
+  }
   // Python 3.11+ returns "Name.MEMBER" from str() on a str-mixin enum, which
   // would leak into query strings. Force the value back.
   lines.push('', `    __str__ = ${base}.__str__`);

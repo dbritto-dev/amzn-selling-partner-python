@@ -69,7 +69,7 @@ class FulfillmentInboundV0PageType(str, Enum):
 class FulfillmentInboundV0QueryType(str, Enum):
     SHIPMENT = "SHIPMENT"
     DATE_RANGE = "DATE_RANGE"
-    NEXT_TOKEN = "NEXT_TOKEN"
+    NEXT_TOKEN = "NEXT_TOKEN"  # nosec B105
 
     __str__ = str.__str__
 

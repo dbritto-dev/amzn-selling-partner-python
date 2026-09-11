@@ -75,6 +75,12 @@ describe('generateModels', () => {
     expect(content).toMatch(/__all__ = \[\n    "Kind",\n    "Priority",\n\]/);
   });
 
+  it('marks enum members named like credentials for bandit', async () => {
+    const files = await emitInline(FIXTURE.replace('enum: [big, small, "2xl", in-between]', 'enum: [big, NextToken, password]'));
+    const content = files['models/widgets/enums.py'] ?? '';
+    expect(content).toContain('    BIG = "big"\n    NEXT_TOKEN = "NextToken"  # nosec B105\n    PASSWORD = "password"  # nosec B105');
+  });
+
   it('puts every model of a package in its __init__.py, enums in enums.py, and re-exports both', async () => {
     const files = await emit(TASKS_SPEC);
     const content = files['models/tasks/__init__.py'] ?? '';

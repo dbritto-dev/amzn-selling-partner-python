@@ -130,7 +130,7 @@ class FulfillmentOutboundV20200701Resource:
             {"query_start_date": query_start_date, "next_token": next_token, "request_options": request_options},
             items=("payload", "fulfillment_orders"),
             token=("payload", "next_token"),
-            token_param="next_token",
+            token_param="next_token",  # nosec B106
             wire_items=("payload", "fulfillmentOrders"),
             wire_token=("payload", "nextToken"),
         )
@@ -463,7 +463,7 @@ class FulfillmentOutboundV20200701Resource:
             },
             items=("payload", "feature_skus"),
             token=("payload", "next_token"),
-            token_param="next_token",
+            token_param="next_token",  # nosec B106
             wire_items=("payload", "featureSkus"),
             wire_token=("payload", "nextToken"),
         )
@@ -615,7 +615,7 @@ class AsyncFulfillmentOutboundV20200701Resource:
             {"query_start_date": query_start_date, "next_token": next_token, "request_options": request_options},
             items=("payload", "fulfillment_orders"),
             token=("payload", "next_token"),
-            token_param="next_token",
+            token_param="next_token",  # nosec B106
             wire_items=("payload", "fulfillmentOrders"),
             wire_token=("payload", "nextToken"),
         )
@@ -948,7 +948,7 @@ class AsyncFulfillmentOutboundV20200701Resource:
             },
             items=("payload", "feature_skus"),
             token=("payload", "next_token"),
-            token_param="next_token",
+            token_param="next_token",  # nosec B106
             wire_items=("payload", "featureSkus"),
             wire_token=("payload", "nextToken"),
         )

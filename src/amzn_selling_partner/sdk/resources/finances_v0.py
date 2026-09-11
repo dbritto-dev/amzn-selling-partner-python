@@ -85,7 +85,7 @@ class FinancesV0Resource:
             },
             items=("payload", "financial_event_group_list"),
             token=("payload", "next_token"),
-            token_param="next_token",
+            token_param="next_token",  # nosec B106
             wire_items=("payload", "FinancialEventGroupList"),
             wire_token=("payload", "NextToken"),
             drop_params_on_next=True,
@@ -158,7 +158,7 @@ class FinancesV0Resource:
             },
             items=("payload", "financial_events"),
             token=("payload", "next_token"),
-            token_param="next_token",
+            token_param="next_token",  # nosec B106
             wire_items=("payload", "FinancialEvents"),
             wire_token=("payload", "NextToken"),
             drop_params_on_next=True,
@@ -219,7 +219,7 @@ class FinancesV0Resource:
             },
             items=("payload", "financial_events"),
             token=("payload", "next_token"),
-            token_param="next_token",
+            token_param="next_token",  # nosec B106
             wire_items=("payload", "FinancialEvents"),
             wire_token=("payload", "NextToken"),
             drop_params_on_next=True,
@@ -288,7 +288,7 @@ class FinancesV0Resource:
             },
             items=("payload", "financial_events"),
             token=("payload", "next_token"),
-            token_param="next_token",
+            token_param="next_token",  # nosec B106
             wire_items=("payload", "FinancialEvents"),
             wire_token=("payload", "NextToken"),
             drop_params_on_next=True,
@@ -364,7 +364,7 @@ class AsyncFinancesV0Resource:
             },
             items=("payload", "financial_event_group_list"),
             token=("payload", "next_token"),
-            token_param="next_token",
+            token_param="next_token",  # nosec B106
             wire_items=("payload", "FinancialEventGroupList"),
             wire_token=("payload", "NextToken"),
             drop_params_on_next=True,
@@ -437,7 +437,7 @@ class AsyncFinancesV0Resource:
             },
             items=("payload", "financial_events"),
             token=("payload", "next_token"),
-            token_param="next_token",
+            token_param="next_token",  # nosec B106
             wire_items=("payload", "FinancialEvents"),
             wire_token=("payload", "NextToken"),
             drop_params_on_next=True,
@@ -498,7 +498,7 @@ class AsyncFinancesV0Resource:
             },
             items=("payload", "financial_events"),
             token=("payload", "next_token"),
-            token_param="next_token",
+            token_param="next_token",  # nosec B106
             wire_items=("payload", "FinancialEvents"),
             wire_token=("payload", "NextToken"),
             drop_params_on_next=True,
@@ -567,7 +567,7 @@ class AsyncFinancesV0Resource:
             },
             items=("payload", "financial_events"),
             token=("payload", "next_token"),
-            token_param="next_token",
+            token_param="next_token",  # nosec B106
             wire_items=("payload", "FinancialEvents"),
             wire_token=("payload", "NextToken"),
             drop_params_on_next=True,

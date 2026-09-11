@@ -211,7 +211,7 @@ class TokenBucket:
     def penalize(self, seconds: float, *, jitter: float = 0.25) -> None:
         """Pause the bucket after a 429 for ``seconds`` (+ up to ``jitter`` x seconds)."""
         with self._lock:
-            until = time.monotonic() + seconds * (1.0 + random.random() * jitter)  # noqa: S311
+            until = time.monotonic() + seconds * (1.0 + random.random() * jitter)  # noqa: S311  # nosec B311
             self._penalty_until = max(self._penalty_until, until)
 
     def update_rate(self, rate: float) -> None:
@@ -496,7 +496,7 @@ class _BaseHttpClient:
     @staticmethod
     def _backoff(attempt: int) -> float:
         delay = min(MAX_DELAY, INITIAL_DELAY * (BACKOFF_MULTIPLIER**attempt))
-        return delay * (1.0 + random.random() * JITTER_FACTOR)  # noqa: S311 - jitter, not security
+        return delay * (1.0 + random.random() * JITTER_FACTOR)  # noqa: S311  # nosec B311
 
     def _retry_delay(self, attempt: int, response: httpx2.Response, bucket: TokenBucket | None) -> float:
         retry_after = _parse_retry_after(response.headers.get("retry-after"))
@@ -512,7 +512,7 @@ class _BaseHttpClient:
                     if bucket is not None:
                         bucket.update_rate(rate)
         if retry_after is not None:
-            delay = min(max(retry_after, 0.0), MAX_DELAY * 8) * (1.0 + random.random() * 0.25)  # noqa: S311
+            delay = min(max(retry_after, 0.0), MAX_DELAY * 8) * (1.0 + random.random() * 0.25)  # noqa: S311  # nosec B311
         else:
             delay = self._backoff(attempt)
         if response.status_code == 429 and bucket is not None:
