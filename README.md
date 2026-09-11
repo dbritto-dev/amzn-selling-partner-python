@@ -225,24 +225,29 @@ any I/O.
 
 ### Injecting a custom HTTP client or transport
 
+The SDK builds its httpx2 client through three factories, exported from the
+package: `DefaultHttpxClient` and `DefaultAsyncHttpxClient` (httpx2's own
+transport, the default) and `DefaultAioHttpClient` (the aiohttp transport, with
+the `aiohttp` extra). Build one with your options, or any httpx2 client, and
+pass it as `http_client=`; it is used as is (its transport, proxies, event
+hooks, auth, default headers and cookies apply; the base URL, timeout and
+retries are the SDK's) and is yours to close.
+
 ```python
 import httpx2
+from amzn_selling_partner import AsyncSellingPartner, DefaultAioHttpClient, DefaultAsyncHttpxClient, DefaultHttpxClient, SellingPartner
 
-client = AsyncSellingPartner(http_client=httpx2.AsyncClient(proxy="http://proxy:3128"))
+client = AsyncSellingPartner(http_client=DefaultAsyncHttpxClient(proxy="http://proxy:3128", retries=0))
 client = AsyncSellingPartner(http_client=DefaultAioHttpClient(proxy="http://proxy:3128"))
-client = AsyncSellingPartner(transport=httpx2.AsyncHTTPTransport(retries=1))
+client = AsyncSellingPartner(http_client=httpx2.AsyncClient(event_hooks=hooks))
 client = AsyncSellingPartner(transport=httpx2.MockTransport(handler))
-client = SellingPartner(http_client=httpx2.Client(proxy="http://proxy:3128"))
+client = SellingPartner(http_client=DefaultHttpxClient(limits=httpx2.Limits(max_connections=100), http2=True))
 ```
 
-The sync client takes the `httpx2.Client` counterparts; a `MockTransport` is
-how the tests run without a network. Any other httpx2 transport option
-(`limits`, `verify`, `proxy`, `http2`, ...) is passed through:
-`AsyncSellingPartner(limits=httpx2.Limits(max_connections=100), http2=True)`.
-`http_client=` takes your own httpx2 client, used as is
-(its transport, proxies, event hooks, auth, default headers and cookies apply;
-the base URL, timeout and retries are the SDK's) and is yours to close.
-
+`transport=` is the short form for a transport alone (a `MockTransport` is how
+the tests run without a network), and any httpx2 transport option (`limits`,
+`verify`, `proxy`, `http2`, ...) passed to the client constructor reaches the
+default factory.
 
 ## Using other APIs
 

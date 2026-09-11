@@ -25,7 +25,7 @@ except PackageNotFoundError:  # pragma: no cover - source checkout without insta
     __version__ = "0.0.0"
 
 from . import client, reports, utils, vendor  # noqa: E402  (0.1.x compatibility subpackages)
-from .sdk._http import DefaultAioHttpClient, RateLimit, RequestOptions
+from .sdk._http import DefaultAioHttpClient, DefaultAsyncHttpxClient, DefaultHttpxClient, RateLimit, RequestOptions
 from .sdk.errors import (
     APIConnectionError,
     APIError,
@@ -64,6 +64,8 @@ __all__ = [
     "Client",
     "ConflictError",
     "DefaultAioHttpClient",
+    "DefaultAsyncHttpxClient",
+    "DefaultHttpxClient",
     "InternalServerError",
     "Marketplace",
     "NotFoundError",

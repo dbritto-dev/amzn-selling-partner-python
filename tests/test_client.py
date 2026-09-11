@@ -356,15 +356,23 @@ def test_user_supplied_http_client_keeps_its_defaults() -> None:
     assert not mine.is_closed  # not ours to close
 
 
-def test_aiohttp_is_an_explicit_http_client() -> None:
-    from petstore_sdk import DefaultAioHttpClient
+def test_default_clients_are_factories_and_aiohttp_is_explicit() -> None:
+    from petstore_sdk import DefaultAioHttpClient, DefaultAsyncHttpxClient, DefaultHttpxClient
+
+    sync = Client(base_url=BASE, http2=False, limits=httpx2.Limits(max_connections=7))
+    assert isinstance(sync.http_client, DefaultHttpxClient) and isinstance(sync.http_client._transport, httpx2.HTTPTransport)
+    sync.close()
 
     default = AsyncClient(base_url=BASE)
-    assert isinstance(default.http_client._transport, httpx2.AsyncHTTPTransport)  # httpx2 unless asked otherwise
+    assert isinstance(default.http_client, DefaultAsyncHttpxClient)  # httpx2 unless asked otherwise
+    assert isinstance(default.http_client._transport, httpx2.AsyncHTTPTransport)
+
+    mine = DefaultAsyncHttpxClient(retries=0, headers={"X-Tenant": "t1"})  # the same factory, your options
+    assert isinstance(mine._transport, httpx2.AsyncHTTPTransport)
+    assert AsyncClient(base_url=BASE, http_client=mine).http_client is mine
 
     aio = DefaultAioHttpClient(headers={"X-Tenant": "t1"})
     assert isinstance(aio, httpx2.AsyncClient) and not isinstance(aio._transport, httpx2.AsyncHTTPTransport)
-    client = AsyncClient(base_url=BASE, http_client=aio)
-    assert client.http_client is aio
-    asyncio.run(default.aclose())
-    asyncio.run(aio.aclose())
+    assert AsyncClient(base_url=BASE, http_client=aio).http_client is aio
+    for c in (default, mine, aio):
+        asyncio.run(c.aclose())

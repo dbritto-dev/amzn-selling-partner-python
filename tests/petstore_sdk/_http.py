@@ -422,7 +422,15 @@ class _BaseHttpClient:
             new._throttler = self._throttler
         return new
 
-    def _http(self) -> Any:  # pragma: no cover - overridden
+    def _http(self) -> Any:
+        """The httpx2 client: the one injected as ``http_client``, else created once by ``_create_client``."""
+        client = self._client
+        if client is None:
+            client = self._client = self._create_client()
+        return client
+
+    def _create_client(self) -> Any:  # pragma: no cover - overridden
+        """Factory method: the sync and the async subclass decide which httpx2 client to build."""
         raise NotImplementedError
 
     @staticmethod
@@ -584,12 +592,16 @@ class HttpClient(_BaseHttpClient):
             self._throttler = Throttler(default=self._default_rate_limit)
 
     def _http(self) -> httpx2.Client:
-        client = self._client
-        if client is None:
-            transport = self._transport or httpx2.HTTPTransport(retries=self._connection_retries(), **self._httpx_kwargs)
-            client = httpx2.Client(base_url=self._base_url, transport=transport, timeout=self._timeout)
-            self._client = client
-        return cast(httpx2.Client, client)
+        return cast(httpx2.Client, super()._http())
+
+    def _create_client(self) -> httpx2.Client:
+        return DefaultHttpxClient(
+            base_url=self._base_url,
+            timeout=self._timeout,
+            transport=self._transport,
+            retries=self._connection_retries(),
+            **self._httpx_kwargs,
+        )
 
     @property
     def http_client(self) -> httpx2.Client:
@@ -693,12 +705,16 @@ class AsyncHttpClient(_BaseHttpClient):
             self._throttler = Throttler(default=self._default_rate_limit, factory=AsyncTokenBucket)
 
     def _http(self) -> httpx2.AsyncClient:
-        client = self._client
-        if client is None:
-            transport = self._transport or httpx2.AsyncHTTPTransport(retries=self._connection_retries(), **self._httpx_kwargs)
-            client = httpx2.AsyncClient(base_url=self._base_url, transport=transport, timeout=self._timeout)
-            self._client = client
-        return cast(httpx2.AsyncClient, client)
+        return cast(httpx2.AsyncClient, super()._http())
+
+    def _create_client(self) -> httpx2.AsyncClient:
+        return DefaultAsyncHttpxClient(
+            base_url=self._base_url,
+            timeout=self._timeout,
+            transport=self._transport,
+            retries=self._connection_retries(),
+            **self._httpx_kwargs,
+        )
 
     @property
     def http_client(self) -> httpx2.AsyncClient:
@@ -883,14 +899,60 @@ async def apaginate(
         current = _next_kwargs(current, token_param, next_token, drop_params_on_next, keep_params)
 
 
-# -- transports ---------------------------------------------------------------------------
+# -- httpx2 clients ----------------------------------------------------------------------
+#
+# The clients the SDK builds by default (the products of the factory method above). Build
+# one yourself to configure it and pass it as ``http_client=``; any other httpx2 client works too.
+
+#: httpx2 options that configure the transport rather than the client.
+_TRANSPORT_OPTIONS = frozenset(
+    {"verify", "cert", "trust_env", "http1", "http2", "limits", "proxy", "uds", "local_address", "socket_options"}
+)
+
+
+def _transport_options(kwargs: dict[str, Any]) -> dict[str, Any]:
+    return {k: kwargs.pop(k) for k in tuple(kwargs) if k in _TRANSPORT_OPTIONS}
+
+
+class DefaultHttpxClient(httpx2.Client):
+    """The ``httpx2.Client`` the SDK creates by default.
+
+    ``retries`` are the transport's connection retries (the SDK's retry policy unless
+    given). Transport options (``limits``, ``verify``, ``proxy``, ``http2``, ...) build the
+    ``httpx2.HTTPTransport`` unless ``transport`` is passed; everything else goes to
+    ``httpx2.Client`` (``headers``, ``event_hooks``, ``timeout``, ...).
+    """
+
+    def __init__(
+        self,
+        *,
+        retries: int = MAX_RETRIES if RETRY_ON_CONNECTION_ERROR else 0,
+        transport: httpx2.BaseTransport | None = None,
+        **kwargs: Any,
+    ) -> None:
+        transport_options = _transport_options(kwargs)
+        super().__init__(transport=transport or httpx2.HTTPTransport(retries=retries, **transport_options), **kwargs)
+
+
+class DefaultAsyncHttpxClient(httpx2.AsyncClient):
+    """The ``httpx2.AsyncClient`` the SDK creates by default; options as ``DefaultHttpxClient``."""
+
+    def __init__(
+        self,
+        *,
+        retries: int = MAX_RETRIES if RETRY_ON_CONNECTION_ERROR else 0,
+        transport: httpx2.AsyncBaseTransport | None = None,
+        **kwargs: Any,
+    ) -> None:
+        transport_options = _transport_options(kwargs)
+        super().__init__(transport=transport or httpx2.AsyncHTTPTransport(retries=retries, **transport_options), **kwargs)
 
 
 class DefaultAioHttpClient(httpx2.AsyncClient):
-    """An ``httpx2.AsyncClient`` on the aiohttp transport, for ``http_client=``.
+    """An ``httpx2.AsyncClient`` on the aiohttp transport (the ``aiohttp`` extra).
 
-    Needs the ``aiohttp`` extra. Keyword arguments go to ``httpx2.AsyncClient``
-    (``proxy``, ``event_hooks``, ``headers``, ...); ``limits`` and ``verify`` configure the transport.
+    ``limits`` and ``verify`` configure the transport; everything else goes to
+    ``httpx2.AsyncClient`` (``proxy``, ``event_hooks``, ``headers``, ...).
     """
 
     def __init__(self, *, limits: httpx2.Limits | None = None, verify: Any = True, **kwargs: Any) -> None:
@@ -909,11 +971,14 @@ class DefaultAioHttpClient(httpx2.AsyncClient):
             else hx.Limits()
         )
         inner: Any = _hat.AiohttpTransport(limits=hx_limits, verify=verify)
-        transport = cast(httpx2.AsyncBaseTransport, inner) if hx is httpx2 else _HttpxBridgeTransport(inner, hx)  # alias_httpx() or not
+        transport = cast(httpx2.AsyncBaseTransport, inner) if hx is httpx2 else _HttpxTransportAdapter(inner, hx)  # alias_httpx() or not
         super().__init__(transport=transport, **kwargs)
 
 
-class _BridgedStream(httpx2.AsyncByteStream):
+# -- adapter: a transport written for httpx, driven through httpx2's interface -------------
+
+
+class _StreamAdapter(httpx2.AsyncByteStream):
     def __init__(self, inner: Any) -> None:
         self._inner = inner
 
@@ -927,8 +992,8 @@ class _BridgedStream(httpx2.AsyncByteStream):
             await aclose()
 
 
-class _HttpxBridgeTransport(httpx2.AsyncBaseTransport):
-    """Adapts a transport written for ``httpx`` to ``httpx2``'s interface."""
+class _HttpxTransportAdapter(httpx2.AsyncBaseTransport):
+    """Adapter: an ``httpx`` transport (``httpx_aiohttp``) behind ``httpx2``'s transport interface."""
 
     def __init__(self, inner: Any, httpx_mod: Any) -> None:
         self._inner = inner
@@ -940,14 +1005,14 @@ class _HttpxBridgeTransport(httpx2.AsyncBaseTransport):
             request.method,
             str(request.url),
             headers=request.headers.raw,
-            stream=_BridgedStream(request.stream),
+            stream=_StreamAdapter(request.stream),
             extensions=dict(request.extensions),
         )  # type: ignore[arg-type]
         old_resp = await self._inner.handle_async_request(old_req)
         return httpx2.Response(
             status_code=old_resp.status_code,
             headers=old_resp.headers.raw,
-            stream=_BridgedStream(old_resp.stream),
+            stream=_StreamAdapter(old_resp.stream),
             extensions=dict(old_resp.extensions),
         )
 
@@ -965,6 +1030,8 @@ __all__ = [
     "AsyncTokenBucket",
     "Auth",
     "DefaultAioHttpClient",
+    "DefaultAsyncHttpxClient",
+    "DefaultHttpxClient",
     "HttpClient",
     "RateLimit",
     "RequestContext",

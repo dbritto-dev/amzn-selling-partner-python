@@ -138,7 +138,13 @@ modules assembled in `index.ts`, plus three small support modules.
   whose transport carries the connection retries; the module adds the
   status-code retries with backoff (constants from the SDK behavior in the
   IR), per-operation token buckets, the `Auth` hook, response decoding,
-  `paginate` / `apaginate` and `DefaultAioHttpClient` (aiohttp as an httpx2 transport, opted into via `http_client=`).
+  `paginate` / `apaginate`. The httpx2 client is built through a factory
+  method (`_create_client`, the sync and async subclass each pick their
+  product) whose products are public factories, `DefaultHttpxClient`,
+  `DefaultAsyncHttpxClient` and `DefaultAioHttpClient`, so a caller
+  configures one and injects it as `http_client=`; the aiohttp transport,
+  written for `httpx`, is driven through an adapter to httpx2's transport
+  interface.
 * `index.ts` – assembles the `Emitter`; `naming.ts`, `pagination.ts`
   (token-parameter heuristic + the Amazon override table) and `ratelimits.ts`
   (usage-plan tables) support the above.
