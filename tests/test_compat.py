@@ -162,7 +162,7 @@ def test_reports_client(tmp_path: pathlib.Path) -> None:
     assert json.loads(target.read_bytes()) == {"salesByAsin": []}
     with pytest.raises(ValueError):
         client.get_report("")
-    assert sp.reports.Report is client.api.models.Report
+    assert sp.reports.Report is sp.reports.models.namespace().Report
     assert isinstance(client.get_report("R1"), sp.reports.Report)
 
 

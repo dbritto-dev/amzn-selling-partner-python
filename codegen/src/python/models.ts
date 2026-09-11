@@ -1,108 +1,214 @@
-/** Models file: pydantic v2 classes + Literal enums for one API version. */
-import type { ApiSpec, Model, EmitterContext, GeneratedFile } from '@workos/oagen';
-import { className, docstring, fieldName, Uniquer } from './naming.js';
-import { renderEnums } from './enums.js';
-import { enumAlias, pyType, typeContext } from './types.js';
-import type { EmitterOptions } from './options.js';
+/**
+ * Models: pydantic v2 classes, one `models/<package>/models.py` per package
+ * (plus the shared base class in `models/_base.py` and the package
+ * `__init__.py` files that re-export models and enums).
+ */
+import type { ApiSpec, EmitterContext, GeneratedFile, Model } from '@workos/oagen';
+import { HEADER_DOC } from './header.js';
+import { docstring, fieldName, pyStr, Uniquer } from './naming.js';
+import { SHARED, type Packages } from './packages.js';
+import { renderTypeRef, type TypeContext } from './types.js';
 
 const SYNTHETIC_ADDITIONAL = 'Additional properties not captured by named fields';
 
-/** True when the model is rendered as a type alias (union) rather than a class. */
-export function isUnionAlias(model: Model, opts?: EmitterOptions): boolean {
-  return model.fields.length === 0 && (opts?.unionAliases?.[model.name] !== undefined || model.discriminator !== undefined);
+/** Type context inside `models/<pkg>/models.py`: same-package classes by name, others through their package alias. */
+function moduleContext(pkg: string, packages: Packages, foreign: Set<string>): TypeContext {
+  const ref = (place: { pkg: string; cls: string } | undefined, name: string): string => {
+    if (!place) return 'Any';
+    if (place.pkg === pkg) return place.cls;
+    const alias = packages.alias(place.pkg);
+    foreign.add(place.pkg);
+    return `${alias}.${place.cls}`;
+  };
+  return {
+    model: (name) => ref(packages.models.get(name), name),
+    enum: (name) => ref(packages.enums.get(name), name),
+  };
 }
 
-export function renderModel(model: Model, spec: ApiSpec, opts?: EmitterOptions): string[] {
-  const ctx = typeContext(spec, '');
-  const name = className(model.name);
+export function isDiscriminatedAlias(model: Model): boolean {
+  return model.fields.length === 0 && model.discriminator !== undefined;
+}
+
+export function renderModel(model: Model, cls: string, ctx: TypeContext, packages: Packages): string[] {
   const lines: string[] = [];
-  const union = opts?.unionAliases?.[model.name];
-  if (union && model.fields.length === 0) {
-    const variants = union.variants.map((v) => (ctx.known.has(v) ? className(v) : 'Any'));
-    const expr = [...new Set(variants)].join(' | ') || 'Any';
-    if (union.discriminator && variants.every((v) => v !== 'Any')) {
-      lines.push(`${name}: TypeAlias = Annotated[${expr}, Field(discriminator=${JSON.stringify(fieldName(union.discriminator))})]`);
+  if (isDiscriminatedAlias(model)) {
+    const variants = [...new Set(Object.values(model.discriminator!.mapping))].map((v) => ctx.model(v));
+    const expr = variants.join(' | ') || 'Any';
+    if (variants.length > 1 && !variants.includes('Any')) {
+      lines.push(`${cls}: TypeAlias = Annotated[${expr}, Field(discriminator=${pyStr(fieldName(model.discriminator!.property))})]`);
     } else {
-      lines.push(`${name}: TypeAlias = ${expr}`);
+      lines.push(`${cls}: TypeAlias = ${expr}`);
     }
     return lines;
   }
-  if (model.discriminator && model.fields.length === 0) {
-    const variants = [...new Set(Object.values(model.discriminator.mapping))].map((v) => className(v));
-    lines.push(`${name}: TypeAlias = ${variants.join(' | ') || 'Any'}`);
-    return lines;
-  }
-  lines.push(`class ${name}(SpecModel):`);
-  if (model.description) lines.push(...docstring(model.description, '    '));
+  lines.push(`class ${cls}(SpecModel):`);
+  if (model.description) lines.push(...docstring(model.description, '    '), '');
   const used = new Uniquer(['model_config']);
+  const required = model.fields.filter((f) => f.required);
+  const optional = model.fields.filter((f) => !f.required);
   let count = 0;
-  for (const f of model.fields) {
+  for (const f of [...required, ...optional]) {
     if (f.name === 'additionalProperties' && f.description === SYNTHETIC_ADDITIONAL) continue;
-    const py = used.take(fieldName(f.name));
-    const t = pyType(f.type, ctx);
+    const py = used.take(fieldName(f.domainName ?? f.name));
+    const t = renderTypeRef(f.type, ctx);
     const aliased = py !== f.name;
     if (f.required) {
-      lines.push(aliased ? `    ${py}: ${t} = Field(alias=${JSON.stringify(f.name)})` : `    ${py}: ${t}`);
+      lines.push(aliased ? `    ${py}: ${t} = Field(alias=${pyStr(f.name)})` : `    ${py}: ${t}`);
     } else {
       const opt = t.split(' | ').includes('None') ? t : `${t} | None`;
-      lines.push(aliased ? `    ${py}: ${opt} = Field(default=None, alias=${JSON.stringify(f.name)})` : `    ${py}: ${opt} = None`);
+      lines.push(aliased ? `    ${py}: ${opt} = Field(default=None, alias=${pyStr(f.name)})` : `    ${py}: ${opt} = None`);
     }
     count++;
   }
   if (count === 0 && !model.description) lines.push('    pass');
+  void packages;
   return lines;
 }
 
-export function renderModelsModule(spec: ApiSpec, opts: EmitterOptions): string {
-  const out: string[] = [];
-  out.push(`"""Models for ${opts.api} ${opts.version} (${spec.name}).`);
-  out.push('');
-  out.push('Generated by codegen/ (oagen) from the pinned spec; do not edit by hand.');
-  out.push('"""');
-  out.push('');
-  out.push('from __future__ import annotations');
-  out.push('');
+export function renderModelsModule(pkg: string, models: [Model, string][], packages: Packages): string {
+  const foreign = new Set<string>();
+  const ctx = moduleContext(pkg, packages, foreign);
   const body: string[] = [];
-  const ctx = typeContext(spec, '');
-  const enums = [...spec.enums].sort((a, b) => a.name.localeCompare(b.name));
-  const models = [...spec.models].sort((a, b) => a.name.localeCompare(b.name));
-  body.push(...renderEnums(enums, ctx));
-  if (enums.length) body.push('');
-  // classes first (string annotations resolve lazily); union aliases are runtime expressions and come last
-  for (const m of models.filter((m) => !isUnionAlias(m, opts))) {
-    body.push(...renderModel(m, spec, opts), '');
-    body.push('');
-  }
-  for (const m of models.filter((m) => isUnionAlias(m, opts))) body.push(...renderModel(m, spec, opts));
-  if (opts.rootSchema && !models.some((m) => m.name === opts.rootSchema) && !enums.some((e) => e.name === opts.rootSchema)) {
-    // a free-form root object (e.g. a dangling reference in the schema file)
-    body.push(`class ${className(opts.rootSchema)}(SpecModel):`, '    pass', '', '');
-  }
+  const classes = models.filter(([m]) => !isDiscriminatedAlias(m));
+  const aliases = models.filter(([m]) => isDiscriminatedAlias(m));
+  for (const [m, cls] of classes) body.push(...renderModel(m, cls, ctx, packages), '', '');
+  for (const [m, cls] of aliases) body.push(...renderModel(m, cls, ctx, packages));
   const text = body.join('\n');
-  const needsDatetime = text.includes('datetime.');
+  const out: string[] = [];
+  out.push(`"""Models of ${pkg || 'the API'}.`, '', HEADER_DOC, '"""', '', 'from __future__ import annotations', '');
+  if (text.includes('datetime.')) out.push('import datetime');
   const typingNames = ['Annotated', 'Any', 'Literal', 'TypeAlias'].filter((n) => new RegExp(`\\b${n}\\b`).test(text));
-  if (needsDatetime) out.push('import datetime');
   if (typingNames.length) out.push(`from typing import ${typingNames.join(', ')}`);
   out.push('');
-  if (text.includes('Field(')) out.push('from pydantic import Field');
-  out.push('');
-  out.push(`from ${opts.runtimePackage}.runtime._models import SpecModel`);
-  out.push('');
-  out.push('');
-  out.push(text.trimEnd());
-  out.push('');
-  const exported = [...enums.map((e) => enumAlias(ctx, e.name)), ...models.map((m) => className(m.name))];
-  if (opts.rootSchema && !exported.includes(className(opts.rootSchema))) exported.push(className(opts.rootSchema));
-  exported.sort();
-  out.push('');
-  out.push('__all__ = [');
-  for (const n of exported) out.push(`    ${JSON.stringify(n)},`);
-  out.push(']');
-  out.push('');
+  if (text.includes('Field(')) out.push('from pydantic import Field', '');
+  const depth = pkg ? pkg.split('.').length : 0;
+  const up = '.'.repeat(depth + 1);
+  out.push(`from ${up}_base import SpecModel`);
+  const enumsHere = [...packages.enums.values()].filter((p) => p.pkg === pkg).map((p) => p.cls).sort();
+  const usedEnums = enumsHere.filter((n) => new RegExp(`\\b${n}\\b`).test(text));
+  if (usedEnums.length) out.push(`from .enums import ${usedEnums.join(', ')}`);
+  for (const other of [...foreign].sort()) {
+    const parts = other.split('.');
+    const last = parts.pop()!;
+    const parent = parts.length ? `${up}${parts.join('.')}` : up.slice(0, -1) || '.';
+    const alias = packages.alias(other);
+    out.push(alias === last ? `from ${parent} import ${last}` : `from ${parent} import ${last} as ${alias}`);
+  }
+  out.push('', '', text.trimEnd(), '', '');
+  out.push('__all__ = [', ...models.map(([, cls]) => cls).sort().map((n) => `    ${pyStr(n)},`), ']', '');
   return out.join('\n');
 }
 
-export function generateModels(spec: ApiSpec, _ctx: EmitterContext, opts: EmitterOptions): GeneratedFile[] {
-  if (spec.models.length === 0 && spec.enums.length === 0 && !opts.rootSchema) return [];
-  return [{ path: `models/${opts.api}/${opts.version}.py`, content: renderModelsModule(spec, opts), headerPlacement: 'skip' }];
+export const BASE_MODULE = `"""Base class of every generated model.
+
+${HEADER_DOC}
+"""
+
+from __future__ import annotations
+
+from typing import Any, cast
+
+from pydantic import BaseModel, ConfigDict, TypeAdapter
+
+MODEL_CONFIG = ConfigDict(
+    defer_build=True,
+    extra="allow",
+    populate_by_name=True,
+    frozen=True,
+    val_json_bytes="base64",
+    ser_json_bytes="base64",
+)
+
+#: Config for TypeAdapters over non-model types (lists, unions, primitives).
+ADAPTER_CONFIG = ConfigDict(
+    populate_by_name=True,
+    val_json_bytes="base64",
+    ser_json_bytes="base64",
+)
+
+
+class SpecModel(BaseModel):
+    """Frozen, alias-aware model; unknown wire fields are kept (\`\`extra="allow"\`\`).
+
+    Attributes are snake_case, the wire names are aliases
+    (\`\`Order(AmazonOrderId=...)\`\` and \`\`Order(amazon_order_id=...)\`\` both work),
+    and the schema is built on first use (\`\`defer_build\`\`), so importing a
+    models module only creates classes.
+    """
+
+    model_config = MODEL_CONFIG
+
+
+def adapter_for(python_type: Any) -> TypeAdapter[Any]:
+    """\`\`TypeAdapter\`\` for a response/body type (models carry their own config)."""
+    if isinstance(python_type, type) and issubclass(python_type, BaseModel):
+        return TypeAdapter(python_type)
+    return TypeAdapter(cast(Any, python_type), config=ADAPTER_CONFIG)
+
+
+__all__ = ["ADAPTER_CONFIG", "MODEL_CONFIG", "SpecModel", "adapter_for"]
+`;
+
+function packageInit(pkg: string, modelNames: string[], enumNames: string[], children: string[]): string {
+  const lines = [`"""Models package \`\`${pkg}\`\`.`, '', HEADER_DOC, '"""', '', 'from __future__ import annotations', ''];
+  const exported = [...enumNames, ...modelNames].sort();
+  if (enumNames.length) lines.push(`from .enums import ${[...enumNames].sort().join(', ')}`);
+  if (modelNames.length) lines.push(`from .models import ${[...modelNames].sort().join(', ')}`);
+  if (exported.length) {
+    lines.push('', '__all__ = [', ...exported.map((n) => `    ${pyStr(n)},`), ']');
+  } else {
+    lines.push(`#: subpackages: ${children.join(', ')}`);
+  }
+  return lines.join('\n') + '\n';
+}
+
+export function generateModels(_models: Model[], _ctx: EmitterContext, spec: ApiSpec, packages: Packages): GeneratedFile[] {
+  const byPkg = new Map<string, [Model, string][]>();
+  for (const m of spec.models) {
+    const place = packages.models.get(m.name);
+    if (!place) continue;
+    let list = byPkg.get(place.pkg);
+    if (!list) byPkg.set(place.pkg, (list = []));
+    list.push([m, place.cls]);
+  }
+  const enumPkgs = new Set([...packages.enums.values()].map((p) => p.pkg));
+  const files: GeneratedFile[] = [{ path: 'models/_base.py', content: BASE_MODULE }];
+  for (const [pkg, list] of [...byPkg.entries()].sort((a, b) => a[0].localeCompare(b[0]))) {
+    list.sort((a, b) => a[1].localeCompare(b[1]));
+    files.push({ path: `models/${packages.modulePath(pkg)}/models.py`, content: renderModelsModule(pkg, list, packages) });
+  }
+  // package __init__ files (every package and every intermediate package)
+  const inits = new Map<string, { models: string[]; enums: string[]; children: Set<string> }>();
+  const ensure = (pkg: string) => {
+    let e = inits.get(pkg);
+    if (!e) inits.set(pkg, (e = { models: [], enums: [], children: new Set() }));
+    return e;
+  };
+  for (const pkg of packages.pkgs) {
+    const e = ensure(pkg);
+    e.models = (byPkg.get(pkg) ?? []).map(([, cls]) => cls);
+    e.enums = [...packages.enums.values()].filter((p) => p.pkg === pkg).map((p) => p.cls);
+    const parts = pkg.split('.');
+    for (let i = parts.length - 1; i > 0; i--) ensure(parts.slice(0, i).join('.')).children.add(parts[i]!);
+  }
+  for (const [pkg, e] of [...inits.entries()].sort((a, b) => a[0].localeCompare(b[0]))) {
+    files.push({ path: `models/${packages.modulePath(pkg)}/__init__.py`, content: packageInit(pkg, e.models, e.enums, [...e.children].sort()) });
+  }
+  const top = [...new Set(packages.pkgs.map((p) => p.split('.')[0]!))].sort();
+  files.push({
+    path: 'models/__init__.py',
+    content: `"""Generated models of ${spec.name}: one package per API version.
+
+${HEADER_DOC}
+
+Packages: ${top.join(', ')}.
+"""
+
+from __future__ import annotations
+`,
+  });
+  void SHARED;
+  void enumPkgs;
+  return files;
 }

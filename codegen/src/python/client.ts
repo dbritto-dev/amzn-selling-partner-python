@@ -1,173 +1,127 @@
-/**
- * The top-level client: `apis.py` (registry of every generated API version +
- * typed accessors, mixed into the client) and `client.py` (the sync/async
- * client classes over the runtime).
- */
-import type { GeneratedFile } from '@workos/oagen';
-import { pascalCase, pyStr } from './naming.js';
-import { resourceClassName } from './index.js';
+/** `client.py`: the top-level client (`--namespace`), one lazily created resource per service. */
+import type { ApiSpec, EmitterContext, GeneratedFile } from '@workos/oagen';
+import { compareVersions } from '../amazon.js';
+import { HEADER_DOC } from './header.js';
+import { docstring, pyStr } from './naming.js';
+import type { EmitterOptions } from './options.js';
+import type { Packages } from './packages.js';
+import { apiVersionOf } from './pagination.js';
+import { resourceGroups, resourceModuleOf } from './resources.js';
 
-export interface ApiVersionEntry {
-  api: string;
-  version: string;
-  title: string;
-  operations: number;
+interface Entry {
+  module: string;
+  cls: string;
 }
 
-export interface ApisInput {
-  packageName: string;
-  runtimePackage: string;
-  entries: ApiVersionEntry[];
-  aliases: Record<string, string>;
-  compareVersions: (a: string, b: string) => number;
-}
-
-export function renderApisModule(input: ApisInput): string {
-  const byApi = new Map<string, ApiVersionEntry[]>();
-  for (const e of input.entries) {
-    const list = byApi.get(e.api) ?? [];
-    list.push(e);
-    byApi.set(e.api, list);
+/** `<api>` -> latest `<api>_<version>` module, for services whose module carries a version suffix. */
+export function latestAliases(modules: string[], extra: Record<string, string>): Map<string, string> {
+  const byApi = new Map<string, { module: string; version: string }[]>();
+  for (const m of modules) {
+    const av = apiVersionOf(m);
+    if (!av) continue;
+    let list = byApi.get(av[0]);
+    if (!list) byApi.set(av[0], (list = []));
+    list.push({ module: m, version: av[1] });
   }
-  const apis = [...byApi.keys()].sort();
+  const out = new Map<string, string>();
+  const taken = new Set(modules);
+  for (const [api, list] of byApi) {
+    if (taken.has(api)) continue;
+    list.sort((a, b) => compareVersions(a.version, b.version));
+    out.set(api, list[list.length - 1]!.module);
+  }
+  for (const [alias, target] of Object.entries(extra)) {
+    const resolvedTarget = out.get(target) ?? (taken.has(target) ? target : undefined);
+    if (resolvedTarget && !taken.has(alias) && !out.has(alias)) out.set(alias, resolvedTarget);
+  }
+  return new Map([...out.entries()].sort((a, b) => a[0].localeCompare(b[0])));
+}
+
+function renderClass(name: string, isAsync: boolean, spec: ApiSpec, entries: Entry[], aliases: Map<string, string>): string[] {
+  const http = isAsync ? 'AsyncHttpClient' : 'HttpClient';
+  const lines: string[] = [];
+  lines.push(`class ${name}:`);
+  lines.push(...docstring(`${isAsync ? 'Asynchronous' : 'Synchronous'} client of ${spec.name} ${spec.version}.\n\nEvery resource is created on first access (\`\`client.${entries[0]?.module ?? 'service'}\`\`); keyword arguments configure the HTTP client (see \`\`http_client.${http}\`\`).`, '    '));
+  lines.push('');
+  lines.push('    def __init__(');
+  lines.push('        self,');
+  lines.push('        *,');
+  lines.push(`        base_url: str = ${pyStr(spec.baseUrl)},`);
+  lines.push(`        auth: ${isAsync ? 'AsyncAuth' : 'Auth'} | None = None,`);
+  lines.push('        timeout: httpx2.Timeout | float | None = None,');
+  lines.push('        max_retries: int = MAX_RETRIES,');
+  lines.push('        throttle: bool = True,');
+  lines.push('        default_rate_limit: RateLimit | None = None,');
+  lines.push('        headers: Mapping[str, str] | None = None,');
+  lines.push(`        transport: ${isAsync ? 'httpx2.AsyncBaseTransport' : 'httpx2.BaseTransport'} | None = None,`);
+  lines.push(`        http_client: ${isAsync ? 'httpx2.AsyncClient' : 'httpx2.Client'} | None = None,`);
+  lines.push('        request_id_header: str = REQUEST_ID_HEADER,');
+  lines.push('        rate_hint_header: str | None = RATE_HINT_HEADER,');
+  lines.push('        user_agent: str | None = None,');
+  lines.push('        **kwargs: Any,');
+  lines.push('    ) -> None:');
+  lines.push(`        self._http = ${http}(`);
+  for (const k of ['base_url', 'auth', 'timeout', 'max_retries', 'throttle', 'default_rate_limit', 'headers', 'transport', 'http_client', 'request_id_header', 'rate_hint_header', 'user_agent']) {
+    lines.push(`            ${k}=${k},`);
+  }
+  lines.push('            **kwargs,');
+  lines.push('        )');
+  lines.push('');
+  lines.push('    @property');
+  lines.push(`    def http(self) -> ${http}:`);
+  lines.push('        """The HTTP client every resource uses."""');
+  lines.push('        return self._http');
+  lines.push('');
+  lines.push('    @property');
+  lines.push('    def base_url(self) -> str:');
+  lines.push('        return self._http.base_url');
+  lines.push('');
+  lines.push('    @property');
+  lines.push(`    def http_client(self) -> ${isAsync ? 'httpx2.AsyncClient' : 'httpx2.Client'}:`);
+  lines.push('        return self._http.http_client');
+  lines.push('');
+  if (isAsync) {
+    lines.push('    async def aclose(self) -> None:', '        await self._http.aclose()', '');
+    lines.push('    async def __aenter__(self) -> Self:', '        return self', '');
+    lines.push('    async def __aexit__(self, exc_type: type[BaseException] | None, exc: BaseException | None, tb: TracebackType | None) -> None:', '        await self.aclose()');
+  } else {
+    lines.push('    def close(self) -> None:', '        self._http.close()', '');
+    lines.push('    def __enter__(self) -> Self:', '        return self', '');
+    lines.push('    def __exit__(self, exc_type: type[BaseException] | None, exc: BaseException | None, tb: TracebackType | None) -> None:', '        self.close()');
+  }
+  lines.push('', '    # -- resources ---------------------------------------------------------------');
+  for (const e of entries) {
+    const cls = `${isAsync ? 'Async' : ''}${e.cls}`;
+    lines.push('', '    @cached_property', `    def ${e.module}(self) -> ${cls}:`, `        from .resources.${e.module} import ${cls}`, '', `        return ${cls}(self._http)`);
+  }
+  if (aliases.size) lines.push('', '    # -- latest version of each API ----------------------------------------------');
+  for (const [alias, module] of aliases) {
+    const cls = `${isAsync ? 'Async' : ''}${entries.find((e) => e.module === module)!.cls}`;
+    lines.push('', '    @property', `    def ${alias}(self) -> ${cls}:`, `        """\`\`${module}\`\`."""`, `        return self.${module}`);
+  }
+  return lines;
+}
+
+export function renderClientModule(spec: ApiSpec, ctx: EmitterContext, packages: Packages, opts: EmitterOptions): string {
+  const entries: Entry[] = resourceGroups(ctx).filter((g) => g.ops.length > 0).map((g) => ({ module: resourceModuleOf(g.service.name, g.ops, packages), cls: `${g.service.name}Client` }));
+  const aliases = latestAliases(
+    entries.map((e) => e.module),
+    opts.serviceAliases,
+  );
+  const name = ctx.namespacePascal || 'Client';
   const out: string[] = [];
-  out.push('"""Registry of the generated APIs and typed accessors for the clients.');
-  out.push('');
-  out.push('Generated by codegen/ (oagen); do not edit by hand.');
-  out.push('"""');
-  out.push('');
-  out.push('from __future__ import annotations');
-  out.push('');
-  out.push('from typing import TYPE_CHECKING');
-  out.push('');
-  out.push(`from ${input.runtimePackage}.runtime._apis import APIVersionsBase, AsyncAPIsBase, SyncAPIsBase`);
-  out.push('');
-  out.push('if TYPE_CHECKING:');
-  for (const api of apis) {
-    for (const e of byApi.get(api)!) {
-      const cls = resourceClassName(api, e.version);
-      out.push(`    from ${input.packageName}.resources.${api}.${e.version} import Async${cls}, ${cls}`);
-    }
-  }
-  out.push('');
-  out.push('');
-  out.push('#: api -> versions (oldest first)');
-  out.push('API_VERSIONS: dict[str, tuple[str, ...]] = {');
-  for (const api of apis) {
-    const versions = byApi.get(api)!.map((e) => e.version).sort(input.compareVersions);
-    out.push(`    ${pyStr(api)}: (${versions.map(pyStr).join(', ')},),`);
-  }
-  out.push('}');
-  out.push('');
-  out.push('#: alias -> canonical api name');
-  out.push('ALIASES: dict[str, str] = {');
-  for (const [k, v] of Object.entries(input.aliases).sort()) if (byApi.has(v)) out.push(`    ${pyStr(k)}: ${pyStr(v)},`);
-  out.push('}');
-  out.push('');
-  out.push('#: api -> spec title');
-  out.push('TITLES: dict[str, str] = {');
-  for (const api of apis) out.push(`    ${pyStr(api)}: ${pyStr(byApi.get(api)![0]!.title)},`);
-  out.push('}');
-  out.push('');
-  for (const isAsync of [false, true]) {
-    const pre = isAsync ? 'Async' : '';
-    for (const api of apis) {
-      const entries = byApi.get(api)!;
-      const versions = entries.map((e) => e.version).sort(input.compareVersions);
-      const latest = versions[versions.length - 1]!;
-      const clsName = `${pre}${pascalCase(api)}API`;
-      out.push('');
-      out.push(`class ${clsName}(APIVersionsBase):`);
-      out.push(`    """Versions of the ${api} API (${pre ? 'async' : 'sync'})."""`);
-      out.push('');
-      out.push('    __slots__ = ()');
-      out.push(`    _api = ${pyStr(api)}`);
-      out.push(`    _versions = API_VERSIONS[${pyStr(api)}]`);
-      out.push(`    _latest = ${pyStr(latest)}`);
-      out.push(`    _is_async = ${isAsync ? 'True' : 'False'}`);
-      for (const v of versions) {
-        const cls = `${pre}${resourceClassName(api, v)}`;
-        out.push('');
-        out.push('    @property');
-        out.push(`    def ${v}(self) -> ${cls}:`);
-        out.push(`        return self._get(${pyStr(v)})  # type: ignore[return-value]`);
-      }
-      const cls = `${pre}${resourceClassName(api, latest)}`;
-      out.push('');
-      out.push('    @property');
-      out.push(`    def latest(self) -> ${cls}:`);
-      out.push(`        return self._get(${pyStr(latest)})  # type: ignore[return-value]`);
-      out.push('');
-    }
-    out.push('');
-    out.push(`class ${pre}APIs(${pre ? 'AsyncAPIsBase' : 'SyncAPIsBase'}):`);
-    out.push(`    """One attribute per API for the ${pre ? 'async' : 'sync'} client."""`);
-    out.push('');
-    out.push('    __slots__ = ()');
-    for (const api of apis) {
-      const clsName = `${pre}${pascalCase(api)}API`;
-      out.push('');
-      out.push('    @property');
-      out.push(`    def ${api}(self) -> ${clsName}:`);
-      out.push(`        return self._api_container(${pyStr(api)}, ${clsName})  # type: ignore[return-value]`);
-    }
-    for (const [alias, target] of Object.entries(input.aliases).sort()) {
-      if (!byApi.has(target)) continue;
-      const clsName = `${pre}${pascalCase(target)}API`;
-      out.push('');
-      out.push('    @property');
-      out.push(`    def ${alias}(self) -> ${clsName}:`);
-      out.push(`        return self._api_container(${pyStr(target)}, ${clsName})  # type: ignore[return-value]`);
-    }
-    out.push('');
-  }
-  out.push('');
-  out.push('__all__ = ["ALIASES", "API_VERSIONS", "TITLES", "APIs", "AsyncAPIs"]');
-  out.push('');
+  out.push(`"""Clients of ${spec.name}.`, '', HEADER_DOC, '"""', '', 'from __future__ import annotations', '');
+  out.push('from collections.abc import Mapping', 'from functools import cached_property', 'from types import TracebackType', 'from typing import TYPE_CHECKING, Any', '', 'import httpx2', '');
+  out.push('from .http_client import MAX_RETRIES, RATE_HINT_HEADER, REQUEST_ID_HEADER, Auth, AsyncAuth, AsyncHttpClient, HttpClient, RateLimit', '');
+  out.push('if TYPE_CHECKING:', '    from typing_extensions import Self', '');
+  for (const e of entries) out.push(`    from .resources.${e.module} import Async${e.cls}, ${e.cls}`);
+  out.push('', '');
+  out.push(...renderClass(name, false, spec, entries, aliases), '', '');
+  out.push(...renderClass(`Async${name}`, true, spec, entries, aliases), '', '');
+  out.push(`__all__ = [${pyStr('Async' + name)}, ${pyStr(name)}]`, '');
   return out.join('\n');
 }
 
-/** `apis.py` as a generated file. */
-export function generateClient(input: ApisInput): GeneratedFile {
-  return { path: 'apis.py', content: renderApisModule(input), headerPlacement: 'skip' };
-}
-
-export interface ClientModuleInput {
-  packageName: string;
-  runtimePackage: string;
-  /** Sync client class name; the async one is `Async<name>`. */
-  clientName: string;
-}
-
-/** `client.py`: `<Name>` / `Async<Name>` = runtime client + the `APIs` mixin. */
-export function renderClientModule(input: ClientModuleInput): string {
-  const { packageName, runtimePackage, clientName } = input;
-  return [
-    `"""Generated clients for ${packageName} (codegen/, oagen). Do not edit by hand."""`,
-    '',
-    'from __future__ import annotations',
-    '',
-    'from typing import Any',
-    '',
-    `from ${runtimePackage}.runtime._base_client import AsyncAPIClient, SyncAPIClient`,
-    `from ${packageName}.apis import APIs, AsyncAPIs`,
-    '',
-    '',
-    `class ${clientName}(SyncAPIClient, APIs):`,
-    `    _package = ${pyStr(packageName)}`,
-    '',
-    '    def __init__(self, *, base_url: str, **kwargs: Any) -> None:',
-    '        super().__init__(base_url=base_url, **kwargs)',
-    '',
-    '',
-    `class Async${clientName}(AsyncAPIClient, AsyncAPIs):`,
-    `    _package = ${pyStr(packageName)}`,
-    '',
-    '    def __init__(self, *, base_url: str, **kwargs: Any) -> None:',
-    '        super().__init__(base_url=base_url, **kwargs)',
-    '',
-    '',
-    `__all__ = [${pyStr('Async' + clientName)}, ${pyStr(clientName)}]`,
-    '',
-  ].join('\n');
+export function generateClient(spec: ApiSpec, ctx: EmitterContext, packages: Packages, opts: EmitterOptions): GeneratedFile[] {
+  return [{ path: 'client.py', content: renderClientModule(spec, ctx, packages, opts) }];
 }

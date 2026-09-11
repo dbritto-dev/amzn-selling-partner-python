@@ -1,6 +1,6 @@
 """Compatibility ``vendor.orders`` resource over ``amzn_selling_partner``.
 
-Models are the spec-generated ones (``client.vendor_orders.v1.models``); the
+Models are the spec-generated ones (``sdk.models.vendor_orders_v1``); the
 old enum classes are kept as plain ``str`` enums.
 """
 
@@ -11,7 +11,7 @@ from typing import Any
 from pydantic import BaseModel, ConfigDict
 
 from ... import client as _compat_client
-from ..._compat import query_kwargs, require_str, to_body
+from ..._compat import operation, query_kwargs, require_str, to_body
 from .models import (
     AcknowledgementCode,
     InternationalCommercialTerms,
@@ -72,22 +72,25 @@ class Client(_compat_client.BaseClient):
 
     @property
     def api(self) -> Any:
-        return self.sp.vendor_orders.v1
+        return self.sp.vendor_orders_v1
+
+    def _op(self, operation_id: str, *, pages: bool = False) -> Any:
+        method = operation(self.sp, "vendor_orders_v1", operation_id)
+        return getattr(self.api, f"iter_{method.__name__}") if pages else method
 
     def get_purchase_orders(self, *, query: GetPurchaseOrdersQuery | dict[str, Any] | None = None) -> list[Any]:
         """All purchase orders matching ``query`` (pages are followed automatically)."""
-        page = self.api.get_purchase_orders(**query_kwargs(query))
-        return list(page)
+        return list(self._op("getPurchaseOrders", pages=True)(**query_kwargs(query)))
 
     def get_purchase_order(self, purchase_order_number: str) -> Any:
         require_str(purchase_order_number, "purchase_order_number")
-        return self.api.get_purchase_order(purchase_order_number=purchase_order_number).payload
+        return self._op("getPurchaseOrder")(purchase_order_number=purchase_order_number).payload
 
     def get_purchase_orders_status(self, *, query: GetPurchaseOrdersStatusQuery | dict[str, Any] | None = None) -> list[Any]:
-        return list(self.api.get_purchase_orders_status(**query_kwargs(query)))
+        return list(self._op("getPurchaseOrdersStatus", pages=True)(**query_kwargs(query)))
 
     def submit_acknowledgement(self, data: Any) -> Any:
-        return self.api.submit_acknowledgement(body=to_body(data))
+        return self._op("submitAcknowledgement")(body=to_body(data))
 
 
 def __getattr__(name: str) -> Any:

@@ -1,4 +1,4 @@
-"""Pagination descriptors baked into the generated tables + the page objects."""
+"""Pagination: the generated ``iter_<method>`` helpers and ``paginate`` / ``apaginate``."""
 
 from __future__ import annotations
 
@@ -9,54 +9,36 @@ from typing import Any
 import httpx2
 import pytest
 from petstore_sdk.client import AsyncClient, Client
-from petstore_sdk.resources.petstore.v2 import PetstoreV2
-from petstore_sdk.resources.petstore.v3 import PetstoreV3
-
-from amzn_selling_partner.runtime import Pagination, RateLimit
-from amzn_selling_partner.runtime._pagination import compile_pagination
-from amzn_selling_partner.runtime._throttle import AsyncTokenBucket, TokenBucket
+from petstore_sdk.http_client import AsyncTokenBucket, RateLimit, RequestOptions, TokenBucket, apaginate, paginate
+from petstore_sdk.resources import OPERATIONS
 
 from .conftest import requires_amazon
 
-BASE = "https://api.example.com/v1"
+BASE = "https://api.example.com"
 
-EXPECTED = {
-    PetstoreV3: {"listPets": ("items", "nextToken", "nextToken")},
-    PetstoreV2: {
-        "listPets": ("payload.Pets", "payload.NextToken", "NextToken"),
-        "getOrders": ("payload.orders", "payload.pagination.nextToken", "NextToken"),
-    },
-}
 EXPECTED_AMAZON = {
-    ("orders", "v0"): {
-        "getOrders": "payload.Orders",
-        "getOrderItems": "payload.OrderItems",
-        "getOrderItemsBuyerInfo": "payload.OrderItems",
-    },
-    ("listings_items", "v2021_08_01"): {"searchListingsItems": "items"},
+    "orders_v0.getOrders": True,
+    "orders_v0.getOrderItems": True,
+    "orders_v0.getOrderItemsBuyerInfo": True,
+    "orders_v0.getOrder": False,
+    "listings_items_v2021_08_01.searchListingsItems": True,
+    "finances_v0.listFinancialEvents": True,
 }
 
 
-@pytest.mark.parametrize("cls", [PetstoreV3, PetstoreV2])
-def test_detection_matches_expected_list(cls: Any) -> None:
-    found = {
-        op.operation_id: (p.items_path, p.next_token_path, p.next_token_param)
-        for op in cls._ops.values()
-        if (p := op.pagination) is not None
-    }
-    assert found == EXPECTED[cls]
-    assert all(op.pagination.source == "heuristic" for op in cls._ops.values() if op.pagination is not None)
+def test_detection_matches_expected_list() -> None:
+    assert {k for k, v in OPERATIONS.items() if v[3]} == {"petstore_v3.listPets", "petstore_v2.listPets", "petstore_v2.getOrders"}
 
 
 @requires_amazon
-@pytest.mark.parametrize("key", list(EXPECTED_AMAZON))
-def test_detection_amazon(key: tuple[str, str]) -> None:
-    import importlib
+def test_detection_amazon() -> None:
+    from amzn_selling_partner.sdk.resources import OPERATIONS as AMAZON
+    from amzn_selling_partner.sdk.resources.orders_v0 import OrdersV0Client
 
-    module = importlib.import_module(f"amzn_selling_partner.resources.{key[0]}.{key[1]}")
-    ops = getattr(module, module.__all__[1])._ops
-    found = {op.operation_id: p.items_path for op in ops.values() if (p := op.pagination) is not None}
-    assert found == EXPECTED_AMAZON[key]
+    for key, expected in EXPECTED_AMAZON.items():
+        assert AMAZON[key][3] is expected, key
+    assert sum(1 for v in AMAZON.values() if v[3]) == 69
+    assert hasattr(OrdersV0Client, "iter_list_orders") and not hasattr(OrdersV0Client, "iter_get_order")
 
 
 def _handler(seen: list[httpx2.Request]) -> Any:
@@ -81,26 +63,24 @@ def test_multi_page_order_sync_and_async_with_throttle(monkeypatch: pytest.Monke
         return orig(self)
 
     monkeypatch.setattr(TokenBucket, "acquire", counting)
+    aorig = AsyncTokenBucket.acquire
 
     async def acounting(self: AsyncTokenBucket) -> float:
         acquires.append(time.monotonic())
         return await aorig(self)
 
-    aorig = AsyncTokenBucket.acquire
     monkeypatch.setattr(AsyncTokenBucket, "acquire", acounting)
     seen: list[httpx2.Request] = []
     fast = RateLimit(rate=1000, burst=2)
-    api = Client(base_url=BASE, transport=httpx2.MockTransport(_handler(seen)), default_rate_limit=fast).petstore.latest
-    page = api.list_pets(limit=2, tags=["x"])
-    assert [p.id for p in page] == [1, 2, 3, 4, 5, 6, 7, 8]
+    api = Client(base_url=BASE, transport=httpx2.MockTransport(_handler(seen)), default_rate_limit=fast).petstore_v3
+    assert [p.id for p in api.iter_list_pets(limit=2, tags=["x"])] == [1, 2, 3, 4, 5, 6, 7, 8]
     assert len(seen) == 4 and len(acquires) == 4
-    assert all("tags=x" in str(r.url) for r in seen)  # params kept (no drop)
+    assert all("tags=x" in str(r.url) for r in seen)  # params kept on every page (no drop)
 
     async def go() -> list[int]:
         aseen: list[httpx2.Request] = []
-        aapi = AsyncClient(base_url=BASE, transport=httpx2.MockTransport(_handler(aseen)), default_rate_limit=fast).petstore.latest
-        p = await aapi.list_pets(limit=2)
-        ids = [x.id async for x in p]
+        aapi = AsyncClient(base_url=BASE, transport=httpx2.MockTransport(_handler(aseen)), default_rate_limit=fast).petstore_v3
+        ids = [x.id async for x in aapi.iter_list_pets(limit=2)]
         assert len(aseen) == 4
         return ids
 
@@ -108,24 +88,59 @@ def test_multi_page_order_sync_and_async_with_throttle(monkeypatch: pytest.Monke
     assert len(acquires) == 8
 
 
-def test_drop_params_on_next_keeps_path_and_keep_params() -> None:
-    op = PetstoreV3._ops["list_pets"]
-    desc = Pagination(
-        items_path="items", next_token_path="nextToken", next_token_param="nextToken", drop_params_on_next=True, keep_params=("limit",)
+def test_paginate_drop_params_and_keep_params() -> None:
+    calls: list[dict[str, Any]] = []
+
+    def fn(**kwargs: Any) -> dict[str, Any]:
+        calls.append(kwargs)
+        n = len(calls)
+        return {"items": [n], "nextToken": f"t{n}" if n < 3 else None}
+
+    items = list(
+        paginate(
+            fn,
+            {"limit": 2, "tags": ["a"], "status": "sold", "request_options": None},
+            items=("items",),
+            token=("nextToken",),
+            token_param="next_token",
+            drop_params_on_next=True,
+            keep_params=("limit",),
+        )
     )
-    p = compile_pagination(desc, op.query_params, op.path_params, op.header_params)
-    assert p.next_kwargs({"limit": 2, "tags": ["a"], "status": "sold"}, "t9") == {"limit": 2, "next_token": "t9"}
-    with pytest.raises(ValueError, match="not a query/header parameter"):
-        compile_pagination(Pagination(items_path="items", next_token_path="n", next_token_param="nope"), op.query_params, (), ())
+    assert items == [1, 2, 3]
+    assert calls[0] == {"limit": 2, "tags": ["a"], "status": "sold", "request_options": None}
+    assert calls[1] == {"limit": 2, "tags": None, "status": None, "request_options": None, "next_token": "t1"}
+    assert calls[2] == {"limit": 2, "tags": None, "status": None, "request_options": None, "next_token": "t2"}
 
 
-def test_prev_token_and_items_is_object() -> None:
-    api = Client(
-        base_url=BASE, transport=httpx2.MockTransport(lambda r: httpx2.Response(200, json={"items": [], "total": "prev"}))
-    ).petstore.latest
-    desc = Pagination(items_path="items", next_token_path="nextToken", next_token_param="nextToken", prev_token_path="total")
-    page: Any = api.list_pets(paginate=desc, raw=True)
-    assert page.prev_token == "prev" and page.items == [] and not page.has_next
-    obj = Pagination(items_path="", next_token_path="nextToken", next_token_param="nextToken", items_is_object=True)
-    page2: Any = api.list_pets(paginate=obj, raw=True)
-    assert page2.items == [page2.raw]
+def test_paginate_single_container_and_raw_paths() -> None:
+    class Page:
+        def __init__(self, n: int) -> None:
+            self.payload = {"events": {"n": n}, "nextToken": f"t{n}" if n < 2 else None}
+
+    def fn(**kwargs: Any) -> Any:
+        n = int(kwargs["next_token"][1:]) + 1 if "next_token" in kwargs else 1
+        return Page(n)
+
+    pages = list(paginate(fn, {}, items=("payload", "events"), token=("payload", "nextToken"), token_param="next_token", single=True))
+    assert pages == [{"n": 1}, {"n": 2}]
+
+    async def afn(**kwargs: Any) -> Any:
+        return {"Payload": {"Items": [1, 2], "NextToken": None}}
+
+    async def go() -> list[int]:
+        raw = RequestOptions(raw=True)
+        return [
+            x
+            async for x in apaginate(
+                afn,
+                {"request_options": raw},
+                items=("payload", "items"),
+                token=("payload", "next_token"),
+                token_param="next_token",
+                wire_items=("Payload", "Items"),
+                wire_token=("Payload", "NextToken"),
+            )
+        ]
+
+    assert asyncio.run(go()) == [1, 2]  # raw responses use the wire paths

@@ -1,8 +1,10 @@
 /**
- * Pagination detection over the oagen IR (docs/PLAN.md §9), plus the shape of
- * the descriptor emitted as a `Pagination(...)` literal.
+ * Pagination detection over the oagen IR (token parameter + single array in the
+ * response envelope) with the Amazon override table for the cases the heuristic
+ * cannot settle. The result drives the generated `iter_<method>` helpers.
  */
 import type { ApiSpec, Model, Operation, TypeRef } from '@workos/oagen';
+import { paginationOverride } from '../amazon.js';
 
 export interface PaginationDescriptor {
   itemsPath: string;
@@ -78,16 +80,9 @@ export function detectPagination(spec: ApiSpec, op: Operation, key: string, log:
     }
     const prevField = model.fields.find((f) => ['prevtoken', 'previoustoken', 'previouspagetoken'].includes(f.name.toLowerCase()));
     if (arrays.length === 1) {
-      candidates.push({
-        token: join(prefix, tokenField.name),
-        items: join(itemsPrefix, arrays[0]!),
-        prev: prevField ? join(prefix, prevField.name) : undefined,
-      });
+      candidates.push({ token: join(prefix, tokenField.name), items: join(itemsPrefix, arrays[0]!), prev: prevField ? join(prefix, prevField.name) : undefined });
     } else {
-      log.push({
-        key,
-        message: `token field ${join(prefix, tokenField.name)} found but ${arrays.length} array fields nearby (${arrays.join(', ') || 'none'}); left unpaginated`,
-      });
+      log.push({ key, message: `token field ${join(prefix, tokenField.name)} found but ${arrays.length} array fields nearby (${arrays.join(', ') || 'none'}); left unpaginated` });
       return null;
     }
   }
@@ -106,4 +101,18 @@ export function detectPagination(spec: ApiSpec, op: Operation, key: string, log:
 
 function join(prefix: string, name: string): string {
   return prefix ? `${prefix}.${name}` : name;
+}
+
+/** `orders_v0` -> `["orders", "v0"]` (the models package of a service names the API version). */
+export function apiVersionOf(pkg: string): [string, string] | null {
+  const m = /^(.+?)_(v\d.*)$/.exec(pkg);
+  return m ? [m[1]!, m[2]!] : null;
+}
+
+/** Override table first, then the heuristic. */
+export function paginationFor(spec: ApiSpec, op: Operation, pkg: string, log: DetectionLog[] = []): PaginationDescriptor | null {
+  const av = apiVersionOf(pkg);
+  const override = av ? paginationOverride(av[0], av[1], op.name) : undefined;
+  if (override) return override;
+  return detectPagination(spec, op, `${pkg}.${op.name}`, log);
 }

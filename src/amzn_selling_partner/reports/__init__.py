@@ -8,7 +8,7 @@ from typing import Any
 from pydantic import BaseModel, ConfigDict
 
 from .. import client as _compat_client
-from .._compat import query_kwargs, require_str, to_body
+from .._compat import operation, query_kwargs, require_str, to_body
 from ..utils import file as _file
 from .models import (
     CompressionAlgorithm,
@@ -68,33 +68,38 @@ class Client(_compat_client.BaseClient):
 
     @property
     def api(self) -> Any:
-        return self.sp.reports.v2021_06_30
+        return self.sp.reports_v2021_06_30
+
+    def _op(self, operation_id: str) -> Any:
+        return operation(self.sp, "reports_v2021_06_30", operation_id)
 
     def create_report(self, data: CreateReportSpecification | dict[str, Any]) -> Any:
         """Create the report and return the ``Report`` (as before: one extra ``getReport`` call)."""
-        response = self.api.create_report(body=to_body(data))
+        response = self._op("createReport")(body=to_body(data))
         return self.get_report(response.report_id)
 
     def get_reports(self, *, query: GetReportsQuery | dict[str, Any] | None = None, pages_limit: int = 3) -> list[Any]:
         """Reports across up to ``pages_limit`` pages."""
         reports: list[Any] = []
-        page = self.api.get_reports(**query_kwargs(query))
-        for i, p in enumerate(page.pages()):
-            reports.extend(p.items)
-            if i + 1 >= pages_limit:
+        kwargs = query_kwargs(query)
+        for _ in range(pages_limit):
+            page = self._op("getReports")(**kwargs)
+            reports.extend(page.reports)
+            if not page.next_token:
                 break
+            kwargs = {"next_token": page.next_token}
         return reports
 
     def get_report(self, report_id: str) -> Any:
         require_str(report_id, "report_id")
-        return self.api.get_report(report_id=report_id)
+        return self._op("getReport")(report_id=report_id)
 
     def get_report_document(self, report_document_id: str, *, enable_content_encoding_url_header: bool | None = None) -> Any:
         self._check_id(report_document_id)
         kwargs: dict[str, Any] = {"report_document_id": report_document_id}
         if enable_content_encoding_url_header is not None:
             kwargs["enable_content_encoding_url_header"] = enable_content_encoding_url_header
-        return self.api.get_report_document(**kwargs)
+        return self._op("getReportDocument")(**kwargs)
 
     def get_report_document_content(self, report_document_id: str, *, enable_content_encoding_url_header: bool | None = None) -> Any:
         """The document parsed as JSON (report types with JSON payloads)."""

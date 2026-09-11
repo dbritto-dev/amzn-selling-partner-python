@@ -3,18 +3,17 @@
 Everything Amazon-specific lives here and in ``amzn_selling_partner.plugins._amazon``:
 regional servers, LWA auth with Restricted Data Tokens and grantless scopes,
 document helpers, sandbox examples and notification models. Rate limits and
-pagination descriptors are generated into the resource modules by
-``codegen/`` (see docs/PLAN.md §14).
+pagination helpers are generated into the resource modules by ``codegen/``.
 """
 
 from __future__ import annotations
 
-import importlib
 import logging
 from typing import Any
 
-from .._client import AsyncClient, Client
-from ..runtime._types import RequestOptions
+from ..sdk.client import AsyncClient, Client
+from ..sdk.http_client import RequestOptions
+from ..sdk.resources import OPERATIONS
 from ._amazon.auth import ACCESS_TOKEN_HEADER, AsyncLWAAuth, LWAAuth, LWACredentials, MemoryTokenStore, Token, TokenStore
 from ._amazon.documents import AsyncDocuments, Documents
 from ._amazon.notifications import Notifications
@@ -24,8 +23,6 @@ from ._amazon.sandbox import SandboxExample, is_dynamic_sandbox, sandbox_example
 from ._amazon.specs import api_naming, default_schema_dir, default_spec_dir, spec_files
 
 log = logging.getLogger("amzn_selling_partner.plugins.amazon")
-
-CLIENT_DEFAULTS: dict[str, Any] = {"request_id_header": "x-amzn-RequestId", "rate_hint_header": "x-amzn-RateLimit-Limit"}
 
 
 def with_rdt(*data_elements: str, **options: Any) -> RequestOptions:
@@ -56,19 +53,15 @@ def _resolve_credentials(
 
 
 def unparsed_rate_limits() -> dict[str, list[str]]:
-    """Operations (per API version) whose description carried no parseable
+    """Operations (per resource module) whose description carried no parseable
     rate-limit table when the code was generated (they run unthrottled unless
-    ``default_rate_limit`` is set). Imports every resource module."""
-    from ..apis import API_VERSIONS
-
+    ``default_rate_limit`` is set)."""
     out: dict[str, list[str]] = {}
-    for api, versions in API_VERSIONS.items():
-        for version in versions:
-            module = importlib.import_module(f"amzn_selling_partner.resources.{api}.{version}")
-            ops = getattr(module, module.__all__[1])._ops  # pyright: ignore[reportPrivateUsage]
-            missing = [op.operation_id for op in ops.values() if op.rate_limit is None]
-            if missing:
-                out[f"{api}.{version}"] = missing
+    for key, (_method, _http, _path, _paginated, has_limit) in OPERATIONS.items():
+        if has_limit:
+            continue
+        module, _, operation_id = key.partition(".")
+        out.setdefault(module, []).append(operation_id.split(":")[0])
     return out
 
 
@@ -99,7 +92,7 @@ class SellingPartner(Client, _SellingPartnerMixin):
         no auth header is sent.
     token_store:
         Pluggable token cache (default in-memory).
-    Other keyword arguments go to the runtime client (``http_client=``,
+    Other keyword arguments go to the generated client (``http_client=``,
     ``transport=``, ``timeout=``, ``max_retries=``, ``throttle=``, ...).
     """
 
@@ -127,13 +120,13 @@ class SellingPartner(Client, _SellingPartnerMixin):
         base_url = region.base_url(sandbox=sandbox)
         if auth is None and creds is not None:
             auth = LWAAuth(creds, store=token_store, token_url=token_url, base_url=base_url, transport=kwargs.get("transport"))
-        super().__init__(base_url=base_url, auth=auth, **{**CLIENT_DEFAULTS, **kwargs})
+        super().__init__(base_url=base_url, auth=auth, **kwargs)
         self.documents = Documents(self)
 
     def close(self) -> None:
         super().close()
-        if isinstance(self._auth, LWAAuth):
-            self._auth.close()
+        if isinstance(self.http.auth, LWAAuth):
+            self.http.auth.close()
 
 
 class AsyncSellingPartner(AsyncClient, _SellingPartnerMixin):
@@ -163,18 +156,17 @@ class AsyncSellingPartner(AsyncClient, _SellingPartnerMixin):
         base_url = region.base_url(sandbox=sandbox)
         if auth is None and creds is not None:
             auth = AsyncLWAAuth(creds, store=token_store, token_url=token_url, base_url=base_url, transport=kwargs.get("transport"))
-        super().__init__(base_url=base_url, auth=auth, **{**CLIENT_DEFAULTS, **kwargs})
+        super().__init__(base_url=base_url, auth=auth, **kwargs)
         self.documents = AsyncDocuments(self)
 
     async def aclose(self) -> None:
         await super().aclose()
-        if isinstance(self._auth, AsyncLWAAuth):
-            await self._auth.aclose()
+        if isinstance(self.http.auth, AsyncLWAAuth):
+            await self.http.auth.aclose()
 
 
 __all__ = [
     "ACCESS_TOKEN_HEADER",
-    "CLIENT_DEFAULTS",
     "GRANTLESS",
     "LWA_TOKEN_URL",
     "RESTRICTED",

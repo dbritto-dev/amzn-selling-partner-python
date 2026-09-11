@@ -7,7 +7,7 @@ import os
 import pathlib
 import re
 
-from ...runtime._naming import snake_case
+from ..._naming import snake_case
 
 _HERE = pathlib.Path(__file__).resolve().parent
 _VERSION_SUFFIX = re.compile(r"(?:[_-]|(?<=[a-z])V)(?P<v>\d{4}-\d{2}-\d{2}|\d+)$")

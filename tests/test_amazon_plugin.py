@@ -13,7 +13,7 @@ import httpx2
 import pytest
 
 from amzn_selling_partner import AuthenticationError, RequestOptions
-from amzn_selling_partner.apis import ALIASES, API_VERSIONS
+from amzn_selling_partner._naming import api_version_of
 from amzn_selling_partner.plugins._amazon.rdt import GRANTLESS, RESTRICTED
 from amzn_selling_partner.plugins.amazon_spapi import (
     AsyncLWAAuth,
@@ -31,9 +31,9 @@ from amzn_selling_partner.plugins.amazon_spapi import (
     unparsed_rate_limits,
     with_rdt,
 )
-from amzn_selling_partner.runtime._op import Op
-from amzn_selling_partner.runtime._throttle import RateLimit, TokenBucket
 from amzn_selling_partner.sandbox_tests import load_documents, raw_operations
+from amzn_selling_partner.sdk.http_client import REQUEST_ID_HEADER, RequestContext, TokenBucket
+from amzn_selling_partner.sdk.resources import OPERATIONS, SERVICES
 
 from ._amazon_mock import AmazonMock
 from .conftest import requires_amazon
@@ -46,7 +46,6 @@ CREDS = LWACredentials(client_id="cid", client_secret="sec", refresh_token="rt")
 def sp(mock: AmazonMock, **kw: Any) -> SellingPartner:
     kw.setdefault("credentials", CREDS)
     kw.setdefault("throttle", False)
-    kw.setdefault("backoff_initial", 0.0001)
     return SellingPartner(transport=mock.transport(), **kw)
 
 
@@ -56,49 +55,50 @@ def asp(mock: AmazonMock, **kw: Any) -> AsyncSellingPartner:
     return AsyncSellingPartner(transport=mock.transport(), **kw)
 
 
-# -- rate limits (parsed at generation time, see codegen/src/emitter/ratelimits.ts) -------------
+def _ctx(module: str, operation: str) -> RequestContext:
+    return RequestContext(operation=operation, service=module, method="GET", path="/x", options=None)
 
 
-def _all_ops() -> dict[tuple[str, str], dict[str, Op]]:
-    """``(api, version) -> {method name: Op}`` for every generated resource."""
-    import importlib
-
-    out: dict[tuple[str, str], dict[str, Op]] = {}
-    for api, versions in API_VERSIONS.items():
-        for version in versions:
-            module = importlib.import_module(f"amzn_selling_partner.resources.{api}.{version}")
-            out[(api, version)] = dict(getattr(module, module.__all__[1])._ops)
+def _ops() -> dict[tuple[str, str], set[str]]:
+    """``(api, version) -> operationIds`` from the generated resources registry."""
+    out: dict[tuple[str, str], set[str]] = {}
+    for key in OPERATIONS:
+        module, _, op_id = key.partition(".")
+        av = api_version_of(module)
+        assert av is not None, module
+        out.setdefault(av, set()).add(op_id.split(":")[0])
     return out
 
 
+# -- rate limits (parsed at generation time, see codegen/src/python/ratelimits.ts) -------------
+
+
 def test_rate_limit_counts_across_pinned_specs() -> None:
-    ops = _all_ops()
-    parsed = sum(1 for table in ops.values() for op in table.values() if op.rate_limit is not None)
+    parsed = sum(1 for v in OPERATIONS.values() if v[4])
     unparsed = unparsed_rate_limits()
     assert parsed == 300
     assert sum(len(v) for v in unparsed.values()) == 73, unparsed
-    assert "listPrepDetails" in unparsed["fulfillment_inbound.v2024_03_20"]  # placeholder table
-    assert ops[("definitions_product_types", "v2020_09_01")]["search_definitions_product_types"].rate_limit is not None  # "Plan type" table
-    assert ops[("orders", "v0")]["get_orders"].rate_limit == RateLimit(rate=0.0167, burst=20)
+    assert "listPrepDetails" in unparsed["fulfillment_inbound_v2024_03_20"]  # placeholder table
+    assert OPERATIONS["definitions_product_types_v2020_09_01.searchDefinitionsProductTypes"][4] is True  # "Plan type" table
+    assert OPERATIONS["orders_v0.getOrders"][4] is True
 
 
-def test_client_reports_unparsed_rate_limits() -> None:
-    client = sp(AmazonMock())
+def test_client_reports_unparsed_rate_limits_and_seeds_buckets() -> None:
+    mock = AmazonMock()
+    client = sp(mock, throttle=True)
     unparsed = client.unparsed_rate_limits()
-    assert "orders.v0" not in unparsed
-    assert len(unparsed["seller_wallet.v2024_03_01"]) == 12
-    assert client.orders.v0.operation("getOrders").rate_limit == RateLimit(rate=0.0167, burst=20)
+    assert "orders_v0" not in unparsed
+    assert len(unparsed["seller_wallet_v2024_03_01"]) == 12
+    client.orders_v0.list_orders(marketplace_ids=["ATVPDKIKX0DER"], created_after="2020-01-01T00:00:00Z")
+    bucket = client.http._throttler.bucket("orders_v0.getOrders", None)
+    assert bucket is not None and bucket.rate == 0.0167  # the usage-plan table: 0.0167 rps, burst 20
 
 
-# -- annotations: rdt, grantless, pagination -------------------------------------------------
-
-
-def _ops_index() -> dict[tuple[str, str], set[str]]:
-    return {key: {op.operation_id for op in table.values()} for key, table in _all_ops().items()}
+# -- tables: rdt, grantless, pagination ---------------------------------------------------------
 
 
 def test_restricted_and_grantless_tables_reference_real_operations() -> None:
-    index = _ops_index()
+    index = _ops()
     for api, version, op_id in RESTRICTED:
         versions = [v for (a, v) in index if a == api and (version is None or v == version)]
         assert versions, (api, version, op_id)
@@ -117,69 +117,42 @@ def test_grantless_table_matches_descriptions() -> None:
     assert set(GRANTLESS) - found == {("application", "rotateApplicationClientSecret")}
 
 
-def test_drop_params_descriptions_match_generated_descriptors() -> None:
-    # every generated ``drop_params_on_next`` descriptor belongs to an operation whose nextToken doc says so
-    ops = _all_ops()
-    dropping = {
-        (api, op.operation_id)
-        for (api, _v), table in ops.items()
-        for op in table.values()
-        if op.pagination and op.pagination.drop_params_on_next
-    }
-    assert dropping == {
-        ("orders", "getOrders"),
-        ("orders", "getOrderItems"),
-        ("orders", "getOrderItemsBuyerInfo"),
-        ("reports", "getReports"),
-        ("feeds", "getFeeds"),
-        ("data_kiosk", "getQueries"),
-        ("fba_inventory", "getInventorySummaries"),
-        ("notifications", "getSubscriptions"),
-        ("finances", "listFinancialEventGroups"),
-        ("finances", "listFinancialEventsByGroupId"),
-        ("finances", "listFinancialEventsByOrderId"),
-        ("finances", "listFinancialEvents"),
-    }
+def test_registry_matches_pinned_specs() -> None:
+    assert len(SERVICES) == 67 and len(OPERATIONS) == 373
     docs = load_documents()
-    for (api, version), table in ops.items():
-        raw_ops = raw_operations(docs[(api, version)])
-        for op in table.values():
-            if op.pagination is None:
-                continue
-            assert op.operation_id in raw_ops
-            params = {p["name"] for p in raw_ops[op.operation_id]["parameters"]}
-            assert op.pagination.next_token_param in params, (api, version, op.operation_id)
+    assert set(_ops()) == set(docs)
+    for (api, version), op_ids in _ops().items():
+        assert op_ids == set(raw_operations(docs[(api, version)])), (api, version)
+    assert sum(1 for v in OPERATIONS.values() if v[3]) == 69  # paginated operations
+    for key in (
+        "orders_v0.getOrders",
+        "listings_items_v2021_08_01.searchListingsItems",
+        "finances_v0.listFinancialEvents",
+        "fba_inventory_v1.getInventorySummaries",
+        "aplus_content_v2020_11_01.searchContentDocuments",
+    ):
+        assert OPERATIONS[key][3] is True, key
+    assert OPERATIONS["shipping_v2.linkCarrierAccount"][1:3] == ("POST", "/shipping/v2/carrierAccounts/{carrierId}")
+    assert OPERATIONS["shipping_v2.linkCarrierAccount:PUT"][0] == "update_carrier_account"  # duplicate operationId in the spec
+
+
+def test_iter_helpers_for_drop_params_operations() -> None:
+    client = sp(AmazonMock())
+    for key in ("orders_v0.getOrders", "reports_v2021_06_30.getReports", "feeds_v2021_06_30.getFeeds", "finances_v0.listFinancialEvents"):
+        module, _, op_id = key.partition(".")
+        method = OPERATIONS[key][0]
+        assert callable(getattr(getattr(client, module), f"iter_{method}")), key
 
 
 def test_rdt_marking() -> None:
-    client = sp(AmazonMock())
-    orders = client.orders.v0
     assert restricted_for("orders", "v0", "getOrderAddress").data_elements is None  # type: ignore[union-attr]
     assert restricted_for("orders", "v0", "getOrders").data_elements == ("buyerInfo", "shippingAddress", "buyerTaxInformation")  # type: ignore[union-attr]
     assert restricted_for("orders", "v0", "confirmShipment") is None
     req = httpx2.Request("GET", "https://x/")
-    assert LWAAuth.classify(orders.operation("getOrderAddress"), req) == ("rdt", ())
-    assert LWAAuth.classify(orders.operation("getOrders"), req) == ("lwa", ())
-    assert LWAAuth.classify(client.notifications.v1.operation("getDestinations"), req) == (
-        "grantless",
-        ("sellingpartnerapi::notifications",),
-    )
-    assert LWAAuth.classify(client.notifications.v1.operation("getSubscription"), req) == ("lwa", ())
-
-
-def test_pagination_annotations() -> None:
-    client = sp(AmazonMock())
-    orders = client.orders.v0
-    p = orders.operation("getOrders").pagination
-    assert p is not None and p.drop_params_on_next and p.items_path == "payload.Orders" and p.source == "plugin"
-    listings = client.listings_items.v2021_08_01.operation("searchListingsItems").pagination
-    assert listings is not None and listings.next_token_param == "pageToken" and listings.prev_token_path == "pagination.previousToken"
-    fin = client.finances.v0.operation("listFinancialEvents").pagination
-    assert fin is not None and fin.items_is_object
-    assert client.fba_inventory.v1.operation("getInventorySummaries").pagination is not None
-    aplus = client.aplus_content.latest.operation("searchContentDocuments").pagination
-    assert aplus is not None and aplus.next_token_path == "nextPageToken"
-    assert sum(1 for table in _all_ops().values() for op in table.values() if op.pagination is not None) == 69
+    assert LWAAuth.classify(_ctx("orders_v0", "getOrderAddress"), req) == ("rdt", ())
+    assert LWAAuth.classify(_ctx("orders_v0", "getOrders"), req) == ("lwa", ())
+    assert LWAAuth.classify(_ctx("notifications_v1", "getDestinations"), req) == ("grantless", ("sellingpartnerapi::notifications",))
+    assert LWAAuth.classify(_ctx("notifications_v1", "getSubscription"), req) == ("lwa", ())
 
 
 def test_servers_and_regions() -> None:
@@ -188,18 +161,18 @@ def test_servers_and_regions() -> None:
     assert sp(AmazonMock(), marketplace=Marketplace.JP).base_url == "https://sellingpartnerapi-fe.amazon.com"
     assert Marketplace("A1F83G8C2ARO7P") is Marketplace.UK and Marketplace.UK.region is Region.EU
     assert Region.NORTH_AMERICA is Region.NA and Region.NA.api_sandbox_endpoint.startswith("https://sandbox.")
-    assert sp(AmazonMock()).options.request_id_header == "x-amzn-RequestId"
+    assert REQUEST_ID_HEADER == "x-amzn-RequestId"
 
 
 def test_naming_and_aliases() -> None:
     client = sp(AmazonMock())
-    assert len(client.apis) == 55 and len(API_VERSIONS) == 55 and sum(len(v) for v in API_VERSIONS.values()) == 67
-    assert ALIASES["invoices"] == "invoices_api_model" and client.aliases == ALIASES
-    assert client.orders.versions == ["v0", "v2026_01_01"] and client.orders.latest.operation("searchOrders")
-    assert client.invoices is client.invoices_api_model
-    assert client.shipping.versions == ["v1", "v2"] and client.shipping.latest is client.shipping.v2
-    assert "link_carrier_account_post" in dir(client.shipping.v2)
-    assert client.catalog_items.versions == ["v0", "v2020_12_01", "v2022_04_01"]
+    assert client.orders is client.orders_v2026_01_01 and hasattr(client.orders, "list_orders")
+    assert client.invoices is client.invoices_api_model_v2024_06_19
+    assert client.shipping is client.shipping_v2 and client.shipping_v1 is not client.shipping_v2
+    assert hasattr(client.shipping_v2, "update_carrier_account")  # PUT linkCarrierAccount (duplicate operationId)
+    assert client.catalog_items is client.catalog_items_v2022_04_01
+    assert client.product_pricing_v0.__class__.__name__ == "ProductPricingV0Client"  # /products + /batches mounted together
+    assert client.fba_inbound_eligibility is client.fba_inbound_v1 and client.awd is client.awd_v2024_05_09
 
 
 # -- auth --------------------------------------------------------------------------------------
@@ -208,8 +181,8 @@ def test_naming_and_aliases() -> None:
 def test_lwa_refresh_flow_and_caching() -> None:
     mock = AmazonMock()
     client = sp(mock)
-    client.orders.v0.get_order(order_id="1")
-    client.orders.v0.get_order(order_id="2")
+    client.orders_v0.get_order(order_id="1")
+    client.orders_v0.get_order(order_id="2")
     assert mock.token_calls == 1
     token_req = mock.by_path("/auth/o2/token")[0]
     assert token_req.method == "POST" and "grant_type=refresh_token" in token_req.content.decode()
@@ -274,29 +247,29 @@ def test_lwa_single_flight_async() -> None:
 def test_grantless_uses_client_credentials() -> None:
     mock = AmazonMock()
     client = sp(mock)
-    client.notifications.v1.get_destinations()
+    client.notifications_v1.list_destinations()
     form = mock.by_path("/auth/o2/token")[0].content.decode()
     assert "grant_type=client_credentials" in form and "scope=sellingpartnerapi%3A%3Anotifications" in form
     assert mock.by_path("/destinations")[0].headers["x-amz-access-token"] == "Atza|cc|1"
-    client.orders.v0.get_order(order_id="1")
+    client.orders_v0.get_order(order_id="1")
     assert mock.token_calls == 2  # separate cache entries per grant
 
 
 def test_rdt_flow_sync_and_async() -> None:
     mock = AmazonMock()
     client = sp(mock)
-    client.orders.v0.get_order_address(order_id="902-1")
+    client.orders_v0.list_order_address(order_id="902-1")
     rdt_req = mock.by_path("/restrictedDataToken")[0]
     assert json.loads(rdt_req.content) == {"restrictedResources": [{"method": "GET", "path": "/orders/v0/orders/902-1/address"}]}
     assert rdt_req.headers["x-amz-access-token"] == "Atza|rt|1"
     assert mock.by_path("/address")[0].headers["x-amz-access-token"] == "RDT|GET|/orders/v0/orders/902-1/address|"
     # cached per resource
-    client.orders.v0.get_order_address(order_id="902-1")
+    client.orders_v0.list_order_address(order_id="902-1")
     assert mock.rdt_calls == 1
     # dataElements only when requested
-    client.orders.v0.get_orders(marketplace_ids=["ATVPDKIKX0DER"], created_after="2020-01-01T00:00:00Z")
+    client.orders_v0.list_orders(marketplace_ids=["ATVPDKIKX0DER"], created_after="2020-01-01T00:00:00Z")
     assert mock.by_path("/orders/v0/orders")[-1].headers["x-amz-access-token"] == "Atza|rt|1"
-    client.orders.v0.get_orders(
+    client.orders_v0.list_orders(
         marketplace_ids=["ATVPDKIKX0DER"], created_after="2020-01-01T00:00:00Z", request_options=with_rdt("buyerInfo", "shippingAddress")
     )
     assert mock.rdt_calls == 2
@@ -306,13 +279,13 @@ def test_rdt_flow_sync_and_async() -> None:
     ]
     assert mock.by_path("/orders/v0/orders")[-1].headers["x-amz-access-token"].startswith("RDT|GET|/orders/v0/orders|buyerInfo")
     # explicit token header wins
-    client.orders.v0.get_order(order_id="9", request_options=RequestOptions(extra_headers={"x-amz-access-token": "MINE"}))
+    client.orders_v0.get_order(order_id="9", request_options=RequestOptions(extra_headers={"x-amz-access-token": "MINE"}))
     assert [r for r in mock.requests if r.url.path == "/orders/v0/orders/9"][0].headers["x-amz-access-token"] == "MINE"
 
     async def go() -> None:
         amock = AmazonMock()
         aclient = asp(amock)
-        await aclient.orders.v0.get_order_address(order_id="1")
+        await aclient.orders_v0.list_order_address(order_id="1")
         assert amock.rdt_calls == 1 and amock.by_path("/address")[0].headers["x-amz-access-token"].startswith("RDT|")
         await aclient.aclose()
 
@@ -323,7 +296,7 @@ def test_auth_failure_maps_to_authentication_error() -> None:
     mock = AmazonMock()
     mock.fail_token = True
     with pytest.raises(AuthenticationError) as ei:
-        sp(mock).orders.v0.get_order(order_id="1")
+        sp(mock).orders_v0.get_order(order_id="1")
     assert ei.value.status_code == 400 and ei.value.body["error"] == "invalid_grant"
 
 
@@ -340,11 +313,11 @@ def test_pluggable_token_store_and_no_credentials() -> None:
 
     store = DictStore()
     mock = AmazonMock()
-    sp(mock, token_store=store).orders.v0.get_order(order_id="1")
+    sp(mock, token_store=store).orders_v0.get_order(order_id="1")
     assert len(store.data) == 1 and next(iter(store.data)).startswith("lwa:refresh:")
     mock2 = AmazonMock()
     client = SellingPartner(transport=mock2.transport(), throttle=False, credentials=None)
-    client.orders.v0.get_order(order_id="1")
+    client.orders_v0.get_order(order_id="1")
     assert "x-amz-access-token" not in mock2.requests[0].headers and mock2.token_calls == 0
 
 
@@ -353,7 +326,7 @@ def test_credentials_from_env(monkeypatch: pytest.MonkeyPatch) -> None:
     monkeypatch.setenv("SELLING_PARTNER_APP_CLIENT_SECRET", "envsec")
     monkeypatch.setenv("SELLING_PARTNER_APP_REFRESH_TOKEN", "envrt")
     mock = AmazonMock()
-    SellingPartner(transport=mock.transport(), throttle=False).orders.v0.get_order(order_id="1")
+    SellingPartner(transport=mock.transport(), throttle=False).orders_v0.get_order(order_id="1")
     assert "refresh_token=envrt" in mock.by_path("/auth/o2/token")[0].content.decode()
 
 
@@ -371,18 +344,28 @@ def test_orders_pagination_walk_with_drop_params_and_throttle(monkeypatch: pytes
     monkeypatch.setattr(TokenBucket, "acquire", counting)
     mock = AmazonMock()
     client = sp(mock, throttle=True)
-    page = client.orders.v0.get_orders(marketplace_ids=["ATVPDKIKX0DER"], created_after="2020-01-01T00:00:00Z", max_results_per_page=1)
-    ids = [o.amazon_order_id for o in page]
+    ids = [
+        o.amazon_order_id
+        for o in client.orders_v0.iter_list_orders(
+            marketplace_ids=["ATVPDKIKX0DER"], created_after="2020-01-01T00:00:00Z", max_results_per_page=1
+        )
+    ]
     assert ids == ["902-1", "902-2", "902-3"]
     urls = [str(r.url) for r in mock.by_path("/orders/v0/orders")]
-    assert urls[0].endswith("?CreatedAfter=2020-01-01T00%3A00%3A00Z&MarketplaceIds=ATVPDKIKX0DER&MaxResultsPerPage=1")
-    assert urls[1].endswith("/orders/v0/orders?NextToken=n2") and urls[2].endswith("?NextToken=n3")
+    assert set(urls[0].split("?")[1].split("&")) == {
+        "MarketplaceIds=ATVPDKIKX0DER",
+        "CreatedAfter=2020-01-01T00%3A00%3A00Z",
+        "MaxResultsPerPage=1",
+    }
+    assert urls[1].endswith("/orders/v0/orders?NextToken=n2") and urls[2].endswith("?NextToken=n3")  # drop_params_on_next
     assert len(acquires) == 3  # one bucket acquire per page
 
     async def go() -> list[str]:
         aclient = asp(AmazonMock())
-        p = await aclient.orders.v0.get_orders(marketplace_ids=["ATVPDKIKX0DER"], created_after="2020-01-01T00:00:00Z")
-        return [o.amazon_order_id async for o in p]
+        return [
+            o.amazon_order_id
+            async for o in aclient.orders_v0.iter_list_orders(marketplace_ids=["ATVPDKIKX0DER"], created_after="2020-01-01T00:00:00Z")
+        ]
 
     assert asyncio.run(go()) == ["902-1", "902-2", "902-3"]
 
@@ -390,11 +373,16 @@ def test_orders_pagination_walk_with_drop_params_and_throttle(monkeypatch: pytes
 def test_raw_mode_and_request_id() -> None:
     mock = AmazonMock()
     client = sp(mock)
-    raw = client.orders.v0.get_orders(marketplace_ids=["ATVPDKIKX0DER"], created_after="2020-01-01T00:00:00Z", raw=True)
-    assert raw.raw["payload"]["Orders"][0]["AmazonOrderId"] == "902-1"
-    assert [o["AmazonOrderId"] for o in raw] == ["902-1", "902-2", "902-3"]
+    raw = client.orders_v0.list_orders(
+        marketplace_ids=["ATVPDKIKX0DER"], created_after="2020-01-01T00:00:00Z", request_options=RequestOptions(raw=True)
+    )
+    assert raw["payload"]["Orders"][0]["AmazonOrderId"] == "902-1"
+    orders = client.orders_v0.iter_list_orders(
+        marketplace_ids=["ATVPDKIKX0DER"], created_after="2020-01-01T00:00:00Z", request_options=RequestOptions(raw=True)
+    )
+    assert [o["AmazonOrderId"] for o in orders] == ["902-1", "902-2", "902-3"]
     with pytest.raises(Exception) as ei:
-        client.orders.v0.get_order_items(order_id="missing")
+        client.orders_v0.list_order_order_items(order_id="missing")
     assert getattr(ei.value, "request_id", None) == "req-404"
 
 
@@ -454,12 +442,13 @@ def test_notification_models() -> None:
     models = n = client.notifications_models
     assert "OrderChangeNotification" in models.names
     schema_dir = default_schema_dir() / "notifications"
+    assert set(models.names) == {p.stem for p in schema_dir.glob("*.json")}
     payload = json.loads((schema_dir / "OrderChangeNotification.json").read_text())["examples"][0]
     parsed = models.parse(json.dumps(payload).encode())
     assert type(parsed).__name__ == "OrderChangeNotification"
     assert parsed.payload.order_change_notification.amazon_order_id == payload["Payload"]["OrderChangeNotification"]["AmazonOrderId"]
     assert models.model("ListingsItemIssuesChangeNotification_2023-12-13").__name__ == "ListingsItemIssuesChangeNotification_2023_12_13"
-    # Known irregularities in the pinned schemas (see docs/PLAN.md §10):
+    # Known irregularities in the pinned schemas (see docs/PLAN.md):
     # - ListingsItemStatusChangeNotification.json's own example says LISTINGS_ITEM_STATUS_CHANGE
     #   while the schema enum says LISTINGS_ITEM_STATUS_CHANGED
     # - ShipmentTrackingMilestoneChangedNotification.json is a dangling "$ref": "#/definitions/Notification";
@@ -506,7 +495,7 @@ def test_sandbox_runner(api: str) -> None:
         return AsyncSellingPartner(transport=transport, sandbox=True, throttle=False, max_retries=0, credentials=None)
 
     outcomes = sandbox_tests.run(sync_factory, async_factory, [api])
-    failures = [f"{o.mode} {o.case.version}.{o.case.operation_id}[{o.case.status}]: {o.error}" for o in outcomes if not o.ok]
+    failures = [f"{o.mode} {o.case.module}.{o.case.operation_id}[{o.case.status}]: {o.error}" for o in outcomes if not o.ok]
     ops = {o.case.operation_id for o in outcomes}
     expected = {op_id for (a, _v), doc in load_documents().items() if a == api for op_id in raw_operations(doc)}
     assert ops == expected

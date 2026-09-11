@@ -2,10 +2,11 @@
 
 `amzn_selling_partner` is generated from the Amazon Selling Partner API models
 (git submodule `spec/selling-partner-api-models`) by `codegen/`, an emitter
-project built on [oagen](https://github.com/workos/oagen). This file records
-the decisions behind that and what the generator had to work around; the
-update procedure is in `UPDATING_SPECS.md`, the 0.1.x differences in
-`../MIGRATION.md`.
+project built on [oagen](https://github.com/workos/oagen) the way the WorkOS
+tutorial [How to build a custom SDK generator with oagen](https://workos.com/blog/build-a-custom-sdk-generator-with-oagen)
+describes. This file records the decisions and what the generator had to work
+around; the update procedure is in `UPDATING_SPECS.md`, the 0.1.x differences
+in `../MIGRATION.md`.
 
 ## Decisions
 
@@ -13,164 +14,143 @@ update procedure is in `UPDATING_SPECS.md`, the 0.1.x differences in
    `amzn_selling_partner`); Python 3.10+ (like the OpenAI SDK).
 2. Runtime dependencies are `httpx2` and `pydantic>=2` only; `aiohttp` is an
    extra. Schemas, validation and parsing use pydantic v2.
-3. LWA-only auth (refresh-token and `client_credentials` grants, Restricted
-   Data Tokens through the Tokens API); boto3 / SigV4 are gone.
-4. One resource class per spec file (Amazon's tags are inconsistent), one models
-   module per API version, `client.<api>.<version>` / `.latest` accessors.
-5. The generated code is committed and CI regenerates it from the submodule and
-   fails on drift; the wheel ships Python only.
-6. `date-time` → `datetime`, `date` → `date`, `byte`/`binary` → `bytes`, other
-   formats stay `str`; enums are `Literal` types; unknown fields are kept
-   (`extra="allow"`); models are frozen.
-7. Duplicate operationIds get the HTTP method appended
-   (`link_carrier_account` / `link_carrier_account_post`); a class that would
-   shadow a Python builtin gets a trailing underscore (`Warning_`).
+3. The SDK is generated, standalone, at build time (decision of 2026-09-11,
+   following the tutorial): `src/amzn_selling_partner/sdk/` holds everything
+   the emitter produces from the spec (client, HTTP client, errors, models,
+   resources) and is committed; CI regenerates it from the submodule and fails
+   on drift; the wheel ships Python only.
+4. Method names are oagen's resolved names (`list_orders`, `get_order`,
+   `create_feed`), not Amazon's operationIds; the 29 operations whose derived
+   names collide inside their API version are named through `operationHints`
+   in `codegen/oagen.config.ts`. `sdk.resources.OPERATIONS` maps operationIds
+   to methods, so the RDT / grantless tables, the sandbox runner and the 0.1.x
+   wrappers stay keyed by Amazon's names.
+5. One resource per API version (`client.orders_v0`, `client.orders` = newest),
+   one models package per API version (`sdk.models.orders_v0`), notification
+   payloads under `sdk.models.notifications.<schema file>`.
+6. LWA-only auth (refresh-token and `client_credentials` grants, Restricted
+   Data Tokens through the Tokens API); boto3 / SigV4 are gone. It is a plugin
+   (`plugins/amazon_spapi.py`) over the generated `Auth` hook, not generated.
+7. `date-time` → `datetime`, `date` → `date`, `byte`/`binary` → `bytes`, other
+   formats stay `str`; enums are `str` (or `int`) `Enum` classes as in the
+   tutorial; unknown fields are kept (`extra="allow"`); models are frozen.
 8. Rate limits come from the usage-plan tables in the operation descriptions
-   (never guessed); pagination is detected from `nextToken`-style parameters
-   with an override table for the operations the heuristic cannot settle;
-   restricted (RDT) and grantless operations are hand-maintained tables in
-   `plugins/_amazon/rdt.py` that still need checking against Amazon's Tokens
-   API guide.
+   (never guessed) and are generated into each call as `RateLimit(rate, burst)`;
+   pagination is detected from `nextToken`-style parameters with an override
+   table for the operations the heuristic cannot settle, and generated as
+   `iter_<method>` helpers; restricted (RDT) and grantless operations are
+   hand-maintained tables in `plugins/_amazon/rdt.py` that still need checking
+   against Amazon's Tokens API guide.
 
-## Design
-
-Decision (user, 2026-09-11): generate the SDK at build time with
-[oagen](https://github.com/workos/oagen) instead of loading specs at runtime.
-The runtime (`runtime/`, auth, throttling, pagination, documents, compat) stays
-hand-written; everything that used to be derived from the spec at import time
-is now generated Python committed to the repository.
-
-### What oagen does and does not give us (measured on the pinned models)
-
-* All 67 model files are Swagger 2.0; oagen refuses them, so `codegen/` converts
-  each one with `swagger2openapi` first (in memory, never committed).
-* The IR loses named non-object schemas: `OrderList` (array), `MarketplaceId`
-  (string) come out as models with no fields, `cleanSchemaName` singularises
-  the leading word (`OrdersList` → `OrderList`, colliding with the real
-  `OrderList`) and `toPascalCase` rewrites acronyms (`ASINIdentifier` →
-  `AsinIdentifier`). The `transformSpec` hook fixes all of it before
-  extraction: alias schemas are inlined at every `$ref` site, inline objects
-  are hoisted to named components (`<Parent><Field>`), and every component
-  name is replaced by an opaque token (`X17`) that survives cleaning;
-  `schemaNameTransform` maps the token back to the original name.
-* Field names keep the spec casing (`AmazonOrderId`), so the emitter can derive
-  `amazon_order_id` + `Field(alias="AmazonOrderId")` exactly as before.
-* oagen's pagination detector matches none of the 373 operations (it looks for
-  `next_token`-style names on the query side and `data`-style envelopes on the
-  response side). The emitter ports the heuristic from §9 and the Amazon
-  override table; the result is emitted as a `Pagination(...)` literal.
-* Rate-limit tables are parsed from operation descriptions at generation time
-  and emitted as `RateLimit(rate, burst)` literals; operations without a
-  parseable table are listed in `codegen/report.json`.
-* Services follow tags, which are inconsistent across the Amazon files
-  (`OrdersV0` + `Shipment`); the emitter flattens every service of a file into
-  one resource class per API version, as before.
-* `oagen extract`/`compat-*` ship a Python extractor, so future spec bumps can be
-  checked with `oagen diff` (spec-level) and `oagen compat-diff` (API-surface
-  level).
-
-### Layout
+## The pipeline
 
 ```
-codegen/                       the emitter project, laid out like `oagen init --lang python`
-  package.json                 @workos/oagen 0.30.2, swagger2openapi, yaml, vitest; `sdk:generate`, `sdk:parse`, `sdk:resolve`, `sdk:diff`, `typecheck`, `test`
-  oagen.config.ts              consumer config: the plugin bundle, this repo's spec policy, `emitterOptions.python` (CLI use)
-  src/plugin.ts, src/index.ts  plugin bundle / barrel
-  src/python/                  the `python` emitter (types, enums, models, resources, client, naming, pagination, ratelimits)
-  src/generate.ts              driver: every model file + notification schema, or `--spec <spec> --namespace <Client>` for one
-  src/convert.ts               Swagger 2.0 → OpenAPI 3.0 (+ known-bad $ref fixes)
-  src/transform.ts             alias inlining, inline-object hoisting, name protection
-  src/extras.ts                facts the IR drops, read from the converted document
-  src/amazon.ts                api naming, aliases, pagination overrides
-  test/                        vitest: emitter tests over tests/fixtures/tasks-api.yml + helper unit tests
-src/amzn_selling_partner/
-  models/<api>/<version>.py    pydantic v2 models, Literal enums (generated)
-  models/notifications/*.py    notification payload models (generated)
-  resources/<api>/<version>.py Op tables + Sync/Async resource classes (generated)
-  apis.py                      API registry, typed accessors, aliases (generated)
-  runtime/                     hand-written: base client, op/serializers, errors, pagination, throttle, auth, stream, transports
-  plugins/                     hand-written: Amazon regions, LWA/RDT auth, documents, sandbox runner support
-  client/, vendor/, reports/   compatibility package (unchanged API)
-tests/petstore_sdk/            the same emitter run over tests/fixtures (proves the core is API-agnostic)
-tests/fixtures/tasks-api.yml   the tutorial's spec: emitter test fixture and `sdk:parse`/`sdk:resolve`/`sdk:generate` example
+spec/selling-partner-api-models        67 Swagger 2.0 files + 23 notification JSON Schemas (submodule)
+        │  npm run spec:build           convert.ts (swagger2openapi, #ref/dangling-ref repairs), namespace components
+        ▼                               as <package>:<Name>, tag every operation with its API version, merge
+codegen/.build/openapi.json            one OpenAPI 3 document: 67 services, 373 operations, 2032 schemas
+        │  oagen generate               oagen.config.ts: transformSpec (alias inlining, inline-object hoisting,
+        ▼                               name protection), operationHints, mountRules, emitterOptions.python
+oagen IR (ApiSpec)                     services, operations, models, enums, sdk behavior
+        │  src/python/ (the emitter)    types.ts, enums.ts, models.ts, resources.ts, client.ts, http_client.ts, errors.ts
+        ▼
+src/amzn_selling_partner/sdk/          client.py, http_client.py, errors.py, models/, resources/  (+ .oagen-manifest.json)
 ```
 
-The wheel ships only Python; the spec submodule is a generator input. Enums
-are always `Literal` types.
+`npm run sdk:generate` runs the whole thing (Amazon into `sdk/`, the petstore
+fixtures into `tests/petstore_sdk`) and formats the output with ruff.
 
-### Following the WorkOS tutorial
+### Step 0: the spec build (`src/spec/build.ts`)
 
-[How to build a custom SDK generator with oagen](https://workos.com/blog/build-a-custom-sdk-generator-with-oagen)
-is the reference for the project, step by step: inspect the IR
-(`npm run sdk:parse`, `npm run sdk:resolve`), the `oagen init --lang python`
-scaffold (`src/python/index.ts` assembles the emitter from `types.ts`,
-`enums.ts`, `models.ts`, `resources.ts`, `client.ts`; `src/plugin.ts`
-registers it; `oagen.config.ts` spreads the plugin), an exhaustive type
-renderer (`mapTypeRef` fails the build when oagen adds a `TypeRef` kind, the
-same guarantee as the tutorial's `assertNever` switch), per-run settings
-through oagen's `emitterOptions` channel (`ctx.emitterOptions`),
-`npm run sdk:generate -- --spec <spec> --namespace <Client>` producing a
-working package, vitest tests over a fixture spec (the tutorial's own
-`tasks-api.yml`), and `npm run sdk:diff` for spec bumps. Where this project
-deliberately differs:
+oagen consumes one OpenAPI 3 document; Amazon ships 67 Swagger 2.0 files.
+The build converts each file with `swagger2openapi` (after repairing the
+`#ref` typo and the dangling references in the pinned models), renames its
+components to `<package>:<Name>` (`orders_v0:Order`) so equally named schemas
+of different API versions never collide, tags every operation with its API
+version (`OrdersV0`: the oagen service, hence the resource class) and merges
+everything. Notification JSON Schemas are wrapped into components under
+`notifications.<file stem>:<Name>`; `x-root-schemas` remembers their roots.
+Path collisions are an error (none in the pinned models).
 
-* Method names come from Amazon's `operationId`s (`getOrders` → `get_orders`)
-  instead of `ctx.resolvedOperations`: oagen's deriver renames 285 of 390
-  operations (`getOrders` → `list_orders`, `cancelInbound` →
-  `create_inbound_order_cancellation`) and collides 15 of them, and the RDT /
-  grantless tables and Amazon's documentation are keyed by `operationId`.
-* Models are pydantic v2 classes, not dataclasses, and enums are `Literal`
-  aliases, not `str, Enum` (decision 3); one module per API version rather
-  than one file per model, because a version has hundreds of models.
-* The HTTP client is not generated: retry, timeout and throttling live in the
-  hand-written, shared `runtime/` and the Amazon plugin rather than in a
-  generated `http_client.py` filled from `ctx.spec.sdk`.
-* The generator runs from source with `tsx` (`npm run sdk:generate`); nothing
-  is published, so there is no `tsup` build step.
+### The config (`oagen.config.ts`)
 
-### Generated code shape
+* `transformSpec`: the pre-IR fixes oagen needs for these files. Named
+  non-object schemas (`OrderList: array`, `MarketplaceId: string`, bare
+  `oneOf` unions) would become empty models: they are inlined at every `$ref`
+  site. Inline objects are hoisted to named components (`<Parent><Field>`).
+  Every component name is replaced by an opaque token (`X17`) because oagen's
+  `cleanSchemaName` singularises and re-cases names (`OrdersList` →
+  `OrderList`, `ASINIdentifier` → `AsinIdentifier`); `schemaNameTransform`
+  maps the token back.
+* `operationIdTransform`: identity (oagen would camelCase `getFeatureSKU`).
+* `operationHints`: the colliding derived names (`npm run sdk:resolve` shows
+  the table).
+* `mountRules`: oagen splits a service whose paths start with different
+  segments (`/products/...` and `/batches/...` of pricing v0); the rule mounts
+  both back on `ProductPricingV0`.
+* `emitterOptions.python`: `sdkBehavior` (retry on 408/429/5xx, 2 retries,
+  0.5 s initial delay, ×2, 8 s cap, 50 % jitter, 30 s timeout overridable with
+  `AMZN_SELLING_PARTNER_TIMEOUT`), `requestIdHeader`, `rateHintHeader`,
+  `greedyPathParams` (`resource` of the Uploads API), `serviceAliases`
+  (`invoices` → `invoices_api_model`, ...), `distribution`.
 
-* Models: `class Order(SpecModel)` with snake_case attributes and wire aliases,
-  `defer_build=True` so importing an API module costs class creation only.
-* Resources: one module-level `Op(...)` literal per operation (URL template,
-  parameter encoders, body kind, response/error model factories, rate limit,
-  pagination), and one method per operation on `OrdersV0` / `AsyncOrdersV0` with
-  an explicit keyword-only signature, so pyright and editors see the real types
-  without stubs. Methods build a kwargs dict and call the runtime `call`, the
-  same hot path as before.
-* `apis.py`: `class OrdersAPI` with `v0`, `v2026_01_01`, `latest`, `versions`
-  and lazy imports; `class APIs` mixin with one typed attribute per API and the
-  alias names; `Client`/`AsyncClient` mix it in.
-* Amazon RDT/grantless tables stay in Python (`plugins/_amazon/rdt.py`) and are
-  looked up by `(api, version, operationId)` from the auth hook.
+### The emitter (`src/python/`)
 
-### Regeneration and CI
+* `types.ts` – `TypeRef` → Python type, an exhaustive switch with `assertNever`.
+* `packages.ts` – where models and enums live: the `<package>:` prefix, or for
+  unprefixed names (single-spec runs, enums oagen synthesises for inline
+  parameter enums) the package of the service that uses them.
+* `enums.ts` – `class Status(str, Enum)` per package (`models/<pkg>/enums.py`).
+* `models.ts` – pydantic classes per package (`models/<pkg>/models.py`),
+  required fields first, snake_case attributes with wire aliases, one file per
+  package rather than per model so recursive references resolve inside one
+  module; `models/_base.py` (`SpecModel`), package `__init__` re-exports.
+* `resources.ts` – `resources/<pkg>.py`: `class OrdersV0Client` and
+  `AsyncOrdersV0Client`, one method per resolved operation (from
+  `ctx.resolvedOperations`) that builds `params`/`headers`/path explicitly and
+  calls `self._client.request(...)` with the response model, the error model,
+  the `RateLimit` and the operationId; `iter_<method>` for paginated
+  operations; `resources/__init__.py` with the `SERVICES` / `OPERATIONS`
+  registry.
+* `client.ts` – `client.py`: the `--namespace` class (`Client` /
+  `AsyncClient`) with one lazily created resource per service and a
+  latest-version alias per API.
+* `http_client.ts` – `http_client.py` from `ctx.spec.sdk`: retries, backoff,
+  timeout, per-operation token buckets, the `Auth` hook, request encoding,
+  response decoding, `paginate` / `apaginate`, the optional aiohttp transport.
+* `errors.ts` – `errors.py` from the error policy (`BadRequestError`, ...,
+  `RateLimitExceededError`, `ServerError`).
 
-```
-cd codegen && npm ci --ignore-scripts && npm run generate   # writes src/amzn_selling_partner/{models,resources,apis.py} and tests/petstore_sdk
-```
+The emitter is registered in `src/plugin.ts`; `oagen.config.ts` spreads the
+plugin. `npm run typecheck`, `npm test` (vitest over
+`tests/fixtures/tasks-api.yml`, the tutorial's spec, and the helper modules)
+and `npm run build` (tsup) work as in the scaffold.
 
-CI runs the generator on Node 22 and fails on `git diff --exit-code`, then the
-Python matrix (ruff, pyright strict over hand-written and generated code,
-pytest, smoke benchmark, wheel build). `docs/UPDATING_SPECS.md` describes the
-submodule bump → `oagen diff` → regenerate → review flow. (`--ignore-scripts`:
-oagen depends on tree-sitter grammars for its compat extractors; they are never
-imported by the generator, so their native builds are skipped.)
+### Hand-written (never generated)
 
-### Measured (Python 3.12)
+`plugins/amazon_spapi.py` (`SellingPartner(Client)` / `AsyncSellingPartner`:
+regions, credentials, LWA auth hook with RDT and grantless scopes, document
+helpers, notification registry), `plugins/_amazon/*`, the 0.1.x compatibility
+subpackages (`client/`, `reports/`, `vendor/`, `utils/`), `sandbox_tests.py`,
+`_examples.py`, `_naming.py`, `_compat.py`, `__init__.py`.
+
+### Known irregularities in the pinned models
+
+`B2bAnyOfferChangedNotification.json` spells a reference `#ref` (repaired),
+`ShipmentTrackingMilestoneChangedNotification.json` is a dangling
+`$ref` (becomes an empty model), `ListingsItemStatusChangeNotification.json`'s
+own example contradicts its enum, `linkCarrierAccount` (Shipping v2) is the
+operationId of two methods on one path (`OPERATIONS` keys the second one
+`...:PUT`), 70 of the 2034 embedded sandbox examples violate their own schemas.
+
+## Measured (Python 3.13, this container)
 
 | | |
 |---|---|
-| import one API version | 50 ms worst, 10 ms median (class creation only) |
-| import all 67 versions | 862 ms |
-| `SellingPartner()` + warm every adapter | 12 ms after the imports |
-| generated method vs hand-written httpx2 (`pytest benchmarks`, best of rounds) | 0.93 sync / 0.96 async |
-| wheel | 3.0 MB of Python, no spec files |
-| pyright strict | hand-written + generated code, 0 errors |
-
-Every API version imports lazily on first attribute access, so a process that
-touches two APIs pays for two modules; `preload()` imports everything.
-
-Benchmarks are a [pytest-benchmark](https://pytest-benchmark.readthedocs.io/)
-suite (`benchmarks/test_benchmarks.py`) over `httpx2.MockTransport`; CI runs
-it on every push and asserts the 1.10x ratio; there is no nightly job.
+| import one resource (its models included) | 46 ms worst, 9 ms median |
+| import all 67 resources | 742 ms |
+| `import amzn_selling_partner` + `SellingPartner()` | 177 ms |
+| generated method vs hand-written httpx2 call (`pytest benchmarks`, best of rounds) | 0.91 sync / 0.95 async |
+| wheel | 551 KB, 347 Python files |
+| pyright strict (hand-written + generated + tests/petstore_sdk) | 0 errors |
+| tests | 116 pytest + 28 vitest; sandbox runner 1964 / 2034 examples |

@@ -4,27 +4,26 @@ from __future__ import annotations
 
 import datetime
 import json
-from typing import Annotated, Literal
 
 import pytest
-from petstore_sdk.models.petstore import v2 as sw2
-from petstore_sdk.models.petstore import v3 as m
+from petstore_sdk.models import petstore_v2 as sw2
+from petstore_sdk.models import petstore_v3 as m
+from petstore_sdk.models._base import SpecModel, adapter_for
 from pydantic import BaseModel, TypeAdapter, ValidationError
-
-from amzn_selling_partner.runtime._models import SpecModel, adapter_for
 
 from .conftest import requires_amazon
 
 
 def test_object_model_fields_and_aliases() -> None:
     assert issubclass(m.Pet, SpecModel) and issubclass(m.Pet, BaseModel)
-    assert m.Pet.__module__ == "petstore_sdk.models.petstore.v3"
+    assert m.Pet.__module__ == "petstore_sdk.models.petstore_v3.models"
     fields = m.Pet.model_fields
     assert fields["created_at"].alias == "createdAt"
     assert fields["schema_"].alias == "schema"  # BaseModel attribute collision
     assert fields["id"].is_required() and not fields["tag"].is_required()
+    assert list(fields)[:2] == ["id", "name"]  # required fields first
     assert m.Pet.model_config["frozen"] and m.Pet.model_config["extra"] == "allow"
-    assert set(m.__all__) >= {"Pet", "NewPet", "Status", "Animal", "Node"}
+    assert set(m.__all__) >= {"Pet", "NewPet", "Status", "Node", "Dog", "Cat"}
 
 
 def test_decode_and_encode_roundtrip() -> None:
@@ -50,7 +49,7 @@ def test_decode_and_encode_roundtrip() -> None:
     assert pet.schema_ == "s"
     assert pet.extra == 5  # type: ignore[attr-defined]  # extra="allow"
     out = json.loads(pet.model_dump_json(by_alias=True, exclude_none=True))
-    assert out["createdAt"] == "2020-01-01T00:00:00Z" and out["photo"] == "aGVsbG8=" and out["schema"] == "s"
+    assert out["createdAt"] == "2020-01-01T00:00:00Z" and out["photo"] == "aGVsbG8=" and out["schema"] == "s" and out["status"] == "sold"
     assert "tag" not in out
     with pytest.raises(ValidationError):
         pet.name = "y"  # frozen
@@ -62,20 +61,23 @@ def test_populate_by_name() -> None:
     assert m.Pet(id=1, name="n", createdAt="2021-01-01T00:00:00Z").created_at.year == 2021  # type: ignore[call-arg, union-attr]
 
 
-def test_enum_literal() -> None:
+def test_enums_are_str_enums() -> None:
+    assert issubclass(m.Status, str) and [s.value for s in m.Status] == ["available", "pending", "sold"]
+    assert m.Status.SOLD == "sold" and m.Status("pending") is m.Status.PENDING
     with pytest.raises(ValidationError):
         m.Pet(id=1, name="n", status="unknown")  # type: ignore[arg-type]
-    assert m.Pet(id=1, name="n", status="pending").status == "pending"
-    assert m.Status == Literal["available", "pending", "sold"]
+    assert m.Pet(id=1, name="n", status="pending").status is m.Status.PENDING
+    assert m.Pet.model_fields["status"].annotation == m.Status | None
 
 
-def test_discriminated_union() -> None:
-    adapter = adapter_for(list[m.Animal])
+def test_union_of_variants() -> None:
+    # Animal is a bare oneOf in the spec: inlined as Dog | Cat wherever it is referenced
+    assert not hasattr(m, "Animal")
+    adapter = adapter_for(list[m.Dog | m.Cat])
     animals = adapter.validate_json(b'[{"kind":"dog","barks":true},{"kind":"cat","lives":9}]')
     assert [type(a).__name__ for a in animals] == ["Dog", "Cat"]
     with pytest.raises(ValidationError):
         adapter.validate_json(b'[{"kind":"bird"}]')
-    assert m.Animal == Annotated[m.Dog | m.Cat, m.Animal.__metadata__[0]]
 
 
 def test_nullable_and_null_variant() -> None:
@@ -101,7 +103,7 @@ def test_additional_properties_and_aliases() -> None:
 
 
 def test_swagger2_models() -> None:
-    # `Decimal` (string alias) and `PetList` (array alias) are inlined by the generator
+    # `Decimal` (string alias) and `PetList` (array alias) are inlined by the pre-IR transform
     assert sw2.Pet.model_fields["price"].annotation == str | None
     assert sw2.PetsPayload.model_fields["pets"].annotation == list[sw2.Pet]
     resp = TypeAdapter(sw2.GetPetsResponse).validate_json(
@@ -118,13 +120,20 @@ def test_import_builds_no_schema() -> None:
     assert m.Owner(name="o").name == "o"
 
 
+def test_package_reexports() -> None:
+    from petstore_sdk.models import petstore_v3
+
+    assert petstore_v3.Pet is m.Pet and petstore_v3.Status is m.Status
+    assert "Status" in petstore_v3.__all__ and "Pet" in petstore_v3.__all__
+
+
 @requires_amazon
 def test_amazon_orders_models() -> None:
-    from amzn_selling_partner.models.orders import v0
+    from amzn_selling_partner.sdk.models import orders_v0
 
-    assert v0.Order.model_fields["amazon_order_id"].alias == "AmazonOrderId"
-    order = v0.Order.model_validate(
+    assert orders_v0.Order.model_fields["amazon_order_id"].alias == "AmazonOrderId"
+    order = orders_v0.Order.model_validate(
         {"AmazonOrderId": "1", "PurchaseDate": "2020-01-01T00:00:00Z", "LastUpdateDate": "2020-01-01T00:00:00Z", "OrderStatus": "Shipped"}
     )
     assert order.order_status == "Shipped"
-    assert v0.OrdersList.model_fields["orders"].annotation == list[v0.Order]  # array alias inlined
+    assert orders_v0.OrdersList.model_fields["orders"].annotation == list[orders_v0.Order]  # array alias inlined

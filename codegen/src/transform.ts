@@ -36,7 +36,10 @@ function isObject(v: unknown): v is JsonObject {
 
 export function isAliasSchema(s: unknown): s is JsonObject {
   if (!isObject(s)) return false;
-  if (s.$ref || s.properties || s.allOf || s.oneOf || s.anyOf || s.enum) return false;
+  if (s.$ref || s.properties || s.allOf || s.enum) return false;
+  // a bare oneOf/anyOf component would become an empty model: inline it as a union
+  if ((Array.isArray(s.oneOf) || Array.isArray(s.anyOf)) && s.type === undefined) return true;
+  if (s.oneOf || s.anyOf) return false;
   if (s.type === 'object' || (s.type === undefined && s.additionalProperties !== undefined)) return true; // free-form or map
   return ['array', 'string', 'integer', 'number', 'boolean'].includes(String(s.type));
 }
@@ -123,8 +126,9 @@ export function transformSpec(doc: JsonObject, report?: TransformReport): JsonOb
   const schemas = liftInlineObjects(isObject(components.schemas) ? components.schemas : {});
   NAME_MAP.clear();
   const aliases: Record<string, JsonObject> = {};
-  const root = typeof doc['x-root-schema'] === 'string' ? doc['x-root-schema'] : undefined;
-  for (const [k, v] of Object.entries(schemas)) if (k !== root && isAliasSchema(v)) aliases[k] = v; // the root of a JSON-Schema document stays a model
+  const roots = new Set<string>(typeof doc['x-root-schema'] === 'string' ? [doc['x-root-schema']] : []);
+  if (Array.isArray(doc['x-root-schemas'])) for (const r of doc['x-root-schemas']) if (typeof r === 'string') roots.add(r);
+  for (const [k, v] of Object.entries(schemas)) if (!roots.has(k) && isAliasSchema(v)) aliases[k] = v; // the root of a JSON-Schema document stays a model
   report?.inlined.push(...Object.keys(aliases));
 
   const walk = (node: unknown, depth = 0): unknown => {

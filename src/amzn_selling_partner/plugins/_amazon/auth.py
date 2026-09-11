@@ -4,8 +4,8 @@
   grantless operations,
 * in-memory token cache with expiry and single-flight refresh
   (``threading.Lock`` / ``asyncio.Lock`` per cache key), pluggable store,
-* Restricted Data Tokens obtained through the Tokens API for operations marked
-  by the plugin (``annotations["rdt"]``).
+* Restricted Data Tokens obtained through the Tokens API for the operations
+  listed in ``rdt.py`` (keyed by Amazon's operationId).
 
 An explicit ``x-amz-access-token`` header on a request (e.g. an RDT obtained
 by the caller) is left untouched.
@@ -27,12 +27,13 @@ from urllib.parse import urlencode
 import httpx2
 from pydantic_core import from_json, to_json
 
-from ...runtime._errors import APIConnectionError, AuthenticationError
+from ..._naming import api_version_of
+from ...sdk.errors import APIConnectionError, AuthenticationError
 from .rdt import GRANTLESS, RestrictedOperation, restricted_for
 from .regions import LWA_TOKEN_URL
 
 if TYPE_CHECKING:
-    from ...runtime._op import Op
+    from ...sdk.http_client import RequestContext
 
 log = logging.getLogger("amzn_selling_partner.plugins.amazon.auth")
 
@@ -130,7 +131,7 @@ class _LWABase:
     # -- classification --------------------------------------------------------------
 
     @staticmethod
-    def classify(op: Op, request: httpx2.Request) -> tuple[str, tuple[str, ...]]:
+    def classify(ctx: RequestContext, request: httpx2.Request) -> tuple[str, tuple[str, ...]]:
         """Return ``("rdt", data_elements)``, ``("grantless", scopes)`` or ``("lwa", ())``.
 
         Operations marked as always-restricted get an RDT unconditionally.
@@ -138,10 +139,11 @@ class _LWABase:
         get one when the call opted in through ``RequestOptions(auth={"rdt":
         True | [elements]})`` (see ``with_rdt``).
         """
-        scopes = op.annotations.get("grantless_scopes") or GRANTLESS.get((op.api, op.operation_id))
+        api, version = api_version_of(ctx.service) or (ctx.service, "")
+        scopes = GRANTLESS.get((api, ctx.operation))
         if scopes:
             return "grantless", tuple(scopes)
-        rdt = op.annotations.get("rdt", restricted_for(op.api, op.version, op.operation_id))
+        rdt = restricted_for(api, version, ctx.operation)
         raw_hints = request.extensions.get("auth_hints")
         hints: Mapping[str, Any] = cast(Mapping[str, Any], raw_hints) if isinstance(raw_hints, Mapping) else {}
         wanted: Any = hints.get("rdt")
@@ -278,10 +280,10 @@ class LWAAuth(_LWABase):
             self.store.set(key, token)
             return token.access_token
 
-    def before_request(self, op: Op, request: httpx2.Request) -> Mapping[str, str] | None:
+    def before_request(self, ctx: RequestContext, request: httpx2.Request) -> Mapping[str, str] | None:
         if ACCESS_TOKEN_HEADER in request.headers:
             return None
-        kind, extra = self.classify(op, request)
+        kind, extra = self.classify(ctx, request)
         if kind == "rdt":
             token = self.restricted_data_token(request.method, request.url.path, extra)
         elif kind == "grantless":
@@ -350,10 +352,10 @@ class AsyncLWAAuth(_LWABase):
             self.store.set(key, token)
             return token.access_token
 
-    async def before_request(self, op: Op, request: httpx2.Request) -> Mapping[str, str] | None:
+    async def before_request(self, ctx: RequestContext, request: httpx2.Request) -> Mapping[str, str] | None:
         if ACCESS_TOKEN_HEADER in request.headers:
             return None
-        kind, extra = self.classify(op, request)
+        kind, extra = self.classify(ctx, request)
         if kind == "rdt":
             token = await self.restricted_data_token(request.method, request.url.path, extra)
         elif kind == "grantless":

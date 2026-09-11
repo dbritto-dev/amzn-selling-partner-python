@@ -2,28 +2,30 @@ import { describe, expect, it } from 'vitest';
 import { emit, TASKS_SPEC } from './helpers.js';
 
 describe('generateModels', () => {
-  it('generates pydantic models and Literal enums from the tasks spec', async () => {
-    const files = await emit(TASKS_SPEC, 'tasks', 'v1');
-    const content = files['models/tasks/v1.py'] ?? '';
-    expect(content).not.toBe('');
-    expect(content).toContain('TaskStatus: TypeAlias = Literal["pending", "in_progress", "done", "cancelled"]');
+  it('generates one pydantic models module per package, required fields first', async () => {
+    const files = await emit(TASKS_SPEC);
+    const content = files['models/tasks/models.py'] ?? '';
     expect(content).toContain('class Task(SpecModel):');
-    expect(content).toContain('    id: str\n');
-    expect(content).toContain('    title: str\n');
-    expect(content).toContain('    status: TaskStatus\n');
-    expect(content).toContain('    assignee_id: str | None = None');
-    expect(content).toContain('    created_at: datetime.datetime | None = None');
-    expect(content).toContain('class TaskList(SpecModel):\n    data: list[Task]\n    after: str | None = None');
+    expect(content).toContain('    id: str\n    title: str\n    status: TaskStatus\n    assignee_id: str | None = None\n    created_at: datetime.datetime | None = None');
+    expect(content).toContain('class TaskList(SpecModel):\n    data: list[Task]\n    after: str | None = None\n    before: str | None = None');
     expect(content).toContain('class CreateTaskInput(SpecModel):\n    title: str\n    assignee_id: str | None = None');
-    expect(content).toContain('class UpdateTaskInput(SpecModel):\n    title: str | None = None');
-    // required fields precede optional ones inside a class
-    const task = content.slice(content.indexOf('class Task(SpecModel):'), content.indexOf('class TaskList(SpecModel):'));
-    expect(task.indexOf('    id: str')).toBeLessThan(task.indexOf('    assignee_id: str | None'));
-    expect(content).toMatch(/__all__ = \[\n    "CreateTaskInput",\n    "Task",\n    "TaskList",\n    "TaskStatus",\n    "UpdateTaskInput",\n\]/);
+    expect(content).toContain('from .enums import TaskStatus');
+    expect(content).toContain('from .._base import SpecModel');
+    expect(content).toMatch(/__all__ = \[\n    "CreateTaskInput",\n    "Task",\n    "TaskList",\n    "UpdateTaskInput",\n\]/);
+    expect(files['models/_base.py']).toContain('class SpecModel(BaseModel):');
   });
 
-  it('adds wire aliases only when the python name differs', async () => {
-    const files = await emit(TASKS_SPEC, 'tasks', 'v1');
-    expect(files['models/tasks/v1.py']).not.toContain('Field(');
+  it('re-exports models and enums from the package __init__', async () => {
+    const files = await emit(TASKS_SPEC);
+    const init = files['models/tasks/__init__.py'] ?? '';
+    expect(init).toContain('from .enums import TaskStatus');
+    expect(init).toContain('from .models import CreateTaskInput, Task, TaskList, UpdateTaskInput');
+    expect(init).toMatch(/__all__ = \[\n    "CreateTaskInput",\n    "Task",\n    "TaskList",\n    "TaskStatus",\n    "UpdateTaskInput",\n\]/);
+    expect(files['models/__init__.py']).toContain('Packages: tasks.');
+  });
+
+  it('uses wire aliases only when the python name differs', async () => {
+    const files = await emit(TASKS_SPEC);
+    expect(files['models/tasks/models.py']).not.toContain('Field(');
   });
 });

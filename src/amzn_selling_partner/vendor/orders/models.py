@@ -110,7 +110,7 @@ def namespace() -> Any:
     """The generated models module for ``vendor_orders``."""
     import importlib
 
-    return importlib.import_module("amzn_selling_partner.models.vendor_orders.v1")
+    return importlib.import_module("amzn_selling_partner.sdk.models.vendor_orders_v1")
 
 
 def model(name: str) -> Any:

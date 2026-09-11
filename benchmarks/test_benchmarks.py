@@ -35,9 +35,11 @@ sys.path.insert(0, str(ROOT / "src"))
 sys.path.insert(0, str(ROOT / "tests"))  # the generated petstore package (codegen/)
 
 from petstore_sdk.client import AsyncClient, Client  # noqa: E402
-from petstore_sdk.models.petstore.v3 import Pet  # noqa: E402
+from petstore_sdk.http_client import RequestOptions  # noqa: E402
+from petstore_sdk.models._base import adapter_for  # noqa: E402
+from petstore_sdk.models.petstore_v3 import Pet, PetList  # noqa: E402
 
-BASE = "http://bench.invalid/v1"
+BASE = "http://bench.invalid"
 PET = b'{"id": 1, "name": "rex", "tag": "dog", "status": "available", "tags": ["a", "b"], "createdAt": "2024-01-01T00:00:00Z"}'
 RATIO_LIMIT = 1.10
 
@@ -85,7 +87,7 @@ def sync_client() -> Any:
 @pytest.mark.benchmark(group="sync")
 def test_sync_transport_only(benchmark: Any, sync_client: Any) -> None:
     http = sync_client.http_client
-    benchmark(lambda: http.get(f"{BASE}/pets/1").content)
+    benchmark(lambda: http.get(f"{BASE}/v3/pets/1").content)
     _record(benchmark, "sync/transport_only")
 
 
@@ -94,7 +96,7 @@ def test_sync_hand_written(benchmark: Any, sync_client: Any) -> None:
     http = sync_client.http_client
 
     def hand_written(pet_id: int) -> Pet:
-        request = http.build_request("GET", f"{BASE}/pets/{pet_id}", headers={"Accept": "application/json"})
+        request = http.build_request("GET", f"{BASE}/v3/pets/{pet_id}", headers={"Accept": "application/json"})
         response = http.send(request)
         if response.status_code >= 400:
             raise RuntimeError(response.status_code)
@@ -106,15 +108,16 @@ def test_sync_hand_written(benchmark: Any, sync_client: Any) -> None:
 
 @pytest.mark.benchmark(group="sync")
 def test_sync_generated_method(benchmark: Any, sync_client: Any) -> None:
-    api = sync_client.petstore.v3
+    api = sync_client.petstore_v3
     assert benchmark(lambda: api.get_pet(pet_id=1)).id == 1
     _record(benchmark, "sync/generated")
 
 
 @pytest.mark.benchmark(group="sync")
 def test_sync_generated_method_raw(benchmark: Any, sync_client: Any) -> None:
-    api = sync_client.petstore.v3
-    assert benchmark(lambda: api.get_pet(pet_id=1, raw=True))["id"] == 1
+    api = sync_client.petstore_v3
+    raw = RequestOptions(raw=True)
+    assert benchmark(lambda: api.get_pet(pet_id=1, request_options=raw))["id"] == 1
     _record(benchmark, "sync/generated_raw")
 
 
@@ -144,7 +147,7 @@ def test_async_transport_only(benchmark: Any, loop: Any, async_client: Any) -> N
     http = async_client.http_client
 
     async def go() -> bytes:
-        return (await http.get(f"{BASE}/pets/1")).content
+        return (await http.get(f"{BASE}/v3/pets/1")).content
 
     benchmark(_run(loop, go))
     _record(benchmark, "async/transport_only")
@@ -155,7 +158,7 @@ def test_async_hand_written(benchmark: Any, loop: Any, async_client: Any) -> Non
     http = async_client.http_client
 
     async def hand_written() -> Pet:
-        request = http.build_request("GET", f"{BASE}/pets/1", headers={"Accept": "application/json"})
+        request = http.build_request("GET", f"{BASE}/v3/pets/1", headers={"Accept": "application/json"})
         response = await http.send(request)
         if response.status_code >= 400:
             raise RuntimeError(response.status_code)
@@ -167,7 +170,7 @@ def test_async_hand_written(benchmark: Any, loop: Any, async_client: Any) -> Non
 
 @pytest.mark.benchmark(group="async")
 def test_async_generated_method(benchmark: Any, loop: Any, async_client: Any) -> None:
-    api = async_client.petstore.v3
+    api = async_client.petstore_v3
     assert benchmark(_run(loop, lambda: api.get_pet(pet_id=1))).id == 1
     _record(benchmark, "async/generated")
 
@@ -178,7 +181,7 @@ def test_async_generated_method(benchmark: Any, loop: Any, async_client: Any) ->
 @pytest.mark.benchmark(group="decode")
 @pytest.mark.parametrize("size", [100_000, 1_000_000], ids=["100KB", "1MB"])
 def test_decode_models(benchmark: Any, sync_client: Any, size: int) -> None:
-    adapter = sync_client.petstore.v3.operation("listPets").default_decoder.adapter
+    adapter = adapter_for(PetList)
     body = pet_list(size)
     benchmark.extra_info["bytes"] = len(body)
     assert benchmark(lambda: adapter.validate_json(body)).items

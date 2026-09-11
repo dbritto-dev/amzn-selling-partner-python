@@ -39,7 +39,8 @@ test('alias schemas are inlined and every remaining component is guarded', () =>
   for (const [k, v] of Object.entries(raw)) schemas[schemaNameTransform(k)] = v;
   const ref = (r: string): string => schemaNameTransform(r.slice('#/components/schemas/'.length));
   assert.ok(Object.keys(raw).every((k) => new RegExp(`^${NAME_GUARD}\\d+$`).test(k)));
-  assert.deepEqual(Object.keys(schemas).sort(), ['Animal', 'Order', 'OrdersList', 'OrdersListMeta']);
+  // Animal (a bare oneOf) is an alias too: inlined at its references as a union
+  assert.deepEqual(Object.keys(schemas).sort(), ['Order', 'OrdersList', 'OrdersListMeta']);
   const orders = (schemas.OrdersList!.properties as Record<string, Record<string, unknown>>).Orders!;
   assert.equal(orders.type, 'array');
   assert.equal(ref((orders.items as Record<string, string>).$ref!), 'Order');
@@ -47,8 +48,6 @@ test('alias schemas are inlined and every remaining component is guarded', () =>
   const attrs = (schemas.OrdersList!.properties as Record<string, Record<string, unknown>>).Attributes!;
   assert.deepEqual(attrs, { type: 'object', additionalProperties: { type: 'string' } });
   assert.deepEqual((schemas.Order!.properties as Record<string, unknown>).Id, { type: 'string', description: 'id' });
-  const disc = schemas.Animal!.discriminator as { mapping: Record<string, string> };
-  assert.equal(ref(disc.mapping.o!), 'Order');
   const resp = (out.paths['/orders'].get.responses['200'].content['application/json'].schema as Record<string, string>).$ref!;
   assert.equal(ref(resp), 'OrdersList');
   assert.equal(schemaNameTransform('Unknown'), 'Unknown');

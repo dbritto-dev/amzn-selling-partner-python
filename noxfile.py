@@ -27,7 +27,7 @@ def type_check(session: nox.Session) -> None:
 
 @nox.session
 def codegen(session: nox.Session) -> None:
-    """Regenerate src/amzn_selling_partner/{models,resources,apis.py} and tests/petstore_sdk (needs Node 22)."""
+    """Regenerate src/amzn_selling_partner/sdk and tests/petstore_sdk with oagen (needs Node 22)."""
     session.install("-e", ".[dev]")
     session.chdir("codegen")
     session.run("npm", "ci", "--ignore-scripts", external=True, silent=True)

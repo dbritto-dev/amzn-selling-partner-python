@@ -1,30 +1,28 @@
 import { describe, expect, it } from 'vitest';
-import { compareVersions } from '../src/amazon.js';
-import { generateClient, renderClientModule } from '../src/python/client.js';
+import { latestAliases } from '../src/python/client.js';
+import { emit, TASKS_SPEC } from './helpers.js';
 
 describe('generateClient', () => {
-  it('renders apis.py with one accessor per API version and the client classes', () => {
-    const apis = generateClient({
-      packageName: 'sdk',
-      runtimePackage: 'amzn_selling_partner',
-      entries: [
-        { api: 'tasks', version: 'v1', title: 'Tasks API', operations: 5 },
-        { api: 'tasks', version: 'v2', title: 'Tasks API', operations: 6 },
-      ],
-      aliases: { todo: 'tasks' },
-      compareVersions,
-    });
-    expect(apis.path).toBe('apis.py');
-    expect(apis.content).toContain('class TasksAPI(APIVersionsBase):');
-    expect(apis.content).toContain('def v1(self) -> TasksV1:');
-    expect(apis.content).toContain('def v2(self) -> TasksV2:');
-    expect(apis.content).toContain('def latest(self) -> TasksV2:');
-    expect(apis.content).toContain('class APIs(SyncAPIsBase):');
-    expect(apis.content).toContain('class AsyncAPIs(AsyncAPIsBase):');
-    expect(apis.content).toMatch(/def todo\(self\)/);
-    const client = renderClientModule({ packageName: 'sdk', runtimePackage: 'amzn_selling_partner', clientName: 'TasksClient' });
-    expect(client).toContain('class TasksClient(SyncAPIClient, APIs):');
-    expect(client).toContain('class AsyncTasksClient(AsyncAPIClient, AsyncAPIs):');
-    expect(client).toContain('_package = "sdk"');
+  it('renders the namespace class with one lazy resource per service', async () => {
+    const files = await emit(TASKS_SPEC, 'TasksClient');
+    const content = files['client.py'] ?? '';
+    expect(content).toContain('class TasksClient:');
+    expect(content).toContain('class AsyncTasksClient:');
+    expect(content).toContain('base_url: str = "https://api.tasks.example.com",');
+    expect(content).toContain('self._http = HttpClient(');
+    expect(content).toContain('    @cached_property\n    def tasks(self) -> TasksClient:\n        from .resources.tasks import TasksClient\n\n        return TasksClient(self._http)');
+    expect(content).toContain('    from .resources.tasks import AsyncTasksClient, TasksClient');
+    expect(content).toContain('__all__ = ["AsyncTasksClient", "TasksClient"]');
+  });
+
+  it('adds a latest-version alias per API and the configured aliases', () => {
+    const aliases = latestAliases(['orders_v0', 'orders_v2026_01_01', 'shipping_v1', 'shipping_v2', 'sellers_v1', 'invoices_api_model_v2024_06_19'], { invoices: 'invoices_api_model', sellers: 'sellers_v1' });
+    expect([...aliases.entries()]).toEqual([
+      ['invoices', 'invoices_api_model_v2024_06_19'],
+      ['invoices_api_model', 'invoices_api_model_v2024_06_19'],
+      ['orders', 'orders_v2026_01_01'],
+      ['sellers', 'sellers_v1'],
+      ['shipping', 'shipping_v2'],
+    ]);
   });
 });

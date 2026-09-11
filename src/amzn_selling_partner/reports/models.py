@@ -98,7 +98,7 @@ def namespace() -> Any:
     """The generated models module for ``reports``."""
     import importlib
 
-    return importlib.import_module("amzn_selling_partner.models.reports.v2021_06_30")
+    return importlib.import_module("amzn_selling_partner.sdk.models.reports_v2021_06_30")
 
 
 def model(name: str) -> Any:

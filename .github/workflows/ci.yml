@@ -93,4 +93,4 @@ jobs:
       - name: Wheel contains the generated APIs
         run: |
           uv build --wheel
-          uv run python -c "import glob, zipfile; n = [x for x in zipfile.ZipFile(glob.glob('dist/*.whl')[0]).namelist() if x.startswith('amzn_selling_partner/resources/') and x.endswith('.py')]; assert len(n) > 60, n; print(len(n), 'resource modules in wheel')"
+          uv run python -c "import glob, zipfile; n = [x for x in zipfile.ZipFile(glob.glob('dist/*.whl')[0]).namelist() if x.startswith('amzn_selling_partner/sdk/resources/') and x.endswith('.py')]; assert len(n) > 60, n; print(len(n), 'resource modules in wheel')"
