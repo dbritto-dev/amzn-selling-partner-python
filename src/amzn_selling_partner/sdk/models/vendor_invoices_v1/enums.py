@@ -15,6 +15,8 @@ class AdditionalDetailsType(str, Enum):
     OCR = "OCR"
     CARTON_COUNT = "CartonCount"
 
+    __str__ = str.__str__
+
 
 class AllowanceDetailsType(str, Enum):
     DISCOUNT = "Discount"
@@ -23,6 +25,8 @@ class AllowanceDetailsType(str, Enum):
     PROMOTIONAL = "Promotional"
     UNSALEABLE_MERCHANDISE = "UnsaleableMerchandise"
     SPECIAL = "Special"
+
+    __str__ = str.__str__
 
 
 class ChargeDetailsType(str, Enum):
@@ -38,15 +42,21 @@ class ChargeDetailsType(str, Enum):
     ENVIRONMENTAL_PROTECTION_SERVICE = "EnvironmentalProtectionService"
     TAX_COLLECTED_AT_SOURCE = "TaxCollectedAtSource"
 
+    __str__ = str.__str__
+
 
 class InvoiceInvoiceType(str, Enum):
     INVOICE = "Invoice"
     CREDIT_NOTE = "CreditNote"
 
+    __str__ = str.__str__
+
 
 class ItemQuantityUnitOfMeasure(str, Enum):
     CASES = "Cases"
     EACHES = "Eaches"
+
+    __str__ = str.__str__
 
 
 class NetCostUnitOfMeasure(str, Enum):
@@ -54,6 +64,8 @@ class NetCostUnitOfMeasure(str, Enum):
     OUNCES = "OUNCES"
     GRAMS = "GRAMS"
     KILOGRAMS = "KILOGRAMS"
+
+    __str__ = str.__str__
 
 
 class PaymentTermsType(str, Enum):
@@ -63,6 +75,8 @@ class PaymentTermsType(str, Enum):
     PROXIMO = "Proximo"
     PAYMENT_DUE_UPON_RECEIPT_OF_INVOICE = "PaymentDueUponReceiptOfInvoice"
     LETTEROF_CREDIT = "LetterofCredit"
+
+    __str__ = str.__str__
 
 
 class TaxDetailsTaxType(str, Enum):
@@ -81,10 +95,14 @@ class TaxDetailsTaxType(str, Enum):
     MUTUALLY_DEFINED = "MutuallyDefined"
     DOMESTIC_VAT = "DomesticVAT"
 
+    __str__ = str.__str__
+
 
 class TaxRegistrationDetailsTaxRegistrationType(str, Enum):
     VAT = "VAT"
     GST = "GST"
+
+    __str__ = str.__str__
 
 
 class TotalWeightUnitOfMeasure(str, Enum):
@@ -92,6 +110,8 @@ class TotalWeightUnitOfMeasure(str, Enum):
     OUNCES = "OUNCES"
     GRAMS = "GRAMS"
     KILOGRAMS = "KILOGRAMS"
+
+    __str__ = str.__str__
 
 
 __all__ = [

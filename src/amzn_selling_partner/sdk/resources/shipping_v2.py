@@ -10,24 +10,24 @@ from __future__ import annotations
 from collections.abc import Mapping
 from typing import Any
 
-from ..http_client import AsyncHttpClient, HttpClient, RateLimit, RequestOptions, joined, path_segment
+from .._http import AsyncHttpClient, HttpClient, RateLimit, RequestOptions, joined, path_segment
 from ..models import shipping_v2
 
 SERVICE = "shipping_v2"
 
 
-class ShippingV2Client:
+class ShippingV2Resource:
     """Synchronous ``ShippingV2`` resource."""
 
-    __slots__ = ("_client",)
+    __slots__ = ("_http",)
 
-    def __init__(self, client: HttpClient) -> None:
-        self._client = client
+    def __init__(self, http: HttpClient) -> None:
+        self._http = http
 
     def create_rate(
         self,
-        *,
         body: shipping_v2.GetRatesRequest | Mapping[str, Any],
+        *,
         x_amzn_shipping_business_id: shipping_v2.ShippingV2XAmznShippingBusinessId | str | None = None,
         request_options: RequestOptions | None = None,
     ) -> shipping_v2.GetRatesResponse:
@@ -44,7 +44,7 @@ class ShippingV2Client:
         POST /shipping/v2/shipments/rates
         """
         headers: dict[str, Any] = {"x-amzn-shipping-business-id": x_amzn_shipping_business_id}
-        return self._client.request(
+        return self._http.request(
             "POST",
             "/shipping/v2/shipments/rates",
             operation="getRates",
@@ -59,8 +59,8 @@ class ShippingV2Client:
 
     def create_direct_purchase(
         self,
-        *,
         body: shipping_v2.DirectPurchaseRequest | Mapping[str, Any],
+        *,
         x_amzn_idempotency_key: str | None = None,
         locale: str | None = None,
         x_amzn_shipping_business_id: shipping_v2.ShippingV2XAmznShippingBusinessId | str | None = None,
@@ -83,7 +83,7 @@ class ShippingV2Client:
             "locale": locale,
             "x-amzn-shipping-business-id": x_amzn_shipping_business_id,
         }
-        return self._client.request(
+        return self._http.request(
             "POST",
             "/shipping/v2/shipments/directPurchase",
             operation="directPurchaseShipment",
@@ -98,8 +98,8 @@ class ShippingV2Client:
 
     def create_shipment(
         self,
-        *,
         body: shipping_v2.PurchaseShipmentRequest | Mapping[str, Any],
+        *,
         x_amzn_idempotency_key: str | None = None,
         x_amzn_shipping_business_id: shipping_v2.ShippingV2XAmznShippingBusinessId | str | None = None,
         request_options: RequestOptions | None = None,
@@ -122,7 +122,7 @@ class ShippingV2Client:
             "x-amzn-IdempotencyKey": x_amzn_idempotency_key,
             "x-amzn-shipping-business-id": x_amzn_shipping_business_id,
         }
-        return self._client.request(
+        return self._http.request(
             "POST",
             "/shipping/v2/shipments",
             operation="purchaseShipment",
@@ -137,8 +137,8 @@ class ShippingV2Client:
 
     def create_one_click_shipment(
         self,
-        *,
         body: shipping_v2.OneClickShipmentRequest | Mapping[str, Any],
+        *,
         x_amzn_shipping_business_id: shipping_v2.ShippingV2XAmznShippingBusinessId | str | None = None,
         request_options: RequestOptions | None = None,
     ) -> shipping_v2.OneClickShipmentResponse:
@@ -155,7 +155,7 @@ class ShippingV2Client:
         POST /shipping/v2/oneClickShipment
         """
         headers: dict[str, Any] = {"x-amzn-shipping-business-id": x_amzn_shipping_business_id}
-        return self._client.request(
+        return self._http.request(
             "POST",
             "/shipping/v2/oneClickShipment",
             operation="oneClickShipment",
@@ -170,9 +170,9 @@ class ShippingV2Client:
 
     def list_tracking(
         self,
-        *,
         tracking_id: str,
         carrier_id: str,
+        *,
         x_amzn_shipping_business_id: shipping_v2.ShippingV2XAmznShippingBusinessId | str | None = None,
         request_options: RequestOptions | None = None,
     ) -> shipping_v2.GetTrackingResponse:
@@ -190,7 +190,7 @@ class ShippingV2Client:
         """
         params: dict[str, Any] = {"trackingId": tracking_id, "carrierId": carrier_id}
         headers: dict[str, Any] = {"x-amzn-shipping-business-id": x_amzn_shipping_business_id}
-        return self._client.request(
+        return self._http.request(
             "GET",
             "/shipping/v2/tracking",
             operation="getTracking",
@@ -205,9 +205,9 @@ class ShippingV2Client:
 
     def list_shipment_documents(
         self,
-        *,
         shipment_id: str,
         package_client_reference_id: str,
+        *,
         format: str | None = None,
         dpi: float | None = None,
         x_amzn_shipping_business_id: shipping_v2.ShippingV2XAmznShippingBusinessId | str | None = None,
@@ -227,7 +227,7 @@ class ShippingV2Client:
         """
         params: dict[str, Any] = {"packageClientReferenceId": package_client_reference_id, "format": format, "dpi": dpi}
         headers: dict[str, Any] = {"x-amzn-shipping-business-id": x_amzn_shipping_business_id}
-        return self._client.request(
+        return self._http.request(
             "GET",
             f"/shipping/v2/shipments/{path_segment(shipment_id)}/documents",
             operation="getShipmentDocuments",
@@ -242,8 +242,8 @@ class ShippingV2Client:
 
     def update_shipment_cancel(
         self,
-        *,
         shipment_id: str,
+        *,
         x_amzn_shipping_business_id: shipping_v2.ShippingV2XAmznShippingBusinessId | str | None = None,
         request_options: RequestOptions | None = None,
     ) -> shipping_v2.CancelShipmentResponse:
@@ -260,7 +260,7 @@ class ShippingV2Client:
         PUT /shipping/v2/shipments/{shipmentId}/cancel
         """
         headers: dict[str, Any] = {"x-amzn-shipping-business-id": x_amzn_shipping_business_id}
-        return self._client.request(
+        return self._http.request(
             "PUT",
             f"/shipping/v2/shipments/{path_segment(shipment_id)}/cancel",
             operation="cancelShipment",
@@ -274,9 +274,9 @@ class ShippingV2Client:
 
     def list_schema(
         self,
-        *,
         request_token: str,
         rate_id: str,
+        *,
         x_amzn_shipping_business_id: shipping_v2.ShippingV2XAmznShippingBusinessId | str | None = None,
         request_options: RequestOptions | None = None,
     ) -> shipping_v2.GetAdditionalInputsResponse:
@@ -294,7 +294,7 @@ class ShippingV2Client:
         """
         params: dict[str, Any] = {"requestToken": request_token, "rateId": rate_id}
         headers: dict[str, Any] = {"x-amzn-shipping-business-id": x_amzn_shipping_business_id}
-        return self._client.request(
+        return self._http.request(
             "GET",
             "/shipping/v2/shipments/additionalInputs/schema",
             operation="getAdditionalInputs",
@@ -326,7 +326,7 @@ class ShippingV2Client:
         GET /shipping/v2/carrierAccountFormInputs
         """
         headers: dict[str, Any] = {"x-amzn-shipping-business-id": x_amzn_shipping_business_id}
-        return self._client.request(
+        return self._http.request(
             "GET",
             "/shipping/v2/carrierAccountFormInputs",
             operation="getCarrierAccountFormInputs",
@@ -340,8 +340,8 @@ class ShippingV2Client:
 
     def update_carrier_accounts(
         self,
-        *,
         body: shipping_v2.GetCarrierAccountsRequest | Mapping[str, Any],
+        *,
         x_amzn_shipping_business_id: shipping_v2.ShippingV2XAmznShippingBusinessId | str | None = None,
         request_options: RequestOptions | None = None,
     ) -> shipping_v2.GetCarrierAccountsResponse:
@@ -358,7 +358,7 @@ class ShippingV2Client:
         PUT /shipping/v2/carrierAccounts
         """
         headers: dict[str, Any] = {"x-amzn-shipping-business-id": x_amzn_shipping_business_id}
-        return self._client.request(
+        return self._http.request(
             "PUT",
             "/shipping/v2/carrierAccounts",
             operation="getCarrierAccounts",
@@ -373,9 +373,9 @@ class ShippingV2Client:
 
     def create_carrier_account(
         self,
-        *,
         carrier_id: str,
         body: shipping_v2.LinkCarrierAccountRequest | Mapping[str, Any],
+        *,
         x_amzn_shipping_business_id: shipping_v2.ShippingV2XAmznShippingBusinessId | str | None = None,
         request_options: RequestOptions | None = None,
     ) -> shipping_v2.LinkCarrierAccountResponse:
@@ -392,7 +392,7 @@ class ShippingV2Client:
         POST /shipping/v2/carrierAccounts/{carrierId}
         """
         headers: dict[str, Any] = {"x-amzn-shipping-business-id": x_amzn_shipping_business_id}
-        return self._client.request(
+        return self._http.request(
             "POST",
             f"/shipping/v2/carrierAccounts/{path_segment(carrier_id)}",
             operation="linkCarrierAccount",
@@ -407,9 +407,9 @@ class ShippingV2Client:
 
     def update_carrier_account(
         self,
-        *,
         carrier_id: str,
         body: shipping_v2.LinkCarrierAccountRequest | Mapping[str, Any],
+        *,
         x_amzn_shipping_business_id: shipping_v2.ShippingV2XAmznShippingBusinessId | str | None = None,
         request_options: RequestOptions | None = None,
     ) -> shipping_v2.LinkCarrierAccountResponse:
@@ -426,7 +426,7 @@ class ShippingV2Client:
         PUT /shipping/v2/carrierAccounts/{carrierId}
         """
         headers: dict[str, Any] = {"x-amzn-shipping-business-id": x_amzn_shipping_business_id}
-        return self._client.request(
+        return self._http.request(
             "PUT",
             f"/shipping/v2/carrierAccounts/{path_segment(carrier_id)}",
             operation="linkCarrierAccount",
@@ -441,9 +441,9 @@ class ShippingV2Client:
 
     def update_carrier_account_unlink(
         self,
-        *,
         carrier_id: str,
         body: shipping_v2.UnlinkCarrierAccountRequest | Mapping[str, Any],
+        *,
         x_amzn_shipping_business_id: shipping_v2.ShippingV2XAmznShippingBusinessId | str | None = None,
         request_options: RequestOptions | None = None,
     ) -> shipping_v2.UnlinkCarrierAccountResponse:
@@ -460,7 +460,7 @@ class ShippingV2Client:
         PUT /shipping/v2/carrierAccounts/{carrierId}/unlink
         """
         headers: dict[str, Any] = {"x-amzn-shipping-business-id": x_amzn_shipping_business_id}
-        return self._client.request(
+        return self._http.request(
             "PUT",
             f"/shipping/v2/carrierAccounts/{path_segment(carrier_id)}/unlink",
             operation="unlinkCarrierAccount",
@@ -475,8 +475,8 @@ class ShippingV2Client:
 
     def create_collection_form(
         self,
-        *,
         body: shipping_v2.GenerateCollectionFormRequest | Mapping[str, Any],
+        *,
         x_amzn_idempotency_key: str | None = None,
         x_amzn_shipping_business_id: shipping_v2.ShippingV2XAmznShippingBusinessId | str | None = None,
         request_options: RequestOptions | None = None,
@@ -497,7 +497,7 @@ class ShippingV2Client:
             "x-amzn-IdempotencyKey": x_amzn_idempotency_key,
             "x-amzn-shipping-business-id": x_amzn_shipping_business_id,
         }
-        return self._client.request(
+        return self._http.request(
             "POST",
             "/shipping/v2/collectionForms",
             operation="generateCollectionForm",
@@ -512,8 +512,8 @@ class ShippingV2Client:
 
     def update_history(
         self,
-        *,
         body: shipping_v2.GetCollectionFormHistoryRequest | Mapping[str, Any],
+        *,
         x_amzn_shipping_business_id: shipping_v2.ShippingV2XAmznShippingBusinessId | str | None = None,
         request_options: RequestOptions | None = None,
     ) -> shipping_v2.GetCollectionFormHistoryResponse:
@@ -530,7 +530,7 @@ class ShippingV2Client:
         PUT /shipping/v2/collectionForms/history
         """
         headers: dict[str, Any] = {"x-amzn-shipping-business-id": x_amzn_shipping_business_id}
-        return self._client.request(
+        return self._http.request(
             "PUT",
             "/shipping/v2/collectionForms/history",
             operation="getCollectionFormHistory",
@@ -545,8 +545,8 @@ class ShippingV2Client:
 
     def update_unmanifested_shipments(
         self,
-        *,
         body: shipping_v2.GetUnmanifestedShipmentsRequest | Mapping[str, Any],
+        *,
         x_amzn_shipping_business_id: shipping_v2.ShippingV2XAmznShippingBusinessId | str | None = None,
         request_options: RequestOptions | None = None,
     ) -> shipping_v2.GetUnmanifestedShipmentsResponse:
@@ -564,7 +564,7 @@ class ShippingV2Client:
         PUT /shipping/v2/unmanifestedShipments
         """
         headers: dict[str, Any] = {"x-amzn-shipping-business-id": x_amzn_shipping_business_id}
-        return self._client.request(
+        return self._http.request(
             "PUT",
             "/shipping/v2/unmanifestedShipments",
             operation="getUnmanifestedShipments",
@@ -579,8 +579,8 @@ class ShippingV2Client:
 
     def get_collection_form(
         self,
-        *,
         collection_form_id: str,
+        *,
         x_amzn_shipping_business_id: shipping_v2.ShippingV2XAmznShippingBusinessId | str | None = None,
         request_options: RequestOptions | None = None,
     ) -> shipping_v2.GetCollectionFormResponse:
@@ -597,7 +597,7 @@ class ShippingV2Client:
         GET /shipping/v2/collectionForms/{collectionFormId}
         """
         headers: dict[str, Any] = {"x-amzn-shipping-business-id": x_amzn_shipping_business_id}
-        return self._client.request(
+        return self._http.request(
             "GET",
             f"/shipping/v2/collectionForms/{path_segment(collection_form_id)}",
             operation="getCollectionForm",
@@ -611,10 +611,10 @@ class ShippingV2Client:
 
     def list_access_points(
         self,
-        *,
         access_point_types: list[shipping_v2.ShippingV2AccessPointTypes],
         country_code: str,
         postal_code: str,
+        *,
         x_amzn_shipping_business_id: shipping_v2.ShippingV2XAmznShippingBusinessId | str | None = None,
         request_options: RequestOptions | None = None,
     ) -> shipping_v2.GetAccessPointsResponse:
@@ -636,7 +636,7 @@ class ShippingV2Client:
             "postalCode": postal_code,
         }
         headers: dict[str, Any] = {"x-amzn-shipping-business-id": x_amzn_shipping_business_id}
-        return self._client.request(
+        return self._http.request(
             "GET",
             "/shipping/v2/accessPoints",
             operation="getAccessPoints",
@@ -651,8 +651,8 @@ class ShippingV2Client:
 
     def create_ndr_feedback(
         self,
-        *,
         body: shipping_v2.SubmitNdrFeedbackRequest | Mapping[str, Any],
+        *,
         x_amzn_shipping_business_id: shipping_v2.ShippingV2XAmznShippingBusinessId | str | None = None,
         request_options: RequestOptions | None = None,
     ) -> None:
@@ -669,7 +669,7 @@ class ShippingV2Client:
         POST /shipping/v2/ndrFeedback
         """
         headers: dict[str, Any] = {"x-amzn-shipping-business-id": x_amzn_shipping_business_id}
-        return self._client.request(
+        return self._http.request(
             "POST",
             "/shipping/v2/ndrFeedback",
             operation="submitNdrFeedback",
@@ -683,8 +683,8 @@ class ShippingV2Client:
 
     def create_claim(
         self,
-        *,
         body: shipping_v2.CreateClaimRequest | Mapping[str, Any],
+        *,
         x_amzn_shipping_business_id: shipping_v2.ShippingV2XAmznShippingBusinessId | str | None = None,
         request_options: RequestOptions | None = None,
     ) -> shipping_v2.CreateClaimResponse:
@@ -701,7 +701,7 @@ class ShippingV2Client:
         POST /shipping/v2/claims
         """
         headers: dict[str, Any] = {"x-amzn-shipping-business-id": x_amzn_shipping_business_id}
-        return self._client.request(
+        return self._http.request(
             "POST",
             "/shipping/v2/claims",
             operation="createClaim",
@@ -715,18 +715,18 @@ class ShippingV2Client:
         )
 
 
-class AsyncShippingV2Client:
+class AsyncShippingV2Resource:
     """Asynchronous ``ShippingV2`` resource."""
 
-    __slots__ = ("_client",)
+    __slots__ = ("_http",)
 
-    def __init__(self, client: AsyncHttpClient) -> None:
-        self._client = client
+    def __init__(self, http: AsyncHttpClient) -> None:
+        self._http = http
 
     async def create_rate(
         self,
-        *,
         body: shipping_v2.GetRatesRequest | Mapping[str, Any],
+        *,
         x_amzn_shipping_business_id: shipping_v2.ShippingV2XAmznShippingBusinessId | str | None = None,
         request_options: RequestOptions | None = None,
     ) -> shipping_v2.GetRatesResponse:
@@ -743,7 +743,7 @@ class AsyncShippingV2Client:
         POST /shipping/v2/shipments/rates
         """
         headers: dict[str, Any] = {"x-amzn-shipping-business-id": x_amzn_shipping_business_id}
-        return await self._client.request(
+        return await self._http.request(
             "POST",
             "/shipping/v2/shipments/rates",
             operation="getRates",
@@ -758,8 +758,8 @@ class AsyncShippingV2Client:
 
     async def create_direct_purchase(
         self,
-        *,
         body: shipping_v2.DirectPurchaseRequest | Mapping[str, Any],
+        *,
         x_amzn_idempotency_key: str | None = None,
         locale: str | None = None,
         x_amzn_shipping_business_id: shipping_v2.ShippingV2XAmznShippingBusinessId | str | None = None,
@@ -782,7 +782,7 @@ class AsyncShippingV2Client:
             "locale": locale,
             "x-amzn-shipping-business-id": x_amzn_shipping_business_id,
         }
-        return await self._client.request(
+        return await self._http.request(
             "POST",
             "/shipping/v2/shipments/directPurchase",
             operation="directPurchaseShipment",
@@ -797,8 +797,8 @@ class AsyncShippingV2Client:
 
     async def create_shipment(
         self,
-        *,
         body: shipping_v2.PurchaseShipmentRequest | Mapping[str, Any],
+        *,
         x_amzn_idempotency_key: str | None = None,
         x_amzn_shipping_business_id: shipping_v2.ShippingV2XAmznShippingBusinessId | str | None = None,
         request_options: RequestOptions | None = None,
@@ -821,7 +821,7 @@ class AsyncShippingV2Client:
             "x-amzn-IdempotencyKey": x_amzn_idempotency_key,
             "x-amzn-shipping-business-id": x_amzn_shipping_business_id,
         }
-        return await self._client.request(
+        return await self._http.request(
             "POST",
             "/shipping/v2/shipments",
             operation="purchaseShipment",
@@ -836,8 +836,8 @@ class AsyncShippingV2Client:
 
     async def create_one_click_shipment(
         self,
-        *,
         body: shipping_v2.OneClickShipmentRequest | Mapping[str, Any],
+        *,
         x_amzn_shipping_business_id: shipping_v2.ShippingV2XAmznShippingBusinessId | str | None = None,
         request_options: RequestOptions | None = None,
     ) -> shipping_v2.OneClickShipmentResponse:
@@ -854,7 +854,7 @@ class AsyncShippingV2Client:
         POST /shipping/v2/oneClickShipment
         """
         headers: dict[str, Any] = {"x-amzn-shipping-business-id": x_amzn_shipping_business_id}
-        return await self._client.request(
+        return await self._http.request(
             "POST",
             "/shipping/v2/oneClickShipment",
             operation="oneClickShipment",
@@ -869,9 +869,9 @@ class AsyncShippingV2Client:
 
     async def list_tracking(
         self,
-        *,
         tracking_id: str,
         carrier_id: str,
+        *,
         x_amzn_shipping_business_id: shipping_v2.ShippingV2XAmznShippingBusinessId | str | None = None,
         request_options: RequestOptions | None = None,
     ) -> shipping_v2.GetTrackingResponse:
@@ -889,7 +889,7 @@ class AsyncShippingV2Client:
         """
         params: dict[str, Any] = {"trackingId": tracking_id, "carrierId": carrier_id}
         headers: dict[str, Any] = {"x-amzn-shipping-business-id": x_amzn_shipping_business_id}
-        return await self._client.request(
+        return await self._http.request(
             "GET",
             "/shipping/v2/tracking",
             operation="getTracking",
@@ -904,9 +904,9 @@ class AsyncShippingV2Client:
 
     async def list_shipment_documents(
         self,
-        *,
         shipment_id: str,
         package_client_reference_id: str,
+        *,
         format: str | None = None,
         dpi: float | None = None,
         x_amzn_shipping_business_id: shipping_v2.ShippingV2XAmznShippingBusinessId | str | None = None,
@@ -926,7 +926,7 @@ class AsyncShippingV2Client:
         """
         params: dict[str, Any] = {"packageClientReferenceId": package_client_reference_id, "format": format, "dpi": dpi}
         headers: dict[str, Any] = {"x-amzn-shipping-business-id": x_amzn_shipping_business_id}
-        return await self._client.request(
+        return await self._http.request(
             "GET",
             f"/shipping/v2/shipments/{path_segment(shipment_id)}/documents",
             operation="getShipmentDocuments",
@@ -941,8 +941,8 @@ class AsyncShippingV2Client:
 
     async def update_shipment_cancel(
         self,
-        *,
         shipment_id: str,
+        *,
         x_amzn_shipping_business_id: shipping_v2.ShippingV2XAmznShippingBusinessId | str | None = None,
         request_options: RequestOptions | None = None,
     ) -> shipping_v2.CancelShipmentResponse:
@@ -959,7 +959,7 @@ class AsyncShippingV2Client:
         PUT /shipping/v2/shipments/{shipmentId}/cancel
         """
         headers: dict[str, Any] = {"x-amzn-shipping-business-id": x_amzn_shipping_business_id}
-        return await self._client.request(
+        return await self._http.request(
             "PUT",
             f"/shipping/v2/shipments/{path_segment(shipment_id)}/cancel",
             operation="cancelShipment",
@@ -973,9 +973,9 @@ class AsyncShippingV2Client:
 
     async def list_schema(
         self,
-        *,
         request_token: str,
         rate_id: str,
+        *,
         x_amzn_shipping_business_id: shipping_v2.ShippingV2XAmznShippingBusinessId | str | None = None,
         request_options: RequestOptions | None = None,
     ) -> shipping_v2.GetAdditionalInputsResponse:
@@ -993,7 +993,7 @@ class AsyncShippingV2Client:
         """
         params: dict[str, Any] = {"requestToken": request_token, "rateId": rate_id}
         headers: dict[str, Any] = {"x-amzn-shipping-business-id": x_amzn_shipping_business_id}
-        return await self._client.request(
+        return await self._http.request(
             "GET",
             "/shipping/v2/shipments/additionalInputs/schema",
             operation="getAdditionalInputs",
@@ -1025,7 +1025,7 @@ class AsyncShippingV2Client:
         GET /shipping/v2/carrierAccountFormInputs
         """
         headers: dict[str, Any] = {"x-amzn-shipping-business-id": x_amzn_shipping_business_id}
-        return await self._client.request(
+        return await self._http.request(
             "GET",
             "/shipping/v2/carrierAccountFormInputs",
             operation="getCarrierAccountFormInputs",
@@ -1039,8 +1039,8 @@ class AsyncShippingV2Client:
 
     async def update_carrier_accounts(
         self,
-        *,
         body: shipping_v2.GetCarrierAccountsRequest | Mapping[str, Any],
+        *,
         x_amzn_shipping_business_id: shipping_v2.ShippingV2XAmznShippingBusinessId | str | None = None,
         request_options: RequestOptions | None = None,
     ) -> shipping_v2.GetCarrierAccountsResponse:
@@ -1057,7 +1057,7 @@ class AsyncShippingV2Client:
         PUT /shipping/v2/carrierAccounts
         """
         headers: dict[str, Any] = {"x-amzn-shipping-business-id": x_amzn_shipping_business_id}
-        return await self._client.request(
+        return await self._http.request(
             "PUT",
             "/shipping/v2/carrierAccounts",
             operation="getCarrierAccounts",
@@ -1072,9 +1072,9 @@ class AsyncShippingV2Client:
 
     async def create_carrier_account(
         self,
-        *,
         carrier_id: str,
         body: shipping_v2.LinkCarrierAccountRequest | Mapping[str, Any],
+        *,
         x_amzn_shipping_business_id: shipping_v2.ShippingV2XAmznShippingBusinessId | str | None = None,
         request_options: RequestOptions | None = None,
     ) -> shipping_v2.LinkCarrierAccountResponse:
@@ -1091,7 +1091,7 @@ class AsyncShippingV2Client:
         POST /shipping/v2/carrierAccounts/{carrierId}
         """
         headers: dict[str, Any] = {"x-amzn-shipping-business-id": x_amzn_shipping_business_id}
-        return await self._client.request(
+        return await self._http.request(
             "POST",
             f"/shipping/v2/carrierAccounts/{path_segment(carrier_id)}",
             operation="linkCarrierAccount",
@@ -1106,9 +1106,9 @@ class AsyncShippingV2Client:
 
     async def update_carrier_account(
         self,
-        *,
         carrier_id: str,
         body: shipping_v2.LinkCarrierAccountRequest | Mapping[str, Any],
+        *,
         x_amzn_shipping_business_id: shipping_v2.ShippingV2XAmznShippingBusinessId | str | None = None,
         request_options: RequestOptions | None = None,
     ) -> shipping_v2.LinkCarrierAccountResponse:
@@ -1125,7 +1125,7 @@ class AsyncShippingV2Client:
         PUT /shipping/v2/carrierAccounts/{carrierId}
         """
         headers: dict[str, Any] = {"x-amzn-shipping-business-id": x_amzn_shipping_business_id}
-        return await self._client.request(
+        return await self._http.request(
             "PUT",
             f"/shipping/v2/carrierAccounts/{path_segment(carrier_id)}",
             operation="linkCarrierAccount",
@@ -1140,9 +1140,9 @@ class AsyncShippingV2Client:
 
     async def update_carrier_account_unlink(
         self,
-        *,
         carrier_id: str,
         body: shipping_v2.UnlinkCarrierAccountRequest | Mapping[str, Any],
+        *,
         x_amzn_shipping_business_id: shipping_v2.ShippingV2XAmznShippingBusinessId | str | None = None,
         request_options: RequestOptions | None = None,
     ) -> shipping_v2.UnlinkCarrierAccountResponse:
@@ -1159,7 +1159,7 @@ class AsyncShippingV2Client:
         PUT /shipping/v2/carrierAccounts/{carrierId}/unlink
         """
         headers: dict[str, Any] = {"x-amzn-shipping-business-id": x_amzn_shipping_business_id}
-        return await self._client.request(
+        return await self._http.request(
             "PUT",
             f"/shipping/v2/carrierAccounts/{path_segment(carrier_id)}/unlink",
             operation="unlinkCarrierAccount",
@@ -1174,8 +1174,8 @@ class AsyncShippingV2Client:
 
     async def create_collection_form(
         self,
-        *,
         body: shipping_v2.GenerateCollectionFormRequest | Mapping[str, Any],
+        *,
         x_amzn_idempotency_key: str | None = None,
         x_amzn_shipping_business_id: shipping_v2.ShippingV2XAmznShippingBusinessId | str | None = None,
         request_options: RequestOptions | None = None,
@@ -1196,7 +1196,7 @@ class AsyncShippingV2Client:
             "x-amzn-IdempotencyKey": x_amzn_idempotency_key,
             "x-amzn-shipping-business-id": x_amzn_shipping_business_id,
         }
-        return await self._client.request(
+        return await self._http.request(
             "POST",
             "/shipping/v2/collectionForms",
             operation="generateCollectionForm",
@@ -1211,8 +1211,8 @@ class AsyncShippingV2Client:
 
     async def update_history(
         self,
-        *,
         body: shipping_v2.GetCollectionFormHistoryRequest | Mapping[str, Any],
+        *,
         x_amzn_shipping_business_id: shipping_v2.ShippingV2XAmznShippingBusinessId | str | None = None,
         request_options: RequestOptions | None = None,
     ) -> shipping_v2.GetCollectionFormHistoryResponse:
@@ -1229,7 +1229,7 @@ class AsyncShippingV2Client:
         PUT /shipping/v2/collectionForms/history
         """
         headers: dict[str, Any] = {"x-amzn-shipping-business-id": x_amzn_shipping_business_id}
-        return await self._client.request(
+        return await self._http.request(
             "PUT",
             "/shipping/v2/collectionForms/history",
             operation="getCollectionFormHistory",
@@ -1244,8 +1244,8 @@ class AsyncShippingV2Client:
 
     async def update_unmanifested_shipments(
         self,
-        *,
         body: shipping_v2.GetUnmanifestedShipmentsRequest | Mapping[str, Any],
+        *,
         x_amzn_shipping_business_id: shipping_v2.ShippingV2XAmznShippingBusinessId | str | None = None,
         request_options: RequestOptions | None = None,
     ) -> shipping_v2.GetUnmanifestedShipmentsResponse:
@@ -1263,7 +1263,7 @@ class AsyncShippingV2Client:
         PUT /shipping/v2/unmanifestedShipments
         """
         headers: dict[str, Any] = {"x-amzn-shipping-business-id": x_amzn_shipping_business_id}
-        return await self._client.request(
+        return await self._http.request(
             "PUT",
             "/shipping/v2/unmanifestedShipments",
             operation="getUnmanifestedShipments",
@@ -1278,8 +1278,8 @@ class AsyncShippingV2Client:
 
     async def get_collection_form(
         self,
-        *,
         collection_form_id: str,
+        *,
         x_amzn_shipping_business_id: shipping_v2.ShippingV2XAmznShippingBusinessId | str | None = None,
         request_options: RequestOptions | None = None,
     ) -> shipping_v2.GetCollectionFormResponse:
@@ -1296,7 +1296,7 @@ class AsyncShippingV2Client:
         GET /shipping/v2/collectionForms/{collectionFormId}
         """
         headers: dict[str, Any] = {"x-amzn-shipping-business-id": x_amzn_shipping_business_id}
-        return await self._client.request(
+        return await self._http.request(
             "GET",
             f"/shipping/v2/collectionForms/{path_segment(collection_form_id)}",
             operation="getCollectionForm",
@@ -1310,10 +1310,10 @@ class AsyncShippingV2Client:
 
     async def list_access_points(
         self,
-        *,
         access_point_types: list[shipping_v2.ShippingV2AccessPointTypes],
         country_code: str,
         postal_code: str,
+        *,
         x_amzn_shipping_business_id: shipping_v2.ShippingV2XAmznShippingBusinessId | str | None = None,
         request_options: RequestOptions | None = None,
     ) -> shipping_v2.GetAccessPointsResponse:
@@ -1335,7 +1335,7 @@ class AsyncShippingV2Client:
             "postalCode": postal_code,
         }
         headers: dict[str, Any] = {"x-amzn-shipping-business-id": x_amzn_shipping_business_id}
-        return await self._client.request(
+        return await self._http.request(
             "GET",
             "/shipping/v2/accessPoints",
             operation="getAccessPoints",
@@ -1350,8 +1350,8 @@ class AsyncShippingV2Client:
 
     async def create_ndr_feedback(
         self,
-        *,
         body: shipping_v2.SubmitNdrFeedbackRequest | Mapping[str, Any],
+        *,
         x_amzn_shipping_business_id: shipping_v2.ShippingV2XAmznShippingBusinessId | str | None = None,
         request_options: RequestOptions | None = None,
     ) -> None:
@@ -1368,7 +1368,7 @@ class AsyncShippingV2Client:
         POST /shipping/v2/ndrFeedback
         """
         headers: dict[str, Any] = {"x-amzn-shipping-business-id": x_amzn_shipping_business_id}
-        return await self._client.request(
+        return await self._http.request(
             "POST",
             "/shipping/v2/ndrFeedback",
             operation="submitNdrFeedback",
@@ -1382,8 +1382,8 @@ class AsyncShippingV2Client:
 
     async def create_claim(
         self,
-        *,
         body: shipping_v2.CreateClaimRequest | Mapping[str, Any],
+        *,
         x_amzn_shipping_business_id: shipping_v2.ShippingV2XAmznShippingBusinessId | str | None = None,
         request_options: RequestOptions | None = None,
     ) -> shipping_v2.CreateClaimResponse:
@@ -1400,7 +1400,7 @@ class AsyncShippingV2Client:
         POST /shipping/v2/claims
         """
         headers: dict[str, Any] = {"x-amzn-shipping-business-id": x_amzn_shipping_business_id}
-        return await self._client.request(
+        return await self._http.request(
             "POST",
             "/shipping/v2/claims",
             operation="createClaim",
@@ -1414,4 +1414,4 @@ class AsyncShippingV2Client:
         )
 
 
-__all__ = ["AsyncShippingV2Client", "ShippingV2Client"]
+__all__ = ["AsyncShippingV2Resource", "ShippingV2Resource"]

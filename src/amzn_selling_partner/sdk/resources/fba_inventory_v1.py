@@ -11,26 +11,26 @@ import datetime
 from collections.abc import AsyncIterator, Iterator, Mapping
 from typing import Any, Literal
 
-from ..http_client import AsyncHttpClient, HttpClient, RateLimit, RequestOptions, apaginate, joined, paginate, path_segment
+from .._http import AsyncHttpClient, HttpClient, RateLimit, RequestOptions, apaginate, joined, paginate, path_segment
 from ..models import fba_inventory_v1
 
 SERVICE = "fba_inventory_v1"
 
 
-class FbaInventoryV1Client:
+class FbaInventoryV1Resource:
     """Synchronous ``FbaInventoryV1`` resource."""
 
-    __slots__ = ("_client",)
+    __slots__ = ("_http",)
 
-    def __init__(self, client: HttpClient) -> None:
-        self._client = client
+    def __init__(self, http: HttpClient) -> None:
+        self._http = http
 
     def list_summaries(
         self,
-        *,
         granularity_type: Literal["Marketplace"],
         granularity_id: str,
         marketplace_ids: list[str],
+        *,
         details: bool | None = None,
         start_date_time: datetime.datetime | None = None,
         seller_skus: list[str] | None = None,
@@ -67,7 +67,7 @@ class FbaInventoryV1Client:
             "nextToken": next_token,
             "marketplaceIds": joined(marketplace_ids, ","),
         }
-        return self._client.request(
+        return self._http.request(
             "GET",
             "/fba/inventory/v1/summaries",
             operation="getInventorySummaries",
@@ -81,10 +81,10 @@ class FbaInventoryV1Client:
 
     def iter_list_summaries(
         self,
-        *,
         granularity_type: Literal["Marketplace"],
         granularity_id: str,
         marketplace_ids: list[str],
+        *,
         details: bool | None = None,
         start_date_time: datetime.datetime | None = None,
         seller_skus: list[str] | None = None,
@@ -116,15 +116,15 @@ class FbaInventoryV1Client:
 
     def create_item(
         self,
-        *,
         body: fba_inventory_v1.CreateInventoryItemRequest | Mapping[str, Any],
+        *,
         request_options: RequestOptions | None = None,
     ) -> fba_inventory_v1.CreateInventoryItemResponse:
         """Requests that Amazon create product-details in the Sandbox Inventory in the sandbox environment. This is a sandbox-only operation and must be directed to a sandbox endpoint. Refer to [Selling Partner API sandbox](https://developer-docs.amazon.com/sp-api/docs/the-selling-partner-api-sandbox) for more information.
 
         POST /fba/inventory/v1/items
         """
-        return self._client.request(
+        return self._http.request(
             "POST",
             "/fba/inventory/v1/items",
             operation="createInventoryItem",
@@ -137,9 +137,9 @@ class FbaInventoryV1Client:
 
     def delete_item(
         self,
-        *,
         seller_sku: str,
         marketplace_id: str,
+        *,
         request_options: RequestOptions | None = None,
     ) -> fba_inventory_v1.DeleteInventoryItemResponse:
         """Requests that Amazon Deletes an item from the Sandbox Inventory in the sandbox environment. This is a sandbox-only operation and must be directed to a sandbox endpoint. Refer to [Selling Partner API sandbox](https://developer-docs.amazon.com/sp-api/docs/the-selling-partner-api-sandbox) for more information.
@@ -147,7 +147,7 @@ class FbaInventoryV1Client:
         DELETE /fba/inventory/v1/items/{sellerSku}
         """
         params: dict[str, Any] = {"marketplaceId": marketplace_id}
-        return self._client.request(
+        return self._http.request(
             "DELETE",
             f"/fba/inventory/v1/items/{path_segment(seller_sku)}",
             operation="deleteInventoryItem",
@@ -160,9 +160,9 @@ class FbaInventoryV1Client:
 
     def create_inventory(
         self,
-        *,
-        x_amzn_idempotency_token: str,
         body: fba_inventory_v1.AddInventoryRequest | Mapping[str, Any],
+        x_amzn_idempotency_token: str,
+        *,
         request_options: RequestOptions | None = None,
     ) -> fba_inventory_v1.AddInventoryResponse:
         """Requests that Amazon add items to the Sandbox Inventory with desired amount of quantity in the sandbox environment. This is a sandbox-only operation and must be directed to a sandbox endpoint. Refer to [Selling Partner API sandbox](https://developer-docs.amazon.com/sp-api/docs/the-selling-partner-api-sandbox) for more information.
@@ -170,7 +170,7 @@ class FbaInventoryV1Client:
         POST /fba/inventory/v1/items/inventory
         """
         headers: dict[str, Any] = {"x-amzn-idempotency-token": x_amzn_idempotency_token}
-        return self._client.request(
+        return self._http.request(
             "POST",
             "/fba/inventory/v1/items/inventory",
             operation="addInventory",
@@ -183,20 +183,20 @@ class FbaInventoryV1Client:
         )
 
 
-class AsyncFbaInventoryV1Client:
+class AsyncFbaInventoryV1Resource:
     """Asynchronous ``FbaInventoryV1`` resource."""
 
-    __slots__ = ("_client",)
+    __slots__ = ("_http",)
 
-    def __init__(self, client: AsyncHttpClient) -> None:
-        self._client = client
+    def __init__(self, http: AsyncHttpClient) -> None:
+        self._http = http
 
     async def list_summaries(
         self,
-        *,
         granularity_type: Literal["Marketplace"],
         granularity_id: str,
         marketplace_ids: list[str],
+        *,
         details: bool | None = None,
         start_date_time: datetime.datetime | None = None,
         seller_skus: list[str] | None = None,
@@ -233,7 +233,7 @@ class AsyncFbaInventoryV1Client:
             "nextToken": next_token,
             "marketplaceIds": joined(marketplace_ids, ","),
         }
-        return await self._client.request(
+        return await self._http.request(
             "GET",
             "/fba/inventory/v1/summaries",
             operation="getInventorySummaries",
@@ -247,10 +247,10 @@ class AsyncFbaInventoryV1Client:
 
     def iter_list_summaries(
         self,
-        *,
         granularity_type: Literal["Marketplace"],
         granularity_id: str,
         marketplace_ids: list[str],
+        *,
         details: bool | None = None,
         start_date_time: datetime.datetime | None = None,
         seller_skus: list[str] | None = None,
@@ -282,15 +282,15 @@ class AsyncFbaInventoryV1Client:
 
     async def create_item(
         self,
-        *,
         body: fba_inventory_v1.CreateInventoryItemRequest | Mapping[str, Any],
+        *,
         request_options: RequestOptions | None = None,
     ) -> fba_inventory_v1.CreateInventoryItemResponse:
         """Requests that Amazon create product-details in the Sandbox Inventory in the sandbox environment. This is a sandbox-only operation and must be directed to a sandbox endpoint. Refer to [Selling Partner API sandbox](https://developer-docs.amazon.com/sp-api/docs/the-selling-partner-api-sandbox) for more information.
 
         POST /fba/inventory/v1/items
         """
-        return await self._client.request(
+        return await self._http.request(
             "POST",
             "/fba/inventory/v1/items",
             operation="createInventoryItem",
@@ -303,9 +303,9 @@ class AsyncFbaInventoryV1Client:
 
     async def delete_item(
         self,
-        *,
         seller_sku: str,
         marketplace_id: str,
+        *,
         request_options: RequestOptions | None = None,
     ) -> fba_inventory_v1.DeleteInventoryItemResponse:
         """Requests that Amazon Deletes an item from the Sandbox Inventory in the sandbox environment. This is a sandbox-only operation and must be directed to a sandbox endpoint. Refer to [Selling Partner API sandbox](https://developer-docs.amazon.com/sp-api/docs/the-selling-partner-api-sandbox) for more information.
@@ -313,7 +313,7 @@ class AsyncFbaInventoryV1Client:
         DELETE /fba/inventory/v1/items/{sellerSku}
         """
         params: dict[str, Any] = {"marketplaceId": marketplace_id}
-        return await self._client.request(
+        return await self._http.request(
             "DELETE",
             f"/fba/inventory/v1/items/{path_segment(seller_sku)}",
             operation="deleteInventoryItem",
@@ -326,9 +326,9 @@ class AsyncFbaInventoryV1Client:
 
     async def create_inventory(
         self,
-        *,
-        x_amzn_idempotency_token: str,
         body: fba_inventory_v1.AddInventoryRequest | Mapping[str, Any],
+        x_amzn_idempotency_token: str,
+        *,
         request_options: RequestOptions | None = None,
     ) -> fba_inventory_v1.AddInventoryResponse:
         """Requests that Amazon add items to the Sandbox Inventory with desired amount of quantity in the sandbox environment. This is a sandbox-only operation and must be directed to a sandbox endpoint. Refer to [Selling Partner API sandbox](https://developer-docs.amazon.com/sp-api/docs/the-selling-partner-api-sandbox) for more information.
@@ -336,7 +336,7 @@ class AsyncFbaInventoryV1Client:
         POST /fba/inventory/v1/items/inventory
         """
         headers: dict[str, Any] = {"x-amzn-idempotency-token": x_amzn_idempotency_token}
-        return await self._client.request(
+        return await self._http.request(
             "POST",
             "/fba/inventory/v1/items/inventory",
             operation="addInventory",
@@ -349,4 +349,4 @@ class AsyncFbaInventoryV1Client:
         )
 
 
-__all__ = ["AsyncFbaInventoryV1Client", "FbaInventoryV1Client"]
+__all__ = ["AsyncFbaInventoryV1Resource", "FbaInventoryV1Resource"]

@@ -10,7 +10,7 @@ points keep working as thin wrappers, but several things changed.
 | Area | 0.1.x | 0.2 |
 |---|---|---|
 | Python | 3.10+ | 3.10+ (unchanged) |
-| HTTP | `requests` | `httpx2` (sync and async), generated `sdk/http_client.py` |
+| HTTP | `requests` | `httpx2` (sync and async), generated `sdk/_http.py` |
 | Models | pydantic 1 (`.dict()`, `class Config`) | pydantic 2, generated from the specs (`.model_dump()`, frozen, `extra="allow"`), under `amzn_selling_partner.sdk.models.<api>_<version>` |
 | Auth | LWA + AWS Signature V4 (boto3, `requests_aws4auth`) | **LWA only.** The `aws_*` constructor arguments are accepted and ignored with a `DeprecationWarning`; `ClientSessionAuth` / `ClientSessionAuthTemporaryCredentials` raise `NotImplementedError` |
 | Exceptions | `requests.HTTPError` | `amzn_selling_partner.APIStatusError` and subclasses (`RateLimitExceededError`, `NotFoundError`, `AuthenticationError` (401), `AuthorizationError` (403), `ServerError`, ...), `APIConnectionError`, `APITimeoutError`, `APIResponseValidationError` |

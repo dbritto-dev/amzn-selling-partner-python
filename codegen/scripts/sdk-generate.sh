@@ -26,4 +26,7 @@ if [[ ! -f "$SPEC" ]]; then
   exit 1
 fi
 
+# Generating into an existing output directory merges instead of overwriting
+# (emitter changes would silently not appear): start from a clean directory.
+rm -rf "$OUTPUT"
 exec npx oagen generate --lang "$LANG" --spec "$SPEC" --namespace "$NAMESPACE" --output "$OUTPUT"

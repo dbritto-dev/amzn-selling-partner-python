@@ -30,6 +30,8 @@ class CreateReportScheduleSpecificationPeriod(str, Enum):
     P30_D = "P30D"
     P1_M = "P1M"
 
+    __str__ = str.__str__
+
 
 class ReportProcessingStatus(str, Enum):
     CANCELLED = "CANCELLED"
@@ -38,6 +40,8 @@ class ReportProcessingStatus(str, Enum):
     IN_PROGRESS = "IN_PROGRESS"
     IN_QUEUE = "IN_QUEUE"
 
+    __str__ = str.__str__
+
 
 class ReportsV20210630ProcessingStatuses(str, Enum):
     CANCELLED = "CANCELLED"
@@ -45,6 +49,8 @@ class ReportsV20210630ProcessingStatuses(str, Enum):
     FATAL = "FATAL"
     IN_PROGRESS = "IN_PROGRESS"
     IN_QUEUE = "IN_QUEUE"
+
+    __str__ = str.__str__
 
 
 __all__ = [

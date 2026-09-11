@@ -10,25 +10,25 @@ from __future__ import annotations
 from collections.abc import Mapping
 from typing import Any
 
-from ..http_client import AsyncHttpClient, HttpClient, RateLimit, RequestOptions, path_segment
+from .._http import AsyncHttpClient, HttpClient, RateLimit, RequestOptions, path_segment
 from ..models import product_fees_v0
 
 SERVICE = "product_fees_v0"
 
 
-class ProductFeesV0Client:
+class ProductFeesV0Resource:
     """Synchronous ``ProductFeesV0`` resource."""
 
-    __slots__ = ("_client",)
+    __slots__ = ("_http",)
 
-    def __init__(self, client: HttpClient) -> None:
-        self._client = client
+    def __init__(self, http: HttpClient) -> None:
+        self._http = http
 
     def create_listing_fees_estimate(
         self,
-        *,
         seller_sku: str,
         body: product_fees_v0.GetMyFeesEstimateRequest | Mapping[str, Any],
+        *,
         request_options: RequestOptions | None = None,
     ) -> product_fees_v0.GetMyFeesEstimateResponse:
         """Returns the estimated fees for the item indicated by the specified seller SKU in the marketplace specified in the request body.
@@ -51,7 +51,7 @@ class ProductFeesV0Client:
 
         POST /products/fees/v0/listings/{SellerSKU}/feesEstimate
         """
-        return self._client.request(
+        return self._http.request(
             "POST",
             f"/products/fees/v0/listings/{path_segment(seller_sku)}/feesEstimate",
             operation="getMyFeesEstimateForSKU",
@@ -65,9 +65,9 @@ class ProductFeesV0Client:
 
     def create_item_fees_estimate(
         self,
-        *,
         asin: str,
         body: product_fees_v0.GetMyFeesEstimateRequest | Mapping[str, Any],
+        *,
         request_options: RequestOptions | None = None,
     ) -> product_fees_v0.GetMyFeesEstimateResponse:
         """Returns the estimated fees for the item indicated by the specified ASIN in the marketplace specified in the request body.
@@ -88,7 +88,7 @@ class ProductFeesV0Client:
 
         POST /products/fees/v0/items/{Asin}/feesEstimate
         """
-        return self._client.request(
+        return self._http.request(
             "POST",
             f"/products/fees/v0/items/{path_segment(asin)}/feesEstimate",
             operation="getMyFeesEstimateForASIN",
@@ -102,8 +102,8 @@ class ProductFeesV0Client:
 
     def create_fees_estimate(
         self,
-        *,
         body: list[product_fees_v0.FeesEstimateByIdRequest],
+        *,
         request_options: RequestOptions | None = None,
     ) -> list[product_fees_v0.FeesEstimateResult]:
         """Returns the estimated fees for a list of products.
@@ -118,7 +118,7 @@ class ProductFeesV0Client:
 
         POST /products/fees/v0/feesEstimate
         """
-        return self._client.request(
+        return self._http.request(
             "POST",
             "/products/fees/v0/feesEstimate",
             operation="getMyFeesEstimates",
@@ -131,19 +131,19 @@ class ProductFeesV0Client:
         )
 
 
-class AsyncProductFeesV0Client:
+class AsyncProductFeesV0Resource:
     """Asynchronous ``ProductFeesV0`` resource."""
 
-    __slots__ = ("_client",)
+    __slots__ = ("_http",)
 
-    def __init__(self, client: AsyncHttpClient) -> None:
-        self._client = client
+    def __init__(self, http: AsyncHttpClient) -> None:
+        self._http = http
 
     async def create_listing_fees_estimate(
         self,
-        *,
         seller_sku: str,
         body: product_fees_v0.GetMyFeesEstimateRequest | Mapping[str, Any],
+        *,
         request_options: RequestOptions | None = None,
     ) -> product_fees_v0.GetMyFeesEstimateResponse:
         """Returns the estimated fees for the item indicated by the specified seller SKU in the marketplace specified in the request body.
@@ -166,7 +166,7 @@ class AsyncProductFeesV0Client:
 
         POST /products/fees/v0/listings/{SellerSKU}/feesEstimate
         """
-        return await self._client.request(
+        return await self._http.request(
             "POST",
             f"/products/fees/v0/listings/{path_segment(seller_sku)}/feesEstimate",
             operation="getMyFeesEstimateForSKU",
@@ -180,9 +180,9 @@ class AsyncProductFeesV0Client:
 
     async def create_item_fees_estimate(
         self,
-        *,
         asin: str,
         body: product_fees_v0.GetMyFeesEstimateRequest | Mapping[str, Any],
+        *,
         request_options: RequestOptions | None = None,
     ) -> product_fees_v0.GetMyFeesEstimateResponse:
         """Returns the estimated fees for the item indicated by the specified ASIN in the marketplace specified in the request body.
@@ -203,7 +203,7 @@ class AsyncProductFeesV0Client:
 
         POST /products/fees/v0/items/{Asin}/feesEstimate
         """
-        return await self._client.request(
+        return await self._http.request(
             "POST",
             f"/products/fees/v0/items/{path_segment(asin)}/feesEstimate",
             operation="getMyFeesEstimateForASIN",
@@ -217,8 +217,8 @@ class AsyncProductFeesV0Client:
 
     async def create_fees_estimate(
         self,
-        *,
         body: list[product_fees_v0.FeesEstimateByIdRequest],
+        *,
         request_options: RequestOptions | None = None,
     ) -> list[product_fees_v0.FeesEstimateResult]:
         """Returns the estimated fees for a list of products.
@@ -233,7 +233,7 @@ class AsyncProductFeesV0Client:
 
         POST /products/fees/v0/feesEstimate
         """
-        return await self._client.request(
+        return await self._http.request(
             "POST",
             "/products/fees/v0/feesEstimate",
             operation="getMyFeesEstimates",
@@ -246,4 +246,4 @@ class AsyncProductFeesV0Client:
         )
 
 
-__all__ = ["AsyncProductFeesV0Client", "ProductFeesV0Client"]
+__all__ = ["AsyncProductFeesV0Resource", "ProductFeesV0Resource"]

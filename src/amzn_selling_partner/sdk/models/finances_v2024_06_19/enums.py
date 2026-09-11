@@ -17,12 +17,16 @@ class BalanceBalanceType(str, Enum):
     DEFERRED = "DEFERRED"
     TOTAL = "TOTAL"
 
+    __str__ = str.__str__
+
 
 class ItemRelatedIdentifierItemRelatedIdentifierName(str, Enum):
     ORDER_ADJUSTMENT_ITEM_ID = "ORDER_ADJUSTMENT_ITEM_ID"
     COUPON_ID = "COUPON_ID"
     REMOVAL_SHIPMENT_ITEM_ID = "REMOVAL_SHIPMENT_ITEM_ID"
     TRANSACTION_ID = "TRANSACTION_ID"
+
+    __str__ = str.__str__
 
 
 class RelatedIdentifierRelatedIdentifierName(str, Enum):
@@ -36,6 +40,8 @@ class RelatedIdentifierRelatedIdentifierName(str, Enum):
     DEFERRED_TRANSACTION_ID = "DEFERRED_TRANSACTION_ID"
     RELEASE_TRANSACTION_ID = "RELEASE_TRANSACTION_ID"
     SETTLEMENT_ID = "SETTLEMENT_ID"
+
+    __str__ = str.__str__
 
 
 __all__ = [

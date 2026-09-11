@@ -1,10 +1,15 @@
-/** IR `TypeRef` -> Python type expression, exhaustive over every kind (the build breaks when oagen adds one). */
+/**
+ * IR `TypeRef` -> Python type annotation.
+ *
+ * The switch is exhaustive over every `kind` oagen defines and calls
+ * `assertNever` in the default branch, so a future oagen release that adds a
+ * kind breaks the build instead of emitting bad Python.
+ */
 import { assertNever, type TypeRef } from '@workos/oagen';
 
+/** How model and enum names render in the module being generated (`Order`, `orders_v0.Order`). */
 export interface TypeContext {
-  /** Python expression for a model (`Order`, `orders_v0.Order`). */
   model(name: string): string;
-  /** Python expression for a named enum. */
   enum(name: string): string;
 }
 
@@ -44,21 +49,28 @@ export function renderTypeRef(ref: TypeRef, ctx: TypeContext): string {
     case 'literal':
       return ref.value === null ? 'None' : `Literal[${JSON.stringify(ref.value)}]`;
     default:
+      // Compile error here if oagen adds a new TypeRef kind.
       return assertNever(ref);
   }
+}
+
+/** `X | None` unless the annotation already admits `None`. */
+export function optional(annotation: string): string {
+  return annotation.split(' | ').includes('None') ? annotation : `${annotation} | None`;
 }
 
 export function unwrap(ref: TypeRef): TypeRef {
   return ref.kind === 'nullable' ? unwrap(ref.inner) : ref;
 }
 
+/** oagen renders "no body" as the `unknown` primitive. */
 export function isVoid(ref: TypeRef | undefined): boolean {
   if (!ref) return true;
   const r = unwrap(ref);
   return r.kind === 'primitive' && r.type === 'unknown';
 }
 
-/** Model and enum names referenced by a type. */
+/** Model and enum names referenced by a type (transitively through arrays, maps, unions). */
 export function referencedNames(ref: TypeRef, out: { models: Set<string>; enums: Set<string> }): void {
   switch (ref.kind) {
     case 'primitive':
@@ -85,4 +97,16 @@ export function referencedNames(ref: TypeRef, out: { models: Set<string>; enums:
     default:
       return assertNever(ref);
   }
+}
+
+/** Import lines a rendered module needs for the annotations it contains. */
+export function importsFor(source: string): string[] {
+  const text = source.replace(/"""[\s\S]*?"""/g, ''); // docstrings do not count
+  const lines: string[] = [];
+  if (/\bdatetime\./.test(text)) lines.push('import datetime');
+  const abc = ['AsyncIterator', 'Iterator', 'Mapping'].filter((n) => new RegExp(`\\b${n}\\b`).test(text));
+  if (abc.length) lines.push(`from collections.abc import ${abc.join(', ')}`);
+  const typing = ['Annotated', 'Any', 'Literal', 'TypeAlias'].filter((n) => new RegExp(`\\b${n}\\b`).test(text));
+  if (typing.length) lines.push(`from typing import ${typing.join(', ')}`);
+  return lines;
 }

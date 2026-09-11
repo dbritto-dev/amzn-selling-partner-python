@@ -10,25 +10,25 @@ from __future__ import annotations
 from collections.abc import Mapping
 from typing import Any
 
-from ..http_client import AsyncHttpClient, HttpClient, RateLimit, RequestOptions, joined, path_segment
+from .._http import AsyncHttpClient, HttpClient, RateLimit, RequestOptions, joined, path_segment
 from ..models import messaging_v1
 
 SERVICE = "messaging_v1"
 
 
-class MessagingV1Client:
+class MessagingV1Resource:
     """Synchronous ``MessagingV1`` resource."""
 
-    __slots__ = ("_client",)
+    __slots__ = ("_http",)
 
-    def __init__(self, client: HttpClient) -> None:
-        self._client = client
+    def __init__(self, http: HttpClient) -> None:
+        self._http = http
 
     def get_order(
         self,
-        *,
         amazon_order_id: str,
         marketplace_ids: list[str],
+        *,
         request_options: RequestOptions | None = None,
     ) -> messaging_v1.GetMessagingActionsForOrderResponse:
         """Returns a list of message types that are available for an order that you specify. A message type is represented by an actions object, which contains a path and query parameter(s). You can use the path and parameter(s) to call an operation that sends a message.
@@ -44,7 +44,7 @@ class MessagingV1Client:
         GET /messaging/v1/orders/{amazonOrderId}
         """
         params: dict[str, Any] = {"marketplaceIds": joined(marketplace_ids, ",")}
-        return self._client.request(
+        return self._http.request(
             "GET",
             f"/messaging/v1/orders/{path_segment(amazon_order_id)}",
             operation="getMessagingActionsForOrder",
@@ -57,10 +57,10 @@ class MessagingV1Client:
 
     def create_confirm_customization_detail(
         self,
-        *,
         amazon_order_id: str,
-        marketplace_ids: list[str],
         body: messaging_v1.CreateConfirmCustomizationDetailsRequest | Mapping[str, Any],
+        marketplace_ids: list[str],
+        *,
         request_options: RequestOptions | None = None,
     ) -> messaging_v1.CreateConfirmCustomizationDetailsResponse:
         """Sends a message asking a buyer to provide or verify customization details such as name spelling, images, initials, etc.
@@ -76,7 +76,7 @@ class MessagingV1Client:
         POST /messaging/v1/orders/{amazonOrderId}/messages/confirmCustomizationDetails
         """
         params: dict[str, Any] = {"marketplaceIds": joined(marketplace_ids, ",")}
-        return self._client.request(
+        return self._http.request(
             "POST",
             f"/messaging/v1/orders/{path_segment(amazon_order_id)}/messages/confirmCustomizationDetails",
             operation="confirmCustomizationDetails",
@@ -90,10 +90,10 @@ class MessagingV1Client:
 
     def create_confirm_delivery_detail(
         self,
-        *,
         amazon_order_id: str,
-        marketplace_ids: list[str],
         body: messaging_v1.CreateConfirmDeliveryDetailsRequest | Mapping[str, Any],
+        marketplace_ids: list[str],
+        *,
         request_options: RequestOptions | None = None,
     ) -> messaging_v1.CreateConfirmDeliveryDetailsResponse:
         """Sends a message to a buyer to arrange a delivery or to confirm contact information for making a delivery.
@@ -109,7 +109,7 @@ class MessagingV1Client:
         POST /messaging/v1/orders/{amazonOrderId}/messages/confirmDeliveryDetails
         """
         params: dict[str, Any] = {"marketplaceIds": joined(marketplace_ids, ",")}
-        return self._client.request(
+        return self._http.request(
             "POST",
             f"/messaging/v1/orders/{path_segment(amazon_order_id)}/messages/confirmDeliveryDetails",
             operation="createConfirmDeliveryDetails",
@@ -123,10 +123,10 @@ class MessagingV1Client:
 
     def create_legal_disclosure(
         self,
-        *,
         amazon_order_id: str,
-        marketplace_ids: list[str],
         body: messaging_v1.CreateLegalDisclosureRequest | Mapping[str, Any],
+        marketplace_ids: list[str],
+        *,
         request_options: RequestOptions | None = None,
     ) -> messaging_v1.CreateLegalDisclosureResponse:
         """Sends a critical message that contains documents that a seller is legally obligated to provide to the buyer. This message should only be used to deliver documents that are required by law.
@@ -142,7 +142,7 @@ class MessagingV1Client:
         POST /messaging/v1/orders/{amazonOrderId}/messages/legalDisclosure
         """
         params: dict[str, Any] = {"marketplaceIds": joined(marketplace_ids, ",")}
-        return self._client.request(
+        return self._http.request(
             "POST",
             f"/messaging/v1/orders/{path_segment(amazon_order_id)}/messages/legalDisclosure",
             operation="createLegalDisclosure",
@@ -156,10 +156,10 @@ class MessagingV1Client:
 
     def create_confirm_order_detail(
         self,
-        *,
         amazon_order_id: str,
-        marketplace_ids: list[str],
         body: messaging_v1.CreateConfirmOrderDetailsRequest | Mapping[str, Any],
+        marketplace_ids: list[str],
+        *,
         request_options: RequestOptions | None = None,
     ) -> messaging_v1.CreateConfirmOrderDetailsResponse:
         """Sends a message to ask a buyer an order-related question prior to shipping their order.
@@ -175,7 +175,7 @@ class MessagingV1Client:
         POST /messaging/v1/orders/{amazonOrderId}/messages/confirmOrderDetails
         """
         params: dict[str, Any] = {"marketplaceIds": joined(marketplace_ids, ",")}
-        return self._client.request(
+        return self._http.request(
             "POST",
             f"/messaging/v1/orders/{path_segment(amazon_order_id)}/messages/confirmOrderDetails",
             operation="createConfirmOrderDetails",
@@ -189,10 +189,10 @@ class MessagingV1Client:
 
     def create_confirm_service_detail(
         self,
-        *,
         amazon_order_id: str,
-        marketplace_ids: list[str],
         body: messaging_v1.CreateConfirmServiceDetailsRequest | Mapping[str, Any],
+        marketplace_ids: list[str],
+        *,
         request_options: RequestOptions | None = None,
     ) -> messaging_v1.CreateConfirmServiceDetailsResponse:
         """Sends a message to contact a Home Service customer to arrange a service call or to gather information prior to a service call.
@@ -208,7 +208,7 @@ class MessagingV1Client:
         POST /messaging/v1/orders/{amazonOrderId}/messages/confirmServiceDetails
         """
         params: dict[str, Any] = {"marketplaceIds": joined(marketplace_ids, ",")}
-        return self._client.request(
+        return self._http.request(
             "POST",
             f"/messaging/v1/orders/{path_segment(amazon_order_id)}/messages/confirmServiceDetails",
             operation="createConfirmServiceDetails",
@@ -222,10 +222,10 @@ class MessagingV1Client:
 
     def create_warranty(
         self,
-        *,
         amazon_order_id: str,
-        marketplace_ids: list[str],
         body: messaging_v1.CreateWarrantyRequest | Mapping[str, Any],
+        marketplace_ids: list[str],
+        *,
         request_options: RequestOptions | None = None,
     ) -> messaging_v1.CreateWarrantyResponse:
         """Sends a message to a buyer to provide details about warranty information on a purchase in their order.
@@ -241,7 +241,7 @@ class MessagingV1Client:
         POST /messaging/v1/orders/{amazonOrderId}/messages/warranty
         """
         params: dict[str, Any] = {"marketplaceIds": joined(marketplace_ids, ",")}
-        return self._client.request(
+        return self._http.request(
             "POST",
             f"/messaging/v1/orders/{path_segment(amazon_order_id)}/messages/warranty",
             operation="CreateWarranty",
@@ -255,9 +255,9 @@ class MessagingV1Client:
 
     def list_order_attributes(
         self,
-        *,
         amazon_order_id: str,
         marketplace_ids: list[str],
+        *,
         request_options: RequestOptions | None = None,
     ) -> messaging_v1.GetAttributesResponse:
         """Returns a response containing attributes related to an order. This includes buyer preferences.
@@ -271,7 +271,7 @@ class MessagingV1Client:
         GET /messaging/v1/orders/{amazonOrderId}/attributes
         """
         params: dict[str, Any] = {"marketplaceIds": joined(marketplace_ids, ",")}
-        return self._client.request(
+        return self._http.request(
             "GET",
             f"/messaging/v1/orders/{path_segment(amazon_order_id)}/attributes",
             operation="GetAttributes",
@@ -284,10 +284,10 @@ class MessagingV1Client:
 
     def create_digital_access_key(
         self,
-        *,
         amazon_order_id: str,
-        marketplace_ids: list[str],
         body: messaging_v1.CreateDigitalAccessKeyRequest | Mapping[str, Any],
+        marketplace_ids: list[str],
+        *,
         request_options: RequestOptions | None = None,
     ) -> messaging_v1.CreateDigitalAccessKeyResponse:
         """Sends a buyer a message to share a digital access key that is required to utilize digital content in their order.
@@ -303,7 +303,7 @@ class MessagingV1Client:
         POST /messaging/v1/orders/{amazonOrderId}/messages/digitalAccessKey
         """
         params: dict[str, Any] = {"marketplaceIds": joined(marketplace_ids, ",")}
-        return self._client.request(
+        return self._http.request(
             "POST",
             f"/messaging/v1/orders/{path_segment(amazon_order_id)}/messages/digitalAccessKey",
             operation="createDigitalAccessKey",
@@ -317,10 +317,10 @@ class MessagingV1Client:
 
     def create_unexpected_problem(
         self,
-        *,
         amazon_order_id: str,
-        marketplace_ids: list[str],
         body: messaging_v1.CreateUnexpectedProblemRequest | Mapping[str, Any],
+        marketplace_ids: list[str],
+        *,
         request_options: RequestOptions | None = None,
     ) -> messaging_v1.CreateUnexpectedProblemResponse:
         """Sends a critical message to a buyer that an unexpected problem was encountered affecting the completion of the order.
@@ -336,7 +336,7 @@ class MessagingV1Client:
         POST /messaging/v1/orders/{amazonOrderId}/messages/unexpectedProblem
         """
         params: dict[str, Any] = {"marketplaceIds": joined(marketplace_ids, ",")}
-        return self._client.request(
+        return self._http.request(
             "POST",
             f"/messaging/v1/orders/{path_segment(amazon_order_id)}/messages/unexpectedProblem",
             operation="createUnexpectedProblem",
@@ -350,10 +350,10 @@ class MessagingV1Client:
 
     def create_invoice(
         self,
-        *,
         amazon_order_id: str,
-        marketplace_ids: list[str],
         body: messaging_v1.InvoiceRequest | Mapping[str, Any],
+        marketplace_ids: list[str],
+        *,
         request_options: RequestOptions | None = None,
     ) -> messaging_v1.InvoiceResponse:
         """Sends a message providing the buyer an invoice
@@ -361,7 +361,7 @@ class MessagingV1Client:
         POST /messaging/v1/orders/{amazonOrderId}/messages/invoice
         """
         params: dict[str, Any] = {"marketplaceIds": joined(marketplace_ids, ",")}
-        return self._client.request(
+        return self._http.request(
             "POST",
             f"/messaging/v1/orders/{path_segment(amazon_order_id)}/messages/invoice",
             operation="sendInvoice",
@@ -373,19 +373,19 @@ class MessagingV1Client:
         )
 
 
-class AsyncMessagingV1Client:
+class AsyncMessagingV1Resource:
     """Asynchronous ``MessagingV1`` resource."""
 
-    __slots__ = ("_client",)
+    __slots__ = ("_http",)
 
-    def __init__(self, client: AsyncHttpClient) -> None:
-        self._client = client
+    def __init__(self, http: AsyncHttpClient) -> None:
+        self._http = http
 
     async def get_order(
         self,
-        *,
         amazon_order_id: str,
         marketplace_ids: list[str],
+        *,
         request_options: RequestOptions | None = None,
     ) -> messaging_v1.GetMessagingActionsForOrderResponse:
         """Returns a list of message types that are available for an order that you specify. A message type is represented by an actions object, which contains a path and query parameter(s). You can use the path and parameter(s) to call an operation that sends a message.
@@ -401,7 +401,7 @@ class AsyncMessagingV1Client:
         GET /messaging/v1/orders/{amazonOrderId}
         """
         params: dict[str, Any] = {"marketplaceIds": joined(marketplace_ids, ",")}
-        return await self._client.request(
+        return await self._http.request(
             "GET",
             f"/messaging/v1/orders/{path_segment(amazon_order_id)}",
             operation="getMessagingActionsForOrder",
@@ -414,10 +414,10 @@ class AsyncMessagingV1Client:
 
     async def create_confirm_customization_detail(
         self,
-        *,
         amazon_order_id: str,
-        marketplace_ids: list[str],
         body: messaging_v1.CreateConfirmCustomizationDetailsRequest | Mapping[str, Any],
+        marketplace_ids: list[str],
+        *,
         request_options: RequestOptions | None = None,
     ) -> messaging_v1.CreateConfirmCustomizationDetailsResponse:
         """Sends a message asking a buyer to provide or verify customization details such as name spelling, images, initials, etc.
@@ -433,7 +433,7 @@ class AsyncMessagingV1Client:
         POST /messaging/v1/orders/{amazonOrderId}/messages/confirmCustomizationDetails
         """
         params: dict[str, Any] = {"marketplaceIds": joined(marketplace_ids, ",")}
-        return await self._client.request(
+        return await self._http.request(
             "POST",
             f"/messaging/v1/orders/{path_segment(amazon_order_id)}/messages/confirmCustomizationDetails",
             operation="confirmCustomizationDetails",
@@ -447,10 +447,10 @@ class AsyncMessagingV1Client:
 
     async def create_confirm_delivery_detail(
         self,
-        *,
         amazon_order_id: str,
-        marketplace_ids: list[str],
         body: messaging_v1.CreateConfirmDeliveryDetailsRequest | Mapping[str, Any],
+        marketplace_ids: list[str],
+        *,
         request_options: RequestOptions | None = None,
     ) -> messaging_v1.CreateConfirmDeliveryDetailsResponse:
         """Sends a message to a buyer to arrange a delivery or to confirm contact information for making a delivery.
@@ -466,7 +466,7 @@ class AsyncMessagingV1Client:
         POST /messaging/v1/orders/{amazonOrderId}/messages/confirmDeliveryDetails
         """
         params: dict[str, Any] = {"marketplaceIds": joined(marketplace_ids, ",")}
-        return await self._client.request(
+        return await self._http.request(
             "POST",
             f"/messaging/v1/orders/{path_segment(amazon_order_id)}/messages/confirmDeliveryDetails",
             operation="createConfirmDeliveryDetails",
@@ -480,10 +480,10 @@ class AsyncMessagingV1Client:
 
     async def create_legal_disclosure(
         self,
-        *,
         amazon_order_id: str,
-        marketplace_ids: list[str],
         body: messaging_v1.CreateLegalDisclosureRequest | Mapping[str, Any],
+        marketplace_ids: list[str],
+        *,
         request_options: RequestOptions | None = None,
     ) -> messaging_v1.CreateLegalDisclosureResponse:
         """Sends a critical message that contains documents that a seller is legally obligated to provide to the buyer. This message should only be used to deliver documents that are required by law.
@@ -499,7 +499,7 @@ class AsyncMessagingV1Client:
         POST /messaging/v1/orders/{amazonOrderId}/messages/legalDisclosure
         """
         params: dict[str, Any] = {"marketplaceIds": joined(marketplace_ids, ",")}
-        return await self._client.request(
+        return await self._http.request(
             "POST",
             f"/messaging/v1/orders/{path_segment(amazon_order_id)}/messages/legalDisclosure",
             operation="createLegalDisclosure",
@@ -513,10 +513,10 @@ class AsyncMessagingV1Client:
 
     async def create_confirm_order_detail(
         self,
-        *,
         amazon_order_id: str,
-        marketplace_ids: list[str],
         body: messaging_v1.CreateConfirmOrderDetailsRequest | Mapping[str, Any],
+        marketplace_ids: list[str],
+        *,
         request_options: RequestOptions | None = None,
     ) -> messaging_v1.CreateConfirmOrderDetailsResponse:
         """Sends a message to ask a buyer an order-related question prior to shipping their order.
@@ -532,7 +532,7 @@ class AsyncMessagingV1Client:
         POST /messaging/v1/orders/{amazonOrderId}/messages/confirmOrderDetails
         """
         params: dict[str, Any] = {"marketplaceIds": joined(marketplace_ids, ",")}
-        return await self._client.request(
+        return await self._http.request(
             "POST",
             f"/messaging/v1/orders/{path_segment(amazon_order_id)}/messages/confirmOrderDetails",
             operation="createConfirmOrderDetails",
@@ -546,10 +546,10 @@ class AsyncMessagingV1Client:
 
     async def create_confirm_service_detail(
         self,
-        *,
         amazon_order_id: str,
-        marketplace_ids: list[str],
         body: messaging_v1.CreateConfirmServiceDetailsRequest | Mapping[str, Any],
+        marketplace_ids: list[str],
+        *,
         request_options: RequestOptions | None = None,
     ) -> messaging_v1.CreateConfirmServiceDetailsResponse:
         """Sends a message to contact a Home Service customer to arrange a service call or to gather information prior to a service call.
@@ -565,7 +565,7 @@ class AsyncMessagingV1Client:
         POST /messaging/v1/orders/{amazonOrderId}/messages/confirmServiceDetails
         """
         params: dict[str, Any] = {"marketplaceIds": joined(marketplace_ids, ",")}
-        return await self._client.request(
+        return await self._http.request(
             "POST",
             f"/messaging/v1/orders/{path_segment(amazon_order_id)}/messages/confirmServiceDetails",
             operation="createConfirmServiceDetails",
@@ -579,10 +579,10 @@ class AsyncMessagingV1Client:
 
     async def create_warranty(
         self,
-        *,
         amazon_order_id: str,
-        marketplace_ids: list[str],
         body: messaging_v1.CreateWarrantyRequest | Mapping[str, Any],
+        marketplace_ids: list[str],
+        *,
         request_options: RequestOptions | None = None,
     ) -> messaging_v1.CreateWarrantyResponse:
         """Sends a message to a buyer to provide details about warranty information on a purchase in their order.
@@ -598,7 +598,7 @@ class AsyncMessagingV1Client:
         POST /messaging/v1/orders/{amazonOrderId}/messages/warranty
         """
         params: dict[str, Any] = {"marketplaceIds": joined(marketplace_ids, ",")}
-        return await self._client.request(
+        return await self._http.request(
             "POST",
             f"/messaging/v1/orders/{path_segment(amazon_order_id)}/messages/warranty",
             operation="CreateWarranty",
@@ -612,9 +612,9 @@ class AsyncMessagingV1Client:
 
     async def list_order_attributes(
         self,
-        *,
         amazon_order_id: str,
         marketplace_ids: list[str],
+        *,
         request_options: RequestOptions | None = None,
     ) -> messaging_v1.GetAttributesResponse:
         """Returns a response containing attributes related to an order. This includes buyer preferences.
@@ -628,7 +628,7 @@ class AsyncMessagingV1Client:
         GET /messaging/v1/orders/{amazonOrderId}/attributes
         """
         params: dict[str, Any] = {"marketplaceIds": joined(marketplace_ids, ",")}
-        return await self._client.request(
+        return await self._http.request(
             "GET",
             f"/messaging/v1/orders/{path_segment(amazon_order_id)}/attributes",
             operation="GetAttributes",
@@ -641,10 +641,10 @@ class AsyncMessagingV1Client:
 
     async def create_digital_access_key(
         self,
-        *,
         amazon_order_id: str,
-        marketplace_ids: list[str],
         body: messaging_v1.CreateDigitalAccessKeyRequest | Mapping[str, Any],
+        marketplace_ids: list[str],
+        *,
         request_options: RequestOptions | None = None,
     ) -> messaging_v1.CreateDigitalAccessKeyResponse:
         """Sends a buyer a message to share a digital access key that is required to utilize digital content in their order.
@@ -660,7 +660,7 @@ class AsyncMessagingV1Client:
         POST /messaging/v1/orders/{amazonOrderId}/messages/digitalAccessKey
         """
         params: dict[str, Any] = {"marketplaceIds": joined(marketplace_ids, ",")}
-        return await self._client.request(
+        return await self._http.request(
             "POST",
             f"/messaging/v1/orders/{path_segment(amazon_order_id)}/messages/digitalAccessKey",
             operation="createDigitalAccessKey",
@@ -674,10 +674,10 @@ class AsyncMessagingV1Client:
 
     async def create_unexpected_problem(
         self,
-        *,
         amazon_order_id: str,
-        marketplace_ids: list[str],
         body: messaging_v1.CreateUnexpectedProblemRequest | Mapping[str, Any],
+        marketplace_ids: list[str],
+        *,
         request_options: RequestOptions | None = None,
     ) -> messaging_v1.CreateUnexpectedProblemResponse:
         """Sends a critical message to a buyer that an unexpected problem was encountered affecting the completion of the order.
@@ -693,7 +693,7 @@ class AsyncMessagingV1Client:
         POST /messaging/v1/orders/{amazonOrderId}/messages/unexpectedProblem
         """
         params: dict[str, Any] = {"marketplaceIds": joined(marketplace_ids, ",")}
-        return await self._client.request(
+        return await self._http.request(
             "POST",
             f"/messaging/v1/orders/{path_segment(amazon_order_id)}/messages/unexpectedProblem",
             operation="createUnexpectedProblem",
@@ -707,10 +707,10 @@ class AsyncMessagingV1Client:
 
     async def create_invoice(
         self,
-        *,
         amazon_order_id: str,
-        marketplace_ids: list[str],
         body: messaging_v1.InvoiceRequest | Mapping[str, Any],
+        marketplace_ids: list[str],
+        *,
         request_options: RequestOptions | None = None,
     ) -> messaging_v1.InvoiceResponse:
         """Sends a message providing the buyer an invoice
@@ -718,7 +718,7 @@ class AsyncMessagingV1Client:
         POST /messaging/v1/orders/{amazonOrderId}/messages/invoice
         """
         params: dict[str, Any] = {"marketplaceIds": joined(marketplace_ids, ",")}
-        return await self._client.request(
+        return await self._http.request(
             "POST",
             f"/messaging/v1/orders/{path_segment(amazon_order_id)}/messages/invoice",
             operation="sendInvoice",
@@ -730,4 +730,4 @@ class AsyncMessagingV1Client:
         )
 
 
-__all__ = ["AsyncMessagingV1Client", "MessagingV1Client"]
+__all__ = ["AsyncMessagingV1Resource", "MessagingV1Resource"]

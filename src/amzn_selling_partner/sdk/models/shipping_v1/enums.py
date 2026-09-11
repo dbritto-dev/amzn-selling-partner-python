@@ -14,11 +14,15 @@ class DimensionsUnit(str, Enum):
     IN = "IN"
     CM = "CM"
 
+    __str__ = str.__str__
+
 
 class ServiceType(str, Enum):
     AMAZON_SHIPPING_GROUND = "Amazon Shipping Ground"
     AMAZON_SHIPPING_STANDARD = "Amazon Shipping Standard"
     AMAZON_SHIPPING_PREMIUM = "Amazon Shipping Premium"
+
+    __str__ = str.__str__
 
 
 class WeightUnit(str, Enum):
@@ -26,6 +30,8 @@ class WeightUnit(str, Enum):
     KG = "kg"
     OZ = "oz"
     LB = "lb"
+
+    __str__ = str.__str__
 
 
 __all__ = [

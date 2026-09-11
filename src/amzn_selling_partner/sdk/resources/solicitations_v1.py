@@ -9,25 +9,25 @@ from __future__ import annotations
 
 from typing import Any
 
-from ..http_client import AsyncHttpClient, HttpClient, RateLimit, RequestOptions, joined, path_segment
+from .._http import AsyncHttpClient, HttpClient, RateLimit, RequestOptions, joined, path_segment
 from ..models import solicitations_v1
 
 SERVICE = "solicitations_v1"
 
 
-class SolicitationsV1Client:
+class SolicitationsV1Resource:
     """Synchronous ``SolicitationsV1`` resource."""
 
-    __slots__ = ("_client",)
+    __slots__ = ("_http",)
 
-    def __init__(self, client: HttpClient) -> None:
-        self._client = client
+    def __init__(self, http: HttpClient) -> None:
+        self._http = http
 
     def get_order(
         self,
-        *,
         amazon_order_id: str,
         marketplace_ids: list[str],
+        *,
         request_options: RequestOptions | None = None,
     ) -> solicitations_v1.GetSolicitationActionsForOrderResponse:
         """Returns a list of solicitation types that are available for an order that you specify. A solicitation type is represented by an actions object, which contains a path and query parameter(s). You can use the path and parameter(s) to call an operation that sends a solicitation. Currently only the productReviewAndSellerFeedbackSolicitation solicitation type is available.
@@ -43,7 +43,7 @@ class SolicitationsV1Client:
         GET /solicitations/v1/orders/{amazonOrderId}
         """
         params: dict[str, Any] = {"marketplaceIds": joined(marketplace_ids, ",")}
-        return self._client.request(
+        return self._http.request(
             "GET",
             f"/solicitations/v1/orders/{path_segment(amazon_order_id)}",
             operation="getSolicitationActionsForOrder",
@@ -56,9 +56,9 @@ class SolicitationsV1Client:
 
     def create_product_review_and_seller_feedback(
         self,
-        *,
         amazon_order_id: str,
         marketplace_ids: list[str],
+        *,
         request_options: RequestOptions | None = None,
     ) -> solicitations_v1.CreateProductReviewAndSellerFeedbackSolicitationResponse:
         """Sends a solicitation to a buyer asking for seller feedback and a product review for the specified order. Send only one productReviewAndSellerFeedback or free form proactive message per order.
@@ -74,7 +74,7 @@ class SolicitationsV1Client:
         POST /solicitations/v1/orders/{amazonOrderId}/solicitations/productReviewAndSellerFeedback
         """
         params: dict[str, Any] = {"marketplaceIds": joined(marketplace_ids, ",")}
-        return self._client.request(
+        return self._http.request(
             "POST",
             f"/solicitations/v1/orders/{path_segment(amazon_order_id)}/solicitations/productReviewAndSellerFeedback",
             operation="createProductReviewAndSellerFeedbackSolicitation",
@@ -86,19 +86,19 @@ class SolicitationsV1Client:
         )
 
 
-class AsyncSolicitationsV1Client:
+class AsyncSolicitationsV1Resource:
     """Asynchronous ``SolicitationsV1`` resource."""
 
-    __slots__ = ("_client",)
+    __slots__ = ("_http",)
 
-    def __init__(self, client: AsyncHttpClient) -> None:
-        self._client = client
+    def __init__(self, http: AsyncHttpClient) -> None:
+        self._http = http
 
     async def get_order(
         self,
-        *,
         amazon_order_id: str,
         marketplace_ids: list[str],
+        *,
         request_options: RequestOptions | None = None,
     ) -> solicitations_v1.GetSolicitationActionsForOrderResponse:
         """Returns a list of solicitation types that are available for an order that you specify. A solicitation type is represented by an actions object, which contains a path and query parameter(s). You can use the path and parameter(s) to call an operation that sends a solicitation. Currently only the productReviewAndSellerFeedbackSolicitation solicitation type is available.
@@ -114,7 +114,7 @@ class AsyncSolicitationsV1Client:
         GET /solicitations/v1/orders/{amazonOrderId}
         """
         params: dict[str, Any] = {"marketplaceIds": joined(marketplace_ids, ",")}
-        return await self._client.request(
+        return await self._http.request(
             "GET",
             f"/solicitations/v1/orders/{path_segment(amazon_order_id)}",
             operation="getSolicitationActionsForOrder",
@@ -127,9 +127,9 @@ class AsyncSolicitationsV1Client:
 
     async def create_product_review_and_seller_feedback(
         self,
-        *,
         amazon_order_id: str,
         marketplace_ids: list[str],
+        *,
         request_options: RequestOptions | None = None,
     ) -> solicitations_v1.CreateProductReviewAndSellerFeedbackSolicitationResponse:
         """Sends a solicitation to a buyer asking for seller feedback and a product review for the specified order. Send only one productReviewAndSellerFeedback or free form proactive message per order.
@@ -145,7 +145,7 @@ class AsyncSolicitationsV1Client:
         POST /solicitations/v1/orders/{amazonOrderId}/solicitations/productReviewAndSellerFeedback
         """
         params: dict[str, Any] = {"marketplaceIds": joined(marketplace_ids, ",")}
-        return await self._client.request(
+        return await self._http.request(
             "POST",
             f"/solicitations/v1/orders/{path_segment(amazon_order_id)}/solicitations/productReviewAndSellerFeedback",
             operation="createProductReviewAndSellerFeedbackSolicitation",
@@ -157,4 +157,4 @@ class AsyncSolicitationsV1Client:
         )
 
 
-__all__ = ["AsyncSolicitationsV1Client", "SolicitationsV1Client"]
+__all__ = ["AsyncSolicitationsV1Resource", "SolicitationsV1Resource"]

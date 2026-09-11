@@ -11,24 +11,24 @@ import datetime
 from collections.abc import AsyncIterator, Iterator
 from typing import Any
 
-from ..http_client import AsyncHttpClient, HttpClient, RateLimit, RequestOptions, apaginate, joined, paginate, path_segment
+from .._http import AsyncHttpClient, HttpClient, RateLimit, RequestOptions, apaginate, joined, paginate, path_segment
 from ..models import fulfillment_inbound_v0
 
 SERVICE = "fulfillment_inbound_v0"
 
 
-class FulfillmentInboundV0Client:
+class FulfillmentInboundV0Resource:
     """Synchronous ``FulfillmentInboundV0`` resource."""
 
-    __slots__ = ("_client",)
+    __slots__ = ("_http",)
 
-    def __init__(self, client: HttpClient) -> None:
-        self._client = client
+    def __init__(self, http: HttpClient) -> None:
+        self._http = http
 
     def list_prep_instructions(
         self,
-        *,
         ship_to_country_code: str,
+        *,
         seller_sku_list: list[str] | None = None,
         asin_list: list[str] | None = None,
         request_options: RequestOptions | None = None,
@@ -50,7 +50,7 @@ class FulfillmentInboundV0Client:
             "SellerSKUList": joined(seller_sku_list, ","),
             "ASINList": joined(asin_list, ","),
         }
-        return self._client.request(
+        return self._http.request(
             "GET",
             "/fba/inbound/v0/prepInstructions",
             operation="getPrepInstructions",
@@ -64,10 +64,10 @@ class FulfillmentInboundV0Client:
 
     def list_shipment_labels(
         self,
-        *,
         shipment_id: str,
         page_type: fulfillment_inbound_v0.FulfillmentInboundV0PageType | str,
         label_type: fulfillment_inbound_v0.FulfillmentInboundV0LabelType | str,
+        *,
         number_of_packages: int | None = None,
         package_labels_to_print: list[str] | None = None,
         number_of_pallets: int | None = None,
@@ -96,7 +96,7 @@ class FulfillmentInboundV0Client:
             "PageSize": page_size,
             "PageStartIndex": page_start_index,
         }
-        return self._client.request(
+        return self._http.request(
             "GET",
             f"/fba/inbound/v0/shipments/{path_segment(shipment_id)}/labels",
             operation="getLabels",
@@ -110,8 +110,8 @@ class FulfillmentInboundV0Client:
 
     def list_shipment_bill_of_lading(
         self,
-        *,
         shipment_id: str,
+        *,
         request_options: RequestOptions | None = None,
     ) -> fulfillment_inbound_v0.GetBillOfLadingResponse:
         """Returns a bill of lading for a Less Than Truckload/Full Truckload (LTL/FTL) shipment. The getBillOfLading operation returns PDF document data for printing a bill of lading for an Amazon-partnered Less Than Truckload/Full Truckload (LTL/FTL) inbound shipment.
@@ -126,7 +126,7 @@ class FulfillmentInboundV0Client:
 
         GET /fba/inbound/v0/shipments/{shipmentId}/billOfLading
         """
-        return self._client.request(
+        return self._http.request(
             "GET",
             f"/fba/inbound/v0/shipments/{path_segment(shipment_id)}/billOfLading",
             operation="getBillOfLading",
@@ -139,9 +139,9 @@ class FulfillmentInboundV0Client:
 
     def list_shipments(
         self,
-        *,
         query_type: fulfillment_inbound_v0.FulfillmentInboundV0QueryType | str,
         marketplace_id: str,
+        *,
         shipment_status_list: list[fulfillment_inbound_v0.FulfillmentInboundV0ShipmentStatusList] | None = None,
         shipment_id_list: list[str] | None = None,
         last_updated_after: datetime.datetime | None = None,
@@ -170,7 +170,7 @@ class FulfillmentInboundV0Client:
             "NextToken": next_token,
             "MarketplaceId": marketplace_id,
         }
-        return self._client.request(
+        return self._http.request(
             "GET",
             "/fba/inbound/v0/shipments",
             operation="getShipments",
@@ -184,9 +184,9 @@ class FulfillmentInboundV0Client:
 
     def iter_list_shipments(
         self,
-        *,
         query_type: fulfillment_inbound_v0.FulfillmentInboundV0QueryType | str,
         marketplace_id: str,
+        *,
         shipment_status_list: list[fulfillment_inbound_v0.FulfillmentInboundV0ShipmentStatusList] | None = None,
         shipment_id_list: list[str] | None = None,
         last_updated_after: datetime.datetime | None = None,
@@ -216,8 +216,8 @@ class FulfillmentInboundV0Client:
 
     def get_shipment_items_by_shipment_id(
         self,
-        *,
         shipment_id: str,
+        *,
         marketplace_id: str | None = None,
         request_options: RequestOptions | None = None,
     ) -> fulfillment_inbound_v0.GetShipmentItemsResponse:
@@ -234,7 +234,7 @@ class FulfillmentInboundV0Client:
         GET /fba/inbound/v0/shipments/{shipmentId}/items
         """
         params: dict[str, Any] = {"MarketplaceId": marketplace_id}
-        return self._client.request(
+        return self._http.request(
             "GET",
             f"/fba/inbound/v0/shipments/{path_segment(shipment_id)}/items",
             operation="getShipmentItemsByShipmentId",
@@ -248,9 +248,9 @@ class FulfillmentInboundV0Client:
 
     def get_shipment_items(
         self,
-        *,
         query_type: fulfillment_inbound_v0.FulfillmentInboundV0QueryType | str,
         marketplace_id: str,
+        *,
         last_updated_after: datetime.datetime | None = None,
         last_updated_before: datetime.datetime | None = None,
         next_token: str | None = None,
@@ -275,7 +275,7 @@ class FulfillmentInboundV0Client:
             "NextToken": next_token,
             "MarketplaceId": marketplace_id,
         }
-        return self._client.request(
+        return self._http.request(
             "GET",
             "/fba/inbound/v0/shipmentItems",
             operation="getShipmentItems",
@@ -289,9 +289,9 @@ class FulfillmentInboundV0Client:
 
     def iter_get_shipment_items(
         self,
-        *,
         query_type: fulfillment_inbound_v0.FulfillmentInboundV0QueryType | str,
         marketplace_id: str,
+        *,
         last_updated_after: datetime.datetime | None = None,
         last_updated_before: datetime.datetime | None = None,
         next_token: str | None = None,
@@ -316,18 +316,18 @@ class FulfillmentInboundV0Client:
         )
 
 
-class AsyncFulfillmentInboundV0Client:
+class AsyncFulfillmentInboundV0Resource:
     """Asynchronous ``FulfillmentInboundV0`` resource."""
 
-    __slots__ = ("_client",)
+    __slots__ = ("_http",)
 
-    def __init__(self, client: AsyncHttpClient) -> None:
-        self._client = client
+    def __init__(self, http: AsyncHttpClient) -> None:
+        self._http = http
 
     async def list_prep_instructions(
         self,
-        *,
         ship_to_country_code: str,
+        *,
         seller_sku_list: list[str] | None = None,
         asin_list: list[str] | None = None,
         request_options: RequestOptions | None = None,
@@ -349,7 +349,7 @@ class AsyncFulfillmentInboundV0Client:
             "SellerSKUList": joined(seller_sku_list, ","),
             "ASINList": joined(asin_list, ","),
         }
-        return await self._client.request(
+        return await self._http.request(
             "GET",
             "/fba/inbound/v0/prepInstructions",
             operation="getPrepInstructions",
@@ -363,10 +363,10 @@ class AsyncFulfillmentInboundV0Client:
 
     async def list_shipment_labels(
         self,
-        *,
         shipment_id: str,
         page_type: fulfillment_inbound_v0.FulfillmentInboundV0PageType | str,
         label_type: fulfillment_inbound_v0.FulfillmentInboundV0LabelType | str,
+        *,
         number_of_packages: int | None = None,
         package_labels_to_print: list[str] | None = None,
         number_of_pallets: int | None = None,
@@ -395,7 +395,7 @@ class AsyncFulfillmentInboundV0Client:
             "PageSize": page_size,
             "PageStartIndex": page_start_index,
         }
-        return await self._client.request(
+        return await self._http.request(
             "GET",
             f"/fba/inbound/v0/shipments/{path_segment(shipment_id)}/labels",
             operation="getLabels",
@@ -409,8 +409,8 @@ class AsyncFulfillmentInboundV0Client:
 
     async def list_shipment_bill_of_lading(
         self,
-        *,
         shipment_id: str,
+        *,
         request_options: RequestOptions | None = None,
     ) -> fulfillment_inbound_v0.GetBillOfLadingResponse:
         """Returns a bill of lading for a Less Than Truckload/Full Truckload (LTL/FTL) shipment. The getBillOfLading operation returns PDF document data for printing a bill of lading for an Amazon-partnered Less Than Truckload/Full Truckload (LTL/FTL) inbound shipment.
@@ -425,7 +425,7 @@ class AsyncFulfillmentInboundV0Client:
 
         GET /fba/inbound/v0/shipments/{shipmentId}/billOfLading
         """
-        return await self._client.request(
+        return await self._http.request(
             "GET",
             f"/fba/inbound/v0/shipments/{path_segment(shipment_id)}/billOfLading",
             operation="getBillOfLading",
@@ -438,9 +438,9 @@ class AsyncFulfillmentInboundV0Client:
 
     async def list_shipments(
         self,
-        *,
         query_type: fulfillment_inbound_v0.FulfillmentInboundV0QueryType | str,
         marketplace_id: str,
+        *,
         shipment_status_list: list[fulfillment_inbound_v0.FulfillmentInboundV0ShipmentStatusList] | None = None,
         shipment_id_list: list[str] | None = None,
         last_updated_after: datetime.datetime | None = None,
@@ -469,7 +469,7 @@ class AsyncFulfillmentInboundV0Client:
             "NextToken": next_token,
             "MarketplaceId": marketplace_id,
         }
-        return await self._client.request(
+        return await self._http.request(
             "GET",
             "/fba/inbound/v0/shipments",
             operation="getShipments",
@@ -483,9 +483,9 @@ class AsyncFulfillmentInboundV0Client:
 
     def iter_list_shipments(
         self,
-        *,
         query_type: fulfillment_inbound_v0.FulfillmentInboundV0QueryType | str,
         marketplace_id: str,
+        *,
         shipment_status_list: list[fulfillment_inbound_v0.FulfillmentInboundV0ShipmentStatusList] | None = None,
         shipment_id_list: list[str] | None = None,
         last_updated_after: datetime.datetime | None = None,
@@ -515,8 +515,8 @@ class AsyncFulfillmentInboundV0Client:
 
     async def get_shipment_items_by_shipment_id(
         self,
-        *,
         shipment_id: str,
+        *,
         marketplace_id: str | None = None,
         request_options: RequestOptions | None = None,
     ) -> fulfillment_inbound_v0.GetShipmentItemsResponse:
@@ -533,7 +533,7 @@ class AsyncFulfillmentInboundV0Client:
         GET /fba/inbound/v0/shipments/{shipmentId}/items
         """
         params: dict[str, Any] = {"MarketplaceId": marketplace_id}
-        return await self._client.request(
+        return await self._http.request(
             "GET",
             f"/fba/inbound/v0/shipments/{path_segment(shipment_id)}/items",
             operation="getShipmentItemsByShipmentId",
@@ -547,9 +547,9 @@ class AsyncFulfillmentInboundV0Client:
 
     async def get_shipment_items(
         self,
-        *,
         query_type: fulfillment_inbound_v0.FulfillmentInboundV0QueryType | str,
         marketplace_id: str,
+        *,
         last_updated_after: datetime.datetime | None = None,
         last_updated_before: datetime.datetime | None = None,
         next_token: str | None = None,
@@ -574,7 +574,7 @@ class AsyncFulfillmentInboundV0Client:
             "NextToken": next_token,
             "MarketplaceId": marketplace_id,
         }
-        return await self._client.request(
+        return await self._http.request(
             "GET",
             "/fba/inbound/v0/shipmentItems",
             operation="getShipmentItems",
@@ -588,9 +588,9 @@ class AsyncFulfillmentInboundV0Client:
 
     def iter_get_shipment_items(
         self,
-        *,
         query_type: fulfillment_inbound_v0.FulfillmentInboundV0QueryType | str,
         marketplace_id: str,
+        *,
         last_updated_after: datetime.datetime | None = None,
         last_updated_before: datetime.datetime | None = None,
         next_token: str | None = None,
@@ -615,4 +615,4 @@ class AsyncFulfillmentInboundV0Client:
         )
 
 
-__all__ = ["AsyncFulfillmentInboundV0Client", "FulfillmentInboundV0Client"]
+__all__ = ["AsyncFulfillmentInboundV0Resource", "FulfillmentInboundV0Resource"]

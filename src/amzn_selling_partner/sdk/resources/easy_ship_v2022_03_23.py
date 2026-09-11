@@ -10,24 +10,24 @@ from __future__ import annotations
 from collections.abc import Mapping
 from typing import Any
 
-from ..http_client import AsyncHttpClient, HttpClient, RateLimit, RequestOptions
+from .._http import AsyncHttpClient, HttpClient, RateLimit, RequestOptions
 from ..models import easy_ship_v2022_03_23
 
 SERVICE = "easy_ship_v2022_03_23"
 
 
-class EasyShipV20220323Client:
+class EasyShipV20220323Resource:
     """Synchronous ``EasyShipV20220323`` resource."""
 
-    __slots__ = ("_client",)
+    __slots__ = ("_http",)
 
-    def __init__(self, client: HttpClient) -> None:
-        self._client = client
+    def __init__(self, http: HttpClient) -> None:
+        self._http = http
 
     def create_time_slot(
         self,
-        *,
         body: easy_ship_v2022_03_23.ListHandoverSlotsRequest | Mapping[str, Any],
+        *,
         request_options: RequestOptions | None = None,
     ) -> easy_ship_v2022_03_23.ListHandoverSlotsResponse:
         """Returns time slots available for Easy Ship orders to be scheduled based on the package weight and dimensions that the seller specifies.
@@ -46,7 +46,7 @@ class EasyShipV20220323Client:
 
         POST /easyShip/2022-03-23/timeSlot
         """
-        return self._client.request(
+        return self._http.request(
             "POST",
             "/easyShip/2022-03-23/timeSlot",
             operation="listHandoverSlots",
@@ -60,9 +60,9 @@ class EasyShipV20220323Client:
 
     def list_package(
         self,
-        *,
         amazon_order_id: str,
         marketplace_id: str,
+        *,
         request_options: RequestOptions | None = None,
     ) -> easy_ship_v2022_03_23.Package:
         """Returns information about a package, including dimensions, weight, time slot information for handover, invoice and item information, and status.
@@ -78,7 +78,7 @@ class EasyShipV20220323Client:
         GET /easyShip/2022-03-23/package
         """
         params: dict[str, Any] = {"amazonOrderId": amazon_order_id, "marketplaceId": marketplace_id}
-        return self._client.request(
+        return self._http.request(
             "GET",
             "/easyShip/2022-03-23/package",
             operation="getScheduledPackage",
@@ -92,8 +92,8 @@ class EasyShipV20220323Client:
 
     def create_package(
         self,
-        *,
         body: easy_ship_v2022_03_23.CreateScheduledPackageRequest | Mapping[str, Any],
+        *,
         request_options: RequestOptions | None = None,
     ) -> easy_ship_v2022_03_23.Package:
         """Schedules an Easy Ship order and returns the scheduled package information.
@@ -120,7 +120,7 @@ class EasyShipV20220323Client:
 
         POST /easyShip/2022-03-23/package
         """
-        return self._client.request(
+        return self._http.request(
             "POST",
             "/easyShip/2022-03-23/package",
             operation="createScheduledPackage",
@@ -134,8 +134,8 @@ class EasyShipV20220323Client:
 
     def update_package(
         self,
-        *,
         body: easy_ship_v2022_03_23.UpdateScheduledPackagesRequest | Mapping[str, Any],
+        *,
         request_options: RequestOptions | None = None,
     ) -> easy_ship_v2022_03_23.Packages:
         """Updates the time slot for handing over the package indicated by the specified `scheduledPackageId`. You can get the new `slotId` value for the time slot by calling the `listHandoverSlots` operation before making another `patch` call.
@@ -152,7 +152,7 @@ class EasyShipV20220323Client:
 
         PATCH /easyShip/2022-03-23/package
         """
-        return self._client.request(
+        return self._http.request(
             "PATCH",
             "/easyShip/2022-03-23/package",
             operation="updateScheduledPackages",
@@ -166,8 +166,8 @@ class EasyShipV20220323Client:
 
     def create_bulk(
         self,
-        *,
         body: easy_ship_v2022_03_23.CreateScheduledPackagesRequest | Mapping[str, Any],
+        *,
         request_options: RequestOptions | None = None,
     ) -> easy_ship_v2022_03_23.CreateScheduledPackagesResponse:
         """This operation automatically schedules a time slot for all the `amazonOrderId`s given as input, generating the associated shipping labels, along with other compliance documents according to the marketplace (refer to the [marketplace document support table](doc:easyship-api-v2022-03-23-use-case-guide#marketplace-support-table)).
@@ -190,7 +190,7 @@ class EasyShipV20220323Client:
 
         POST /easyShip/2022-03-23/packages/bulk
         """
-        return self._client.request(
+        return self._http.request(
             "POST",
             "/easyShip/2022-03-23/packages/bulk",
             operation="createScheduledPackageBulk",
@@ -203,18 +203,18 @@ class EasyShipV20220323Client:
         )
 
 
-class AsyncEasyShipV20220323Client:
+class AsyncEasyShipV20220323Resource:
     """Asynchronous ``EasyShipV20220323`` resource."""
 
-    __slots__ = ("_client",)
+    __slots__ = ("_http",)
 
-    def __init__(self, client: AsyncHttpClient) -> None:
-        self._client = client
+    def __init__(self, http: AsyncHttpClient) -> None:
+        self._http = http
 
     async def create_time_slot(
         self,
-        *,
         body: easy_ship_v2022_03_23.ListHandoverSlotsRequest | Mapping[str, Any],
+        *,
         request_options: RequestOptions | None = None,
     ) -> easy_ship_v2022_03_23.ListHandoverSlotsResponse:
         """Returns time slots available for Easy Ship orders to be scheduled based on the package weight and dimensions that the seller specifies.
@@ -233,7 +233,7 @@ class AsyncEasyShipV20220323Client:
 
         POST /easyShip/2022-03-23/timeSlot
         """
-        return await self._client.request(
+        return await self._http.request(
             "POST",
             "/easyShip/2022-03-23/timeSlot",
             operation="listHandoverSlots",
@@ -247,9 +247,9 @@ class AsyncEasyShipV20220323Client:
 
     async def list_package(
         self,
-        *,
         amazon_order_id: str,
         marketplace_id: str,
+        *,
         request_options: RequestOptions | None = None,
     ) -> easy_ship_v2022_03_23.Package:
         """Returns information about a package, including dimensions, weight, time slot information for handover, invoice and item information, and status.
@@ -265,7 +265,7 @@ class AsyncEasyShipV20220323Client:
         GET /easyShip/2022-03-23/package
         """
         params: dict[str, Any] = {"amazonOrderId": amazon_order_id, "marketplaceId": marketplace_id}
-        return await self._client.request(
+        return await self._http.request(
             "GET",
             "/easyShip/2022-03-23/package",
             operation="getScheduledPackage",
@@ -279,8 +279,8 @@ class AsyncEasyShipV20220323Client:
 
     async def create_package(
         self,
-        *,
         body: easy_ship_v2022_03_23.CreateScheduledPackageRequest | Mapping[str, Any],
+        *,
         request_options: RequestOptions | None = None,
     ) -> easy_ship_v2022_03_23.Package:
         """Schedules an Easy Ship order and returns the scheduled package information.
@@ -307,7 +307,7 @@ class AsyncEasyShipV20220323Client:
 
         POST /easyShip/2022-03-23/package
         """
-        return await self._client.request(
+        return await self._http.request(
             "POST",
             "/easyShip/2022-03-23/package",
             operation="createScheduledPackage",
@@ -321,8 +321,8 @@ class AsyncEasyShipV20220323Client:
 
     async def update_package(
         self,
-        *,
         body: easy_ship_v2022_03_23.UpdateScheduledPackagesRequest | Mapping[str, Any],
+        *,
         request_options: RequestOptions | None = None,
     ) -> easy_ship_v2022_03_23.Packages:
         """Updates the time slot for handing over the package indicated by the specified `scheduledPackageId`. You can get the new `slotId` value for the time slot by calling the `listHandoverSlots` operation before making another `patch` call.
@@ -339,7 +339,7 @@ class AsyncEasyShipV20220323Client:
 
         PATCH /easyShip/2022-03-23/package
         """
-        return await self._client.request(
+        return await self._http.request(
             "PATCH",
             "/easyShip/2022-03-23/package",
             operation="updateScheduledPackages",
@@ -353,8 +353,8 @@ class AsyncEasyShipV20220323Client:
 
     async def create_bulk(
         self,
-        *,
         body: easy_ship_v2022_03_23.CreateScheduledPackagesRequest | Mapping[str, Any],
+        *,
         request_options: RequestOptions | None = None,
     ) -> easy_ship_v2022_03_23.CreateScheduledPackagesResponse:
         """This operation automatically schedules a time slot for all the `amazonOrderId`s given as input, generating the associated shipping labels, along with other compliance documents according to the marketplace (refer to the [marketplace document support table](doc:easyship-api-v2022-03-23-use-case-guide#marketplace-support-table)).
@@ -377,7 +377,7 @@ class AsyncEasyShipV20220323Client:
 
         POST /easyShip/2022-03-23/packages/bulk
         """
-        return await self._client.request(
+        return await self._http.request(
             "POST",
             "/easyShip/2022-03-23/packages/bulk",
             operation="createScheduledPackageBulk",
@@ -390,4 +390,4 @@ class AsyncEasyShipV20220323Client:
         )
 
 
-__all__ = ["AsyncEasyShipV20220323Client", "EasyShipV20220323Client"]
+__all__ = ["AsyncEasyShipV20220323Resource", "EasyShipV20220323Resource"]

@@ -32,7 +32,7 @@ from amzn_selling_partner.plugins.amazon_spapi import (
     with_rdt,
 )
 from amzn_selling_partner.sandbox_tests import load_documents, raw_operations
-from amzn_selling_partner.sdk.http_client import REQUEST_ID_HEADER, RequestContext, TokenBucket
+from amzn_selling_partner.sdk._http import REQUEST_ID_HEADER, RequestContext, TokenBucket
 from amzn_selling_partner.sdk.resources import OPERATIONS, SERVICES
 
 from ._amazon_mock import AmazonMock
@@ -171,7 +171,7 @@ def test_naming_and_aliases() -> None:
     assert client.shipping is client.shipping_v2 and client.shipping_v1 is not client.shipping_v2
     assert hasattr(client.shipping_v2, "update_carrier_account")  # PUT linkCarrierAccount (duplicate operationId)
     assert client.catalog_items is client.catalog_items_v2022_04_01
-    assert client.product_pricing_v0.__class__.__name__ == "ProductPricingV0Client"  # /products + /batches mounted together
+    assert client.product_pricing_v0.__class__.__name__ == "ProductPricingV0Resource"  # /products + /batches mounted together
     assert client.fba_inbound_eligibility is client.fba_inbound_v1 and client.awd is client.awd_v2024_05_09
 
 

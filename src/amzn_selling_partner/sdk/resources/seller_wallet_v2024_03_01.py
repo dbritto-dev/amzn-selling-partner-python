@@ -10,24 +10,24 @@ from __future__ import annotations
 from collections.abc import Mapping
 from typing import Any
 
-from ..http_client import AsyncHttpClient, HttpClient, RequestOptions, path_segment
+from .._http import AsyncHttpClient, HttpClient, RequestOptions, path_segment
 from ..models import seller_wallet_v2024_03_01
 
 SERVICE = "seller_wallet_v2024_03_01"
 
 
-class SellerWalletV20240301Client:
+class SellerWalletV20240301Resource:
     """Synchronous ``SellerWalletV20240301`` resource."""
 
-    __slots__ = ("_client",)
+    __slots__ = ("_http",)
 
-    def __init__(self, client: HttpClient) -> None:
-        self._client = client
+    def __init__(self, http: HttpClient) -> None:
+        self._http = http
 
     def list_accounts(
         self,
-        *,
         marketplace_id: str,
+        *,
         request_options: RequestOptions | None = None,
     ) -> seller_wallet_v2024_03_01.BankAccountListing:
         """Get all Amazon Seller Wallet accounts for the seller
@@ -37,7 +37,7 @@ class SellerWalletV20240301Client:
         GET /finances/transfers/wallet/2024-03-01/accounts
         """
         params: dict[str, Any] = {"marketplaceId": marketplace_id}
-        return self._client.request(
+        return self._http.request(
             "GET",
             "/finances/transfers/wallet/2024-03-01/accounts",
             operation="listAccounts",
@@ -50,9 +50,9 @@ class SellerWalletV20240301Client:
 
     def get_account(
         self,
-        *,
         account_id: str,
         marketplace_id: str,
+        *,
         request_options: RequestOptions | None = None,
     ) -> seller_wallet_v2024_03_01.BankAccount:
         """Find particular Amazon Seller Wallet account by Amazon account identifier
@@ -62,7 +62,7 @@ class SellerWalletV20240301Client:
         GET /finances/transfers/wallet/2024-03-01/accounts/{accountId}
         """
         params: dict[str, Any] = {"marketplaceId": marketplace_id}
-        return self._client.request(
+        return self._http.request(
             "GET",
             f"/finances/transfers/wallet/2024-03-01/accounts/{path_segment(account_id)}",
             operation="getAccount",
@@ -75,9 +75,9 @@ class SellerWalletV20240301Client:
 
     def list_account_balance(
         self,
-        *,
         account_id: str,
         marketplace_id: str,
+        *,
         request_options: RequestOptions | None = None,
     ) -> seller_wallet_v2024_03_01.BalanceListing:
         """Find balance in particular Amazon Seller Wallet account by Amazon account identifier
@@ -87,7 +87,7 @@ class SellerWalletV20240301Client:
         GET /finances/transfers/wallet/2024-03-01/accounts/{accountId}/balance
         """
         params: dict[str, Any] = {"marketplaceId": marketplace_id}
-        return self._client.request(
+        return self._http.request(
             "GET",
             f"/finances/transfers/wallet/2024-03-01/accounts/{path_segment(account_id)}/balance",
             operation="listAccountBalances",
@@ -100,13 +100,13 @@ class SellerWalletV20240301Client:
 
     def list_transfer_preview(
         self,
-        *,
         source_country_code: str,
         source_currency_code: str,
         destination_country_code: str,
         destination_currency_code: str,
         base_amount: float,
         marketplace_id: str,
+        *,
         request_options: RequestOptions | None = None,
     ) -> seller_wallet_v2024_03_01.TransferRatePreview:
         """Fetch potential fees that could be applied on a transaction on the basis of the source and destination country currency code
@@ -123,7 +123,7 @@ class SellerWalletV20240301Client:
             "baseAmount": base_amount,
             "marketplaceId": marketplace_id,
         }
-        return self._client.request(
+        return self._http.request(
             "GET",
             "/finances/transfers/wallet/2024-03-01/transferPreview",
             operation="getTransferPreview",
@@ -136,9 +136,9 @@ class SellerWalletV20240301Client:
 
     def list_transactions(
         self,
-        *,
         account_id: str,
         marketplace_id: str,
+        *,
         next_page_token: str | None = None,
         request_options: RequestOptions | None = None,
     ) -> seller_wallet_v2024_03_01.TransactionListing:
@@ -149,7 +149,7 @@ class SellerWalletV20240301Client:
         GET /finances/transfers/wallet/2024-03-01/transactions
         """
         params: dict[str, Any] = {"accountId": account_id, "nextPageToken": next_page_token, "marketplaceId": marketplace_id}
-        return self._client.request(
+        return self._http.request(
             "GET",
             "/finances/transfers/wallet/2024-03-01/transactions",
             operation="listAccountTransactions",
@@ -162,11 +162,11 @@ class SellerWalletV20240301Client:
 
     def create_transaction(
         self,
-        *,
+        body: seller_wallet_v2024_03_01.TransactionInitiationRequest | Mapping[str, Any],
         marketplace_id: str,
         dest_account_digital_signature: str,
         amount_digital_signature: str,
-        body: seller_wallet_v2024_03_01.TransactionInitiationRequest | Mapping[str, Any],
+        *,
         request_options: RequestOptions | None = None,
     ) -> seller_wallet_v2024_03_01.CreateTransactionResponse:
         """Create a transaction request from Amazon Seller Wallet account to another customer-provided account
@@ -180,7 +180,7 @@ class SellerWalletV20240301Client:
             "destAccountDigitalSignature": dest_account_digital_signature,
             "amountDigitalSignature": amount_digital_signature,
         }
-        return self._client.request(
+        return self._http.request(
             "POST",
             "/finances/transfers/wallet/2024-03-01/transactions",
             operation="createTransaction",
@@ -195,9 +195,9 @@ class SellerWalletV20240301Client:
 
     def get_transaction(
         self,
-        *,
         transaction_id: str,
         marketplace_id: str,
+        *,
         request_options: RequestOptions | None = None,
     ) -> seller_wallet_v2024_03_01.Transaction:
         """Find particular Amazon Seller Wallet account transaction by Amazon transaction identifier
@@ -207,7 +207,7 @@ class SellerWalletV20240301Client:
         GET /finances/transfers/wallet/2024-03-01/transactions/{transactionId}
         """
         params: dict[str, Any] = {"marketplaceId": marketplace_id}
-        return self._client.request(
+        return self._http.request(
             "GET",
             f"/finances/transfers/wallet/2024-03-01/transactions/{path_segment(transaction_id)}",
             operation="getTransaction",
@@ -220,9 +220,9 @@ class SellerWalletV20240301Client:
 
     def list_transfer_schedules(
         self,
-        *,
         account_id: str,
         marketplace_id: str,
+        *,
         next_page_token: str | None = None,
         request_options: RequestOptions | None = None,
     ) -> seller_wallet_v2024_03_01.TransferScheduleListing:
@@ -233,7 +233,7 @@ class SellerWalletV20240301Client:
         GET /finances/transfers/wallet/2024-03-01/transferSchedules
         """
         params: dict[str, Any] = {"accountId": account_id, "marketplaceId": marketplace_id, "nextPageToken": next_page_token}
-        return self._client.request(
+        return self._http.request(
             "GET",
             "/finances/transfers/wallet/2024-03-01/transferSchedules",
             operation="listTransferSchedules",
@@ -246,11 +246,11 @@ class SellerWalletV20240301Client:
 
     def create_transfer_schedule(
         self,
-        *,
+        body: seller_wallet_v2024_03_01.TransferScheduleRequest | Mapping[str, Any],
         marketplace_id: str,
         dest_account_digital_signature: str,
         amount_digital_signature: str,
-        body: seller_wallet_v2024_03_01.TransferScheduleRequest | Mapping[str, Any],
+        *,
         request_options: RequestOptions | None = None,
     ) -> seller_wallet_v2024_03_01.TransferSchedule:
         """Create a transfer schedule request from Amazon Seller Wallet account to another customer-provided account
@@ -264,7 +264,7 @@ class SellerWalletV20240301Client:
             "destAccountDigitalSignature": dest_account_digital_signature,
             "amountDigitalSignature": amount_digital_signature,
         }
-        return self._client.request(
+        return self._http.request(
             "POST",
             "/finances/transfers/wallet/2024-03-01/transferSchedules",
             operation="createTransferSchedule",
@@ -279,11 +279,11 @@ class SellerWalletV20240301Client:
 
     def update_transfer_schedules(
         self,
-        *,
+        body: seller_wallet_v2024_03_01.TransferSchedule | Mapping[str, Any],
         marketplace_id: str,
         dest_account_digital_signature: str,
         amount_digital_signature: str,
-        body: seller_wallet_v2024_03_01.TransferSchedule | Mapping[str, Any],
+        *,
         request_options: RequestOptions | None = None,
     ) -> seller_wallet_v2024_03_01.TransferSchedule:
         """Update a transfer schedule information. Only fields (i.e; transferScheduleInformation, paymentPreference, transferScheduleStatus) in the request body can be updated.
@@ -297,7 +297,7 @@ class SellerWalletV20240301Client:
             "destAccountDigitalSignature": dest_account_digital_signature,
             "amountDigitalSignature": amount_digital_signature,
         }
-        return self._client.request(
+        return self._http.request(
             "PUT",
             "/finances/transfers/wallet/2024-03-01/transferSchedules",
             operation="updateTransferSchedule",
@@ -312,9 +312,9 @@ class SellerWalletV20240301Client:
 
     def get_transfer_schedule(
         self,
-        *,
         transfer_schedule_id: str,
         marketplace_id: str,
+        *,
         request_options: RequestOptions | None = None,
     ) -> seller_wallet_v2024_03_01.TransferSchedule:
         """Find particular Amazon Seller Wallet account transfer schedule by Amazon transfer schedule identifier
@@ -324,7 +324,7 @@ class SellerWalletV20240301Client:
         GET /finances/transfers/wallet/2024-03-01/transferSchedules/{transferScheduleId}
         """
         params: dict[str, Any] = {"marketplaceId": marketplace_id}
-        return self._client.request(
+        return self._http.request(
             "GET",
             f"/finances/transfers/wallet/2024-03-01/transferSchedules/{path_segment(transfer_schedule_id)}",
             operation="getTransferSchedule",
@@ -337,9 +337,9 @@ class SellerWalletV20240301Client:
 
     def delete_transfer_schedule(
         self,
-        *,
         transfer_schedule_id: str,
         marketplace_id: str,
+        *,
         request_options: RequestOptions | None = None,
     ) -> seller_wallet_v2024_03_01.DeleteTransferSchedule:
         """Delete a transaction request that is scheduled from Amazon Seller Wallet account to another customer-provided account
@@ -349,7 +349,7 @@ class SellerWalletV20240301Client:
         DELETE /finances/transfers/wallet/2024-03-01/transferSchedules/{transferScheduleId}
         """
         params: dict[str, Any] = {"marketplaceId": marketplace_id}
-        return self._client.request(
+        return self._http.request(
             "DELETE",
             f"/finances/transfers/wallet/2024-03-01/transferSchedules/{path_segment(transfer_schedule_id)}",
             operation="deleteScheduleTransaction",
@@ -361,18 +361,18 @@ class SellerWalletV20240301Client:
         )
 
 
-class AsyncSellerWalletV20240301Client:
+class AsyncSellerWalletV20240301Resource:
     """Asynchronous ``SellerWalletV20240301`` resource."""
 
-    __slots__ = ("_client",)
+    __slots__ = ("_http",)
 
-    def __init__(self, client: AsyncHttpClient) -> None:
-        self._client = client
+    def __init__(self, http: AsyncHttpClient) -> None:
+        self._http = http
 
     async def list_accounts(
         self,
-        *,
         marketplace_id: str,
+        *,
         request_options: RequestOptions | None = None,
     ) -> seller_wallet_v2024_03_01.BankAccountListing:
         """Get all Amazon Seller Wallet accounts for the seller
@@ -382,7 +382,7 @@ class AsyncSellerWalletV20240301Client:
         GET /finances/transfers/wallet/2024-03-01/accounts
         """
         params: dict[str, Any] = {"marketplaceId": marketplace_id}
-        return await self._client.request(
+        return await self._http.request(
             "GET",
             "/finances/transfers/wallet/2024-03-01/accounts",
             operation="listAccounts",
@@ -395,9 +395,9 @@ class AsyncSellerWalletV20240301Client:
 
     async def get_account(
         self,
-        *,
         account_id: str,
         marketplace_id: str,
+        *,
         request_options: RequestOptions | None = None,
     ) -> seller_wallet_v2024_03_01.BankAccount:
         """Find particular Amazon Seller Wallet account by Amazon account identifier
@@ -407,7 +407,7 @@ class AsyncSellerWalletV20240301Client:
         GET /finances/transfers/wallet/2024-03-01/accounts/{accountId}
         """
         params: dict[str, Any] = {"marketplaceId": marketplace_id}
-        return await self._client.request(
+        return await self._http.request(
             "GET",
             f"/finances/transfers/wallet/2024-03-01/accounts/{path_segment(account_id)}",
             operation="getAccount",
@@ -420,9 +420,9 @@ class AsyncSellerWalletV20240301Client:
 
     async def list_account_balance(
         self,
-        *,
         account_id: str,
         marketplace_id: str,
+        *,
         request_options: RequestOptions | None = None,
     ) -> seller_wallet_v2024_03_01.BalanceListing:
         """Find balance in particular Amazon Seller Wallet account by Amazon account identifier
@@ -432,7 +432,7 @@ class AsyncSellerWalletV20240301Client:
         GET /finances/transfers/wallet/2024-03-01/accounts/{accountId}/balance
         """
         params: dict[str, Any] = {"marketplaceId": marketplace_id}
-        return await self._client.request(
+        return await self._http.request(
             "GET",
             f"/finances/transfers/wallet/2024-03-01/accounts/{path_segment(account_id)}/balance",
             operation="listAccountBalances",
@@ -445,13 +445,13 @@ class AsyncSellerWalletV20240301Client:
 
     async def list_transfer_preview(
         self,
-        *,
         source_country_code: str,
         source_currency_code: str,
         destination_country_code: str,
         destination_currency_code: str,
         base_amount: float,
         marketplace_id: str,
+        *,
         request_options: RequestOptions | None = None,
     ) -> seller_wallet_v2024_03_01.TransferRatePreview:
         """Fetch potential fees that could be applied on a transaction on the basis of the source and destination country currency code
@@ -468,7 +468,7 @@ class AsyncSellerWalletV20240301Client:
             "baseAmount": base_amount,
             "marketplaceId": marketplace_id,
         }
-        return await self._client.request(
+        return await self._http.request(
             "GET",
             "/finances/transfers/wallet/2024-03-01/transferPreview",
             operation="getTransferPreview",
@@ -481,9 +481,9 @@ class AsyncSellerWalletV20240301Client:
 
     async def list_transactions(
         self,
-        *,
         account_id: str,
         marketplace_id: str,
+        *,
         next_page_token: str | None = None,
         request_options: RequestOptions | None = None,
     ) -> seller_wallet_v2024_03_01.TransactionListing:
@@ -494,7 +494,7 @@ class AsyncSellerWalletV20240301Client:
         GET /finances/transfers/wallet/2024-03-01/transactions
         """
         params: dict[str, Any] = {"accountId": account_id, "nextPageToken": next_page_token, "marketplaceId": marketplace_id}
-        return await self._client.request(
+        return await self._http.request(
             "GET",
             "/finances/transfers/wallet/2024-03-01/transactions",
             operation="listAccountTransactions",
@@ -507,11 +507,11 @@ class AsyncSellerWalletV20240301Client:
 
     async def create_transaction(
         self,
-        *,
+        body: seller_wallet_v2024_03_01.TransactionInitiationRequest | Mapping[str, Any],
         marketplace_id: str,
         dest_account_digital_signature: str,
         amount_digital_signature: str,
-        body: seller_wallet_v2024_03_01.TransactionInitiationRequest | Mapping[str, Any],
+        *,
         request_options: RequestOptions | None = None,
     ) -> seller_wallet_v2024_03_01.CreateTransactionResponse:
         """Create a transaction request from Amazon Seller Wallet account to another customer-provided account
@@ -525,7 +525,7 @@ class AsyncSellerWalletV20240301Client:
             "destAccountDigitalSignature": dest_account_digital_signature,
             "amountDigitalSignature": amount_digital_signature,
         }
-        return await self._client.request(
+        return await self._http.request(
             "POST",
             "/finances/transfers/wallet/2024-03-01/transactions",
             operation="createTransaction",
@@ -540,9 +540,9 @@ class AsyncSellerWalletV20240301Client:
 
     async def get_transaction(
         self,
-        *,
         transaction_id: str,
         marketplace_id: str,
+        *,
         request_options: RequestOptions | None = None,
     ) -> seller_wallet_v2024_03_01.Transaction:
         """Find particular Amazon Seller Wallet account transaction by Amazon transaction identifier
@@ -552,7 +552,7 @@ class AsyncSellerWalletV20240301Client:
         GET /finances/transfers/wallet/2024-03-01/transactions/{transactionId}
         """
         params: dict[str, Any] = {"marketplaceId": marketplace_id}
-        return await self._client.request(
+        return await self._http.request(
             "GET",
             f"/finances/transfers/wallet/2024-03-01/transactions/{path_segment(transaction_id)}",
             operation="getTransaction",
@@ -565,9 +565,9 @@ class AsyncSellerWalletV20240301Client:
 
     async def list_transfer_schedules(
         self,
-        *,
         account_id: str,
         marketplace_id: str,
+        *,
         next_page_token: str | None = None,
         request_options: RequestOptions | None = None,
     ) -> seller_wallet_v2024_03_01.TransferScheduleListing:
@@ -578,7 +578,7 @@ class AsyncSellerWalletV20240301Client:
         GET /finances/transfers/wallet/2024-03-01/transferSchedules
         """
         params: dict[str, Any] = {"accountId": account_id, "marketplaceId": marketplace_id, "nextPageToken": next_page_token}
-        return await self._client.request(
+        return await self._http.request(
             "GET",
             "/finances/transfers/wallet/2024-03-01/transferSchedules",
             operation="listTransferSchedules",
@@ -591,11 +591,11 @@ class AsyncSellerWalletV20240301Client:
 
     async def create_transfer_schedule(
         self,
-        *,
+        body: seller_wallet_v2024_03_01.TransferScheduleRequest | Mapping[str, Any],
         marketplace_id: str,
         dest_account_digital_signature: str,
         amount_digital_signature: str,
-        body: seller_wallet_v2024_03_01.TransferScheduleRequest | Mapping[str, Any],
+        *,
         request_options: RequestOptions | None = None,
     ) -> seller_wallet_v2024_03_01.TransferSchedule:
         """Create a transfer schedule request from Amazon Seller Wallet account to another customer-provided account
@@ -609,7 +609,7 @@ class AsyncSellerWalletV20240301Client:
             "destAccountDigitalSignature": dest_account_digital_signature,
             "amountDigitalSignature": amount_digital_signature,
         }
-        return await self._client.request(
+        return await self._http.request(
             "POST",
             "/finances/transfers/wallet/2024-03-01/transferSchedules",
             operation="createTransferSchedule",
@@ -624,11 +624,11 @@ class AsyncSellerWalletV20240301Client:
 
     async def update_transfer_schedules(
         self,
-        *,
+        body: seller_wallet_v2024_03_01.TransferSchedule | Mapping[str, Any],
         marketplace_id: str,
         dest_account_digital_signature: str,
         amount_digital_signature: str,
-        body: seller_wallet_v2024_03_01.TransferSchedule | Mapping[str, Any],
+        *,
         request_options: RequestOptions | None = None,
     ) -> seller_wallet_v2024_03_01.TransferSchedule:
         """Update a transfer schedule information. Only fields (i.e; transferScheduleInformation, paymentPreference, transferScheduleStatus) in the request body can be updated.
@@ -642,7 +642,7 @@ class AsyncSellerWalletV20240301Client:
             "destAccountDigitalSignature": dest_account_digital_signature,
             "amountDigitalSignature": amount_digital_signature,
         }
-        return await self._client.request(
+        return await self._http.request(
             "PUT",
             "/finances/transfers/wallet/2024-03-01/transferSchedules",
             operation="updateTransferSchedule",
@@ -657,9 +657,9 @@ class AsyncSellerWalletV20240301Client:
 
     async def get_transfer_schedule(
         self,
-        *,
         transfer_schedule_id: str,
         marketplace_id: str,
+        *,
         request_options: RequestOptions | None = None,
     ) -> seller_wallet_v2024_03_01.TransferSchedule:
         """Find particular Amazon Seller Wallet account transfer schedule by Amazon transfer schedule identifier
@@ -669,7 +669,7 @@ class AsyncSellerWalletV20240301Client:
         GET /finances/transfers/wallet/2024-03-01/transferSchedules/{transferScheduleId}
         """
         params: dict[str, Any] = {"marketplaceId": marketplace_id}
-        return await self._client.request(
+        return await self._http.request(
             "GET",
             f"/finances/transfers/wallet/2024-03-01/transferSchedules/{path_segment(transfer_schedule_id)}",
             operation="getTransferSchedule",
@@ -682,9 +682,9 @@ class AsyncSellerWalletV20240301Client:
 
     async def delete_transfer_schedule(
         self,
-        *,
         transfer_schedule_id: str,
         marketplace_id: str,
+        *,
         request_options: RequestOptions | None = None,
     ) -> seller_wallet_v2024_03_01.DeleteTransferSchedule:
         """Delete a transaction request that is scheduled from Amazon Seller Wallet account to another customer-provided account
@@ -694,7 +694,7 @@ class AsyncSellerWalletV20240301Client:
         DELETE /finances/transfers/wallet/2024-03-01/transferSchedules/{transferScheduleId}
         """
         params: dict[str, Any] = {"marketplaceId": marketplace_id}
-        return await self._client.request(
+        return await self._http.request(
             "DELETE",
             f"/finances/transfers/wallet/2024-03-01/transferSchedules/{path_segment(transfer_schedule_id)}",
             operation="deleteScheduleTransaction",
@@ -706,4 +706,4 @@ class AsyncSellerWalletV20240301Client:
         )
 
 
-__all__ = ["AsyncSellerWalletV20240301Client", "SellerWalletV20240301Client"]
+__all__ = ["AsyncSellerWalletV20240301Resource", "SellerWalletV20240301Resource"]

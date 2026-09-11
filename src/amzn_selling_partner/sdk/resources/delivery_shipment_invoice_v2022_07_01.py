@@ -10,24 +10,24 @@ from __future__ import annotations
 from collections.abc import Mapping
 from typing import Any, Literal
 
-from ..http_client import AsyncHttpClient, HttpClient, RateLimit, RequestOptions
+from .._http import AsyncHttpClient, HttpClient, RateLimit, RequestOptions
 from ..models import delivery_shipment_invoice_v2022_07_01
 
 SERVICE = "delivery_shipment_invoice_v2022_07_01"
 
 
-class DeliveryShipmentInvoiceV20220701Client:
+class DeliveryShipmentInvoiceV20220701Resource:
     """Synchronous ``DeliveryShipmentInvoiceV20220701`` resource."""
 
-    __slots__ = ("_client",)
+    __slots__ = ("_http",)
 
-    def __init__(self, client: HttpClient) -> None:
-        self._client = client
+    def __init__(self, http: HttpClient) -> None:
+        self._http = http
 
     def create_invoice(
         self,
-        *,
         body: delivery_shipment_invoice_v2022_07_01.SubmitInvoiceRequest | Mapping[str, Any],
+        *,
         order_id: str | None = None,
         shipment_id: str | None = None,
         request_options: RequestOptions | None = None,
@@ -45,7 +45,7 @@ class DeliveryShipmentInvoiceV20220701Client:
         POST /delivery/2022-07-01/invoice
         """
         params: dict[str, Any] = {"orderId": order_id, "shipmentId": shipment_id}
-        return self._client.request(
+        return self._http.request(
             "POST",
             "/delivery/2022-07-01/invoice",
             operation="submitInvoice",
@@ -60,10 +60,10 @@ class DeliveryShipmentInvoiceV20220701Client:
 
     def list_status(
         self,
-        *,
         marketplace_id: str,
         invoice_type: Literal["Outbound"],
         program_type: delivery_shipment_invoice_v2022_07_01.DeliveryShipmentInvoiceV20220701ProgramType | str,
+        *,
         order_id: str | None = None,
         shipment_id: str | None = None,
         request_options: RequestOptions | None = None,
@@ -87,7 +87,7 @@ class DeliveryShipmentInvoiceV20220701Client:
             "invoiceType": invoice_type,
             "programType": program_type,
         }
-        return self._client.request(
+        return self._http.request(
             "GET",
             "/delivery/2022-07-01/invoice/status",
             operation="getInvoiceStatus",
@@ -100,18 +100,18 @@ class DeliveryShipmentInvoiceV20220701Client:
         )
 
 
-class AsyncDeliveryShipmentInvoiceV20220701Client:
+class AsyncDeliveryShipmentInvoiceV20220701Resource:
     """Asynchronous ``DeliveryShipmentInvoiceV20220701`` resource."""
 
-    __slots__ = ("_client",)
+    __slots__ = ("_http",)
 
-    def __init__(self, client: AsyncHttpClient) -> None:
-        self._client = client
+    def __init__(self, http: AsyncHttpClient) -> None:
+        self._http = http
 
     async def create_invoice(
         self,
-        *,
         body: delivery_shipment_invoice_v2022_07_01.SubmitInvoiceRequest | Mapping[str, Any],
+        *,
         order_id: str | None = None,
         shipment_id: str | None = None,
         request_options: RequestOptions | None = None,
@@ -129,7 +129,7 @@ class AsyncDeliveryShipmentInvoiceV20220701Client:
         POST /delivery/2022-07-01/invoice
         """
         params: dict[str, Any] = {"orderId": order_id, "shipmentId": shipment_id}
-        return await self._client.request(
+        return await self._http.request(
             "POST",
             "/delivery/2022-07-01/invoice",
             operation="submitInvoice",
@@ -144,10 +144,10 @@ class AsyncDeliveryShipmentInvoiceV20220701Client:
 
     async def list_status(
         self,
-        *,
         marketplace_id: str,
         invoice_type: Literal["Outbound"],
         program_type: delivery_shipment_invoice_v2022_07_01.DeliveryShipmentInvoiceV20220701ProgramType | str,
+        *,
         order_id: str | None = None,
         shipment_id: str | None = None,
         request_options: RequestOptions | None = None,
@@ -171,7 +171,7 @@ class AsyncDeliveryShipmentInvoiceV20220701Client:
             "invoiceType": invoice_type,
             "programType": program_type,
         }
-        return await self._client.request(
+        return await self._http.request(
             "GET",
             "/delivery/2022-07-01/invoice/status",
             operation="getInvoiceStatus",
@@ -184,4 +184,4 @@ class AsyncDeliveryShipmentInvoiceV20220701Client:
         )
 
 
-__all__ = ["AsyncDeliveryShipmentInvoiceV20220701Client", "DeliveryShipmentInvoiceV20220701Client"]
+__all__ = ["AsyncDeliveryShipmentInvoiceV20220701Resource", "DeliveryShipmentInvoiceV20220701Resource"]

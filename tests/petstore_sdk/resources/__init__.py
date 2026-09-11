@@ -9,8 +9,8 @@ from __future__ import annotations
 
 #: resource module -> (sync class, async class)
 SERVICES: dict[str, tuple[str, str]] = {
-    "petstore_v3": ("PetstoreV3Client", "AsyncPetstoreV3Client"),
-    "petstore_v2": ("PetstoreV2Client", "AsyncPetstoreV2Client"),
+    "petstore_v3": ("PetstoreV3Resource", "AsyncPetstoreV3Resource"),
+    "petstore_v2": ("PetstoreV2Resource", "AsyncPetstoreV2Resource"),
 }
 
 #: "<resource module>.<operationId>" -> (method name, HTTP method, path, paginated, has rate limit)

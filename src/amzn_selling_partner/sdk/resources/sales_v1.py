@@ -9,26 +9,26 @@ from __future__ import annotations
 
 from typing import Any, Literal
 
-from ..http_client import AsyncHttpClient, HttpClient, RateLimit, RequestOptions, joined
+from .._http import AsyncHttpClient, HttpClient, RateLimit, RequestOptions, joined
 from ..models import sales_v1
 
 SERVICE = "sales_v1"
 
 
-class SalesV1Client:
+class SalesV1Resource:
     """Synchronous ``SalesV1`` resource."""
 
-    __slots__ = ("_client",)
+    __slots__ = ("_http",)
 
-    def __init__(self, client: HttpClient) -> None:
-        self._client = client
+    def __init__(self, http: HttpClient) -> None:
+        self._http = http
 
     def list_order_metrics(
         self,
-        *,
         marketplace_ids: list[str],
         interval: str,
         granularity: sales_v1.SalesV1Granularity | str,
+        *,
         granularity_time_zone: str | None = None,
         buyer_type: sales_v1.SalesV1BuyerType | str | None = None,
         fulfillment_network: str | None = None,
@@ -62,7 +62,7 @@ class SalesV1Client:
             "sku": sku,
             "amazonProgram": amazon_program,
         }
-        return self._client.request(
+        return self._http.request(
             "GET",
             "/sales/v1/orderMetrics",
             operation="getOrderMetrics",
@@ -75,20 +75,20 @@ class SalesV1Client:
         )
 
 
-class AsyncSalesV1Client:
+class AsyncSalesV1Resource:
     """Asynchronous ``SalesV1`` resource."""
 
-    __slots__ = ("_client",)
+    __slots__ = ("_http",)
 
-    def __init__(self, client: AsyncHttpClient) -> None:
-        self._client = client
+    def __init__(self, http: AsyncHttpClient) -> None:
+        self._http = http
 
     async def list_order_metrics(
         self,
-        *,
         marketplace_ids: list[str],
         interval: str,
         granularity: sales_v1.SalesV1Granularity | str,
+        *,
         granularity_time_zone: str | None = None,
         buyer_type: sales_v1.SalesV1BuyerType | str | None = None,
         fulfillment_network: str | None = None,
@@ -122,7 +122,7 @@ class AsyncSalesV1Client:
             "sku": sku,
             "amazonProgram": amazon_program,
         }
-        return await self._client.request(
+        return await self._http.request(
             "GET",
             "/sales/v1/orderMetrics",
             operation="getOrderMetrics",
@@ -135,4 +135,4 @@ class AsyncSalesV1Client:
         )
 
 
-__all__ = ["AsyncSalesV1Client", "SalesV1Client"]
+__all__ = ["AsyncSalesV1Resource", "SalesV1Resource"]

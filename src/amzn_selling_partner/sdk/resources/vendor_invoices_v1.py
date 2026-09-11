@@ -10,24 +10,24 @@ from __future__ import annotations
 from collections.abc import Mapping
 from typing import Any
 
-from ..http_client import AsyncHttpClient, HttpClient, RateLimit, RequestOptions
+from .._http import AsyncHttpClient, HttpClient, RateLimit, RequestOptions
 from ..models import vendor_invoices_v1
 
 SERVICE = "vendor_invoices_v1"
 
 
-class VendorInvoicesV1Client:
+class VendorInvoicesV1Resource:
     """Synchronous ``VendorInvoicesV1`` resource."""
 
-    __slots__ = ("_client",)
+    __slots__ = ("_http",)
 
-    def __init__(self, client: HttpClient) -> None:
-        self._client = client
+    def __init__(self, http: HttpClient) -> None:
+        self._http = http
 
     def create_invoice(
         self,
-        *,
         body: vendor_invoices_v1.SubmitInvoicesRequest | Mapping[str, Any],
+        *,
         request_options: RequestOptions | None = None,
     ) -> vendor_invoices_v1.SubmitInvoicesResponse:
         """Submit new invoices to Amazon.
@@ -42,7 +42,7 @@ class VendorInvoicesV1Client:
 
         POST /vendor/payments/v1/invoices
         """
-        return self._client.request(
+        return self._http.request(
             "POST",
             "/vendor/payments/v1/invoices",
             operation="submitInvoices",
@@ -55,18 +55,18 @@ class VendorInvoicesV1Client:
         )
 
 
-class AsyncVendorInvoicesV1Client:
+class AsyncVendorInvoicesV1Resource:
     """Asynchronous ``VendorInvoicesV1`` resource."""
 
-    __slots__ = ("_client",)
+    __slots__ = ("_http",)
 
-    def __init__(self, client: AsyncHttpClient) -> None:
-        self._client = client
+    def __init__(self, http: AsyncHttpClient) -> None:
+        self._http = http
 
     async def create_invoice(
         self,
-        *,
         body: vendor_invoices_v1.SubmitInvoicesRequest | Mapping[str, Any],
+        *,
         request_options: RequestOptions | None = None,
     ) -> vendor_invoices_v1.SubmitInvoicesResponse:
         """Submit new invoices to Amazon.
@@ -81,7 +81,7 @@ class AsyncVendorInvoicesV1Client:
 
         POST /vendor/payments/v1/invoices
         """
-        return await self._client.request(
+        return await self._http.request(
             "POST",
             "/vendor/payments/v1/invoices",
             operation="submitInvoices",
@@ -94,4 +94,4 @@ class AsyncVendorInvoicesV1Client:
         )
 
 
-__all__ = ["AsyncVendorInvoicesV1Client", "VendorInvoicesV1Client"]
+__all__ = ["AsyncVendorInvoicesV1Resource", "VendorInvoicesV1Resource"]

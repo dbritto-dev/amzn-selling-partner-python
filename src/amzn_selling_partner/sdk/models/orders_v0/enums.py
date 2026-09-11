@@ -14,9 +14,13 @@ class AddressAddressType(str, Enum):
     RESIDENTIAL = "Residential"
     COMMERCIAL = "Commercial"
 
+    __str__ = str.__str__
+
 
 class AssociationType(str, Enum):
     VALUE_ADD_SERVICE = "VALUE_ADD_SERVICE"
+
+    __str__ = str.__str__
 
 
 class BusinessHoursDayOfWeek(str, Enum):
@@ -28,9 +32,13 @@ class BusinessHoursDayOfWeek(str, Enum):
     FRI = "FRI"
     SAT = "SAT"
 
+    __str__ = str.__str__
+
 
 class ConstraintType(str, Enum):
     MANDATORY = "MANDATORY"
+
+    __str__ = str.__str__
 
 
 class EasyShipShipmentStatus(str, Enum):
@@ -51,6 +59,8 @@ class EasyShipShipmentStatus(str, Enum):
     OUT_FOR_DELIVERY = "OutForDelivery"
     DAMAGED = "Damaged"
 
+    __str__ = str.__str__
+
 
 class ElectronicInvoiceStatus(str, Enum):
     NOT_REQUIRED = "NotRequired"
@@ -58,6 +68,8 @@ class ElectronicInvoiceStatus(str, Enum):
     PROCESSING = "Processing"
     ERRORED = "Errored"
     ACCEPTED = "Accepted"
+
+    __str__ = str.__str__
 
 
 class MeasurementUnit(str, Enum):
@@ -86,20 +98,28 @@ class MeasurementUnit(str, Enum):
     CUBIC_CENTIMETERS = "CUBIC_CENTIMETERS"
     COUNT = "COUNT"
 
+    __str__ = str.__str__
+
 
 class OrderBuyerInvoicePreference(str, Enum):
     INDIVIDUAL = "INDIVIDUAL"
     BUSINESS = "BUSINESS"
+
+    __str__ = str.__str__
 
 
 class OrderFulfillmentChannel(str, Enum):
     MFN = "MFN"
     AFN = "AFN"
 
+    __str__ = str.__str__
+
 
 class OrderItemDeemedResellerCategory(str, Enum):
     IOSS = "IOSS"
     UOSS = "UOSS"
+
+    __str__ = str.__str__
 
 
 class OrderOrderStatus(str, Enum):
@@ -112,6 +132,8 @@ class OrderOrderStatus(str, Enum):
     INVOICE_UNCONFIRMED = "InvoiceUnconfirmed"
     PENDING_AVAILABILITY = "PendingAvailability"
 
+    __str__ = str.__str__
+
 
 class OrderOrderType(str, Enum):
     STANDARD_ORDER = "StandardOrder"
@@ -120,11 +142,15 @@ class OrderOrderType(str, Enum):
     BACK_ORDER = "BackOrder"
     SOURCING_ON_DEMAND_ORDER = "SourcingOnDemandOrder"
 
+    __str__ = str.__str__
+
 
 class OrderPaymentMethod(str, Enum):
     COD = "COD"
     CVS = "CVS"
     OTHER = "Other"
+
+    __str__ = str.__str__
 
 
 class OtherDeliveryAttributes(str, Enum):
@@ -132,10 +158,14 @@ class OtherDeliveryAttributes(str, Enum):
     PALLET_ENABLED = "PALLET_ENABLED"
     PALLET_DISABLED = "PALLET_DISABLED"
 
+    __str__ = str.__str__
+
 
 class RegulatedInformationFieldFieldType(str, Enum):
     TEXT = "Text"
     FILE_ATTACHMENT = "FileAttachment"
+
+    __str__ = str.__str__
 
 
 class ShipmentStatus(str, Enum):
@@ -143,11 +173,15 @@ class ShipmentStatus(str, Enum):
     PICKED_UP = "PickedUp"
     REFUSED_PICKUP = "RefusedPickup"
 
+    __str__ = str.__str__
+
 
 class SubstitutionPreferencesSubstitutionType(str, Enum):
     CUSTOMER_PREFERENCE = "CUSTOMER_PREFERENCE"
     AMAZON_RECOMMENDED = "AMAZON_RECOMMENDED"
     DO_NOT_SUBSTITUTE = "DO_NOT_SUBSTITUTE"
+
+    __str__ = str.__str__
 
 
 class VerificationStatus(str, Enum):
@@ -156,6 +190,8 @@ class VerificationStatus(str, Enum):
     REJECTED = "Rejected"
     EXPIRED = "Expired"
     CANCELLED = "Cancelled"
+
+    __str__ = str.__str__
 
 
 __all__ = [

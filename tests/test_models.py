@@ -16,7 +16,7 @@ from .conftest import requires_amazon
 
 def test_object_model_fields_and_aliases() -> None:
     assert issubclass(m.Pet, SpecModel) and issubclass(m.Pet, BaseModel)
-    assert m.Pet.__module__ == "petstore_sdk.models.petstore_v3.models"
+    assert m.Pet.__module__ == "petstore_sdk.models.petstore_v3"
     fields = m.Pet.model_fields
     assert fields["created_at"].alias == "createdAt"
     assert fields["schema_"].alias == "schema"  # BaseModel attribute collision

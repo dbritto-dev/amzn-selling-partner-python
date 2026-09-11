@@ -50,11 +50,15 @@ class DefinitionsProductTypesV20200901Locale(str, Enum):
     ZH_CN = "zh_CN"
     ZH_TW = "zh_TW"
 
+    __str__ = str.__str__
+
 
 class DefinitionsProductTypesV20200901ParentageLevel(str, Enum):
     NONE = "NONE"
     CHILD = "CHILD"
     PARENT = "PARENT"
+
+    __str__ = str.__str__
 
 
 class DefinitionsProductTypesV20200901Requirements(str, Enum):
@@ -62,10 +66,14 @@ class DefinitionsProductTypesV20200901Requirements(str, Enum):
     LISTING_PRODUCT_ONLY = "LISTING_PRODUCT_ONLY"
     LISTING_OFFER_ONLY = "LISTING_OFFER_ONLY"
 
+    __str__ = str.__str__
+
 
 class DefinitionsProductTypesV20200901RequirementsEnforced(str, Enum):
     ENFORCED = "ENFORCED"
     NOT_ENFORCED = "NOT_ENFORCED"
+
+    __str__ = str.__str__
 
 
 class ProductTypeDefinitionRequirements(str, Enum):
@@ -73,10 +81,14 @@ class ProductTypeDefinitionRequirements(str, Enum):
     LISTING_PRODUCT_ONLY = "LISTING_PRODUCT_ONLY"
     LISTING_OFFER_ONLY = "LISTING_OFFER_ONLY"
 
+    __str__ = str.__str__
+
 
 class ProductTypeDefinitionRequirementsEnforced(str, Enum):
     ENFORCED = "ENFORCED"
     NOT_ENFORCED = "NOT_ENFORCED"
+
+    __str__ = str.__str__
 
 
 __all__ = [

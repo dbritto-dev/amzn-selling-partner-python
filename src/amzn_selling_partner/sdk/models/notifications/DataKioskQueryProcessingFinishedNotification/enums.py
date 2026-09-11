@@ -15,6 +15,8 @@ class DataKioskQueryProcessingFinishedNotificationPayloadProcessingStatus(str, E
     DONE = "DONE"
     FATAL = "FATAL"
 
+    __str__ = str.__str__
+
 
 __all__ = [
     "DataKioskQueryProcessingFinishedNotificationPayloadProcessingStatus",

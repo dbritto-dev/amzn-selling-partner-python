@@ -14,6 +14,8 @@ class AwdV20240509Details(str, Enum):
     SHOW = "SHOW"
     HIDE = "HIDE"
 
+    __str__ = str.__str__
+
 
 class AwdV20240509ShipmentStatus(str, Enum):
     CREATED = "CREATED"
@@ -24,48 +26,68 @@ class AwdV20240509ShipmentStatus(str, Enum):
     CLOSED = "CLOSED"
     CANCELLED = "CANCELLED"
 
+    __str__ = str.__str__
+
 
 class AwdV20240509SkuQuantities(str, Enum):
     SHOW = "SHOW"
     HIDE = "HIDE"
+
+    __str__ = str.__str__
 
 
 class AwdV20240509SortBy(str, Enum):
     UPDATED_AT = "UPDATED_AT"
     CREATED_AT = "CREATED_AT"
 
+    __str__ = str.__str__
+
 
 class AwdV20240509SortOrder(str, Enum):
     ASCENDING = "ASCENDING"
     DESCENDING = "DESCENDING"
 
+    __str__ = str.__str__
+
 
 class CarrierCodeType(str, Enum):
     SCAC = "SCAC"
+
+    __str__ = str.__str__
 
 
 class ConfirmationMode(str, Enum):
     AUTO = "AUTO"
     MANUAL = "MANUAL"
 
+    __str__ = str.__str__
+
 
 class DimensionUnitOfMeasurement(str, Enum):
     INCHES = "INCHES"
     CENTIMETERS = "CENTIMETERS"
+
+    __str__ = str.__str__
 
 
 class DistributionPackageType(str, Enum):
     CASE = "CASE"
     PALLET = "PALLET"
 
+    __str__ = str.__str__
+
 
 class FormatType(str, Enum):
     PDF = "PDF"
+
+    __str__ = str.__str__
 
 
 class InboundEligibilityStatus(str, Enum):
     ELIGIBLE = "ELIGIBLE"
     INELIGIBLE = "INELIGIBLE"
+
+    __str__ = str.__str__
 
 
 class InboundShipmentStatus(str, Enum):
@@ -77,6 +99,8 @@ class InboundShipmentStatus(str, Enum):
     CLOSED = "CLOSED"
     CANCELLED = "CANCELLED"
 
+    __str__ = str.__str__
+
 
 class InboundStatus(str, Enum):
     DRAFT = "DRAFT"
@@ -86,10 +110,14 @@ class InboundStatus(str, Enum):
     EXPIRED = "EXPIRED"
     CANCELLED = "CANCELLED"
 
+    __str__ = str.__str__
+
 
 class InventoryDetailsVisibility(str, Enum):
     SHOW = "SHOW"
     HIDE = "HIDE"
+
+    __str__ = str.__str__
 
 
 class InventoryUnitOfMeasurement(str, Enum):
@@ -97,10 +125,14 @@ class InventoryUnitOfMeasurement(str, Enum):
     CASES = "CASES"
     PALLETS = "PALLETS"
 
+    __str__ = str.__str__
+
 
 class LabelOwner(str, Enum):
     AMAZON = "AMAZON"
     SELF = "SELF"
+
+    __str__ = str.__str__
 
 
 class LabelStatus(str, Enum):
@@ -109,14 +141,20 @@ class LabelStatus(str, Enum):
     GENERATION_FAILED = "GENERATION_FAILED"
     NOT_READY = "NOT_READY"
 
+    __str__ = str.__str__
+
 
 class OrderPreference(str, Enum):
     PARTIAL_ORDER = "PARTIAL_ORDER"
+
+    __str__ = str.__str__
 
 
 class OrderPreferenceValue(str, Enum):
     SET = "SET"
     UNSET = "UNSET"
+
+    __str__ = str.__str__
 
 
 class OutboundShipmentStatus(str, Enum):
@@ -128,6 +166,8 @@ class OutboundShipmentStatus(str, Enum):
     CLOSED = "CLOSED"
     CANCELLED = "CANCELLED"
     FAILED = "FAILED"
+
+    __str__ = str.__str__
 
 
 class OutboundStatus(str, Enum):
@@ -141,6 +181,8 @@ class OutboundStatus(str, Enum):
     SUCCESS = "SUCCESS"
     VALIDATING = "VALIDATING"
 
+    __str__ = str.__str__
+
 
 class PageType(str, Enum):
     PLAIN_PAPER = "PLAIN_PAPER"
@@ -152,6 +194,8 @@ class PageType(str, Enum):
     A4_PAPER = "A4_PAPER"
     A4_2_HORIZONTAL = "A4_2_HORIZONTAL"
     THERMAL_SQUARE_10_CM = "THERMAL_SQUARE_10CM"
+
+    __str__ = str.__str__
 
 
 class PrepCategory(str, Enum):
@@ -170,10 +214,14 @@ class PrepCategory(str, Enum):
     NO_PREP = "NO_PREP"
     UNKNOWN = "UNKNOWN"
 
+    __str__ = str.__str__
+
 
 class PrepOwner(str, Enum):
     AMAZON = "AMAZON"
     SELF = "SELF"
+
+    __str__ = str.__str__
 
 
 class ReplenishmentOrderStatus(str, Enum):
@@ -187,20 +235,28 @@ class ReplenishmentOrderStatus(str, Enum):
     SUCCESS = "SUCCESS"
     VALIDATING = "VALIDATING"
 
+    __str__ = str.__str__
+
 
 class ShipmentSortableField(str, Enum):
     UPDATED_AT = "UPDATED_AT"
     CREATED_AT = "CREATED_AT"
+
+    __str__ = str.__str__
 
 
 class SkuQuantitiesVisibility(str, Enum):
     SHOW = "SHOW"
     HIDE = "HIDE"
 
+    __str__ = str.__str__
+
 
 class SortOrder(str, Enum):
     ASCENDING = "ASCENDING"
     DESCENDING = "DESCENDING"
+
+    __str__ = str.__str__
 
 
 class VolumeUnitOfMeasurement(str, Enum):
@@ -208,10 +264,14 @@ class VolumeUnitOfMeasurement(str, Enum):
     CBM = "CBM"
     CC = "CC"
 
+    __str__ = str.__str__
+
 
 class WeightUnitOfMeasurement(str, Enum):
     POUNDS = "POUNDS"
     KILOGRAMS = "KILOGRAMS"
+
+    __str__ = str.__str__
 
 
 __all__ = [

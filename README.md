@@ -159,7 +159,7 @@ data["payload"]["OrderStatus"]
 Each operation has a token bucket seeded from the rate/burst table in the
 Amazon documentation; 408, 429 and 5xx responses are retried with
 `Retry-After` (or Amazon's `x-amzn-RateLimit-Limit` hint) or exponential
-backoff. The policy is generated into `sdk/http_client.py` from
+backoff. The policy is generated into `sdk/_http.py` from
 `sdkBehavior` in `codegen/oagen.config.ts`. Tune with
 `SellingPartner(max_retries=..., throttle=False, timeout=httpx2.Timeout(...))`
 or per call with `request_options=RequestOptions(timeout=5.0, max_retries=0)`;

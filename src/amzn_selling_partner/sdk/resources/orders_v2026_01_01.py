@@ -11,19 +11,19 @@ import datetime
 from collections.abc import AsyncIterator, Iterator
 from typing import Any
 
-from ..http_client import AsyncHttpClient, HttpClient, RateLimit, RequestOptions, apaginate, joined, paginate, path_segment
+from .._http import AsyncHttpClient, HttpClient, RateLimit, RequestOptions, apaginate, joined, paginate, path_segment
 from ..models import orders_v2026_01_01
 
 SERVICE = "orders_v2026_01_01"
 
 
-class OrdersV20260101Client:
+class OrdersV20260101Resource:
     """Synchronous ``OrdersV20260101`` resource."""
 
-    __slots__ = ("_client",)
+    __slots__ = ("_http",)
 
-    def __init__(self, client: HttpClient) -> None:
-        self._client = client
+    def __init__(self, http: HttpClient) -> None:
+        self._http = http
 
     def list_orders(
         self,
@@ -64,7 +64,7 @@ class OrdersV20260101Client:
             "paginationToken": pagination_token,
             "includedData": joined(included_data, ","),
         }
-        return self._client.request(
+        return self._http.request(
             "GET",
             "/orders/2026-01-01/orders",
             operation="searchOrders",
@@ -116,8 +116,8 @@ class OrdersV20260101Client:
 
     def get_order(
         self,
-        *,
         order_id: str,
+        *,
         included_data: list[orders_v2026_01_01.OrdersV20260101IncludedData] | None = None,
         request_options: RequestOptions | None = None,
     ) -> orders_v2026_01_01.GetOrderResponse:
@@ -134,7 +134,7 @@ class OrdersV20260101Client:
         GET /orders/2026-01-01/orders/{orderId}
         """
         params: dict[str, Any] = {"includedData": joined(included_data, ",")}
-        return self._client.request(
+        return self._http.request(
             "GET",
             f"/orders/2026-01-01/orders/{path_segment(order_id)}",
             operation="getOrder",
@@ -147,13 +147,13 @@ class OrdersV20260101Client:
         )
 
 
-class AsyncOrdersV20260101Client:
+class AsyncOrdersV20260101Resource:
     """Asynchronous ``OrdersV20260101`` resource."""
 
-    __slots__ = ("_client",)
+    __slots__ = ("_http",)
 
-    def __init__(self, client: AsyncHttpClient) -> None:
-        self._client = client
+    def __init__(self, http: AsyncHttpClient) -> None:
+        self._http = http
 
     async def list_orders(
         self,
@@ -194,7 +194,7 @@ class AsyncOrdersV20260101Client:
             "paginationToken": pagination_token,
             "includedData": joined(included_data, ","),
         }
-        return await self._client.request(
+        return await self._http.request(
             "GET",
             "/orders/2026-01-01/orders",
             operation="searchOrders",
@@ -246,8 +246,8 @@ class AsyncOrdersV20260101Client:
 
     async def get_order(
         self,
-        *,
         order_id: str,
+        *,
         included_data: list[orders_v2026_01_01.OrdersV20260101IncludedData] | None = None,
         request_options: RequestOptions | None = None,
     ) -> orders_v2026_01_01.GetOrderResponse:
@@ -264,7 +264,7 @@ class AsyncOrdersV20260101Client:
         GET /orders/2026-01-01/orders/{orderId}
         """
         params: dict[str, Any] = {"includedData": joined(included_data, ",")}
-        return await self._client.request(
+        return await self._http.request(
             "GET",
             f"/orders/2026-01-01/orders/{path_segment(order_id)}",
             operation="getOrder",
@@ -277,4 +277,4 @@ class AsyncOrdersV20260101Client:
         )
 
 
-__all__ = ["AsyncOrdersV20260101Client", "OrdersV20260101Client"]
+__all__ = ["AsyncOrdersV20260101Resource", "OrdersV20260101Resource"]

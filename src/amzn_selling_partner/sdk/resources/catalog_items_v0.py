@@ -9,24 +9,24 @@ from __future__ import annotations
 
 from typing import Any
 
-from ..http_client import AsyncHttpClient, HttpClient, RateLimit, RequestOptions
+from .._http import AsyncHttpClient, HttpClient, RateLimit, RequestOptions
 from ..models import catalog_items_v0
 
 SERVICE = "catalog_items_v0"
 
 
-class CatalogItemsV0Client:
+class CatalogItemsV0Resource:
     """Synchronous ``CatalogItemsV0`` resource."""
 
-    __slots__ = ("_client",)
+    __slots__ = ("_http",)
 
-    def __init__(self, client: HttpClient) -> None:
-        self._client = client
+    def __init__(self, http: HttpClient) -> None:
+        self._http = http
 
     def list_categories(
         self,
-        *,
         marketplace_id: str,
+        *,
         asin: str | None = None,
         seller_sku: str | None = None,
         request_options: RequestOptions | None = None,
@@ -44,7 +44,7 @@ class CatalogItemsV0Client:
         GET /catalog/v0/categories
         """
         params: dict[str, Any] = {"MarketplaceId": marketplace_id, "ASIN": asin, "SellerSKU": seller_sku}
-        return self._client.request(
+        return self._http.request(
             "GET",
             "/catalog/v0/categories",
             operation="listCatalogCategories",
@@ -57,18 +57,18 @@ class CatalogItemsV0Client:
         )
 
 
-class AsyncCatalogItemsV0Client:
+class AsyncCatalogItemsV0Resource:
     """Asynchronous ``CatalogItemsV0`` resource."""
 
-    __slots__ = ("_client",)
+    __slots__ = ("_http",)
 
-    def __init__(self, client: AsyncHttpClient) -> None:
-        self._client = client
+    def __init__(self, http: AsyncHttpClient) -> None:
+        self._http = http
 
     async def list_categories(
         self,
-        *,
         marketplace_id: str,
+        *,
         asin: str | None = None,
         seller_sku: str | None = None,
         request_options: RequestOptions | None = None,
@@ -86,7 +86,7 @@ class AsyncCatalogItemsV0Client:
         GET /catalog/v0/categories
         """
         params: dict[str, Any] = {"MarketplaceId": marketplace_id, "ASIN": asin, "SellerSKU": seller_sku}
-        return await self._client.request(
+        return await self._http.request(
             "GET",
             "/catalog/v0/categories",
             operation="listCatalogCategories",
@@ -99,4 +99,4 @@ class AsyncCatalogItemsV0Client:
         )
 
 
-__all__ = ["AsyncCatalogItemsV0Client", "CatalogItemsV0Client"]
+__all__ = ["AsyncCatalogItemsV0Resource", "CatalogItemsV0Resource"]

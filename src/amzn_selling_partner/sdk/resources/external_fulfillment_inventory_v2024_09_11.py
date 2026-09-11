@@ -10,31 +10,31 @@ from __future__ import annotations
 from collections.abc import Mapping
 from typing import Any
 
-from ..http_client import AsyncHttpClient, HttpClient, RequestOptions
+from .._http import AsyncHttpClient, HttpClient, RequestOptions
 from ..models import external_fulfillment_inventory_v2024_09_11
 
 SERVICE = "external_fulfillment_inventory_v2024_09_11"
 
 
-class ExternalFulfillmentInventoryV20240911Client:
+class ExternalFulfillmentInventoryV20240911Resource:
     """Synchronous ``ExternalFulfillmentInventoryV20240911`` resource."""
 
-    __slots__ = ("_client",)
+    __slots__ = ("_http",)
 
-    def __init__(self, client: HttpClient) -> None:
-        self._client = client
+    def __init__(self, http: HttpClient) -> None:
+        self._http = http
 
     def create_inventory(
         self,
-        *,
         body: external_fulfillment_inventory_v2024_09_11.BatchInventoryRequest | Mapping[str, Any],
+        *,
         request_options: RequestOptions | None = None,
     ) -> external_fulfillment_inventory_v2024_09_11.BatchInventoryResponse:
         """Make up to 10 inventory requests. The response includes the set of responses that correspond to requests. The response for each successful request in the set includes the  inventory count for the provided `sku` and `locationId` pair.
 
         POST /externalFulfillment/inventory/2024-09-11/inventories
         """
-        return self._client.request(
+        return self._http.request(
             "POST",
             "/externalFulfillment/inventory/2024-09-11/inventories",
             operation="batchInventory",
@@ -46,25 +46,25 @@ class ExternalFulfillmentInventoryV20240911Client:
         )
 
 
-class AsyncExternalFulfillmentInventoryV20240911Client:
+class AsyncExternalFulfillmentInventoryV20240911Resource:
     """Asynchronous ``ExternalFulfillmentInventoryV20240911`` resource."""
 
-    __slots__ = ("_client",)
+    __slots__ = ("_http",)
 
-    def __init__(self, client: AsyncHttpClient) -> None:
-        self._client = client
+    def __init__(self, http: AsyncHttpClient) -> None:
+        self._http = http
 
     async def create_inventory(
         self,
-        *,
         body: external_fulfillment_inventory_v2024_09_11.BatchInventoryRequest | Mapping[str, Any],
+        *,
         request_options: RequestOptions | None = None,
     ) -> external_fulfillment_inventory_v2024_09_11.BatchInventoryResponse:
         """Make up to 10 inventory requests. The response includes the set of responses that correspond to requests. The response for each successful request in the set includes the  inventory count for the provided `sku` and `locationId` pair.
 
         POST /externalFulfillment/inventory/2024-09-11/inventories
         """
-        return await self._client.request(
+        return await self._http.request(
             "POST",
             "/externalFulfillment/inventory/2024-09-11/inventories",
             operation="batchInventory",
@@ -76,4 +76,4 @@ class AsyncExternalFulfillmentInventoryV20240911Client:
         )
 
 
-__all__ = ["AsyncExternalFulfillmentInventoryV20240911Client", "ExternalFulfillmentInventoryV20240911Client"]
+__all__ = ["AsyncExternalFulfillmentInventoryV20240911Resource", "ExternalFulfillmentInventoryV20240911Resource"]

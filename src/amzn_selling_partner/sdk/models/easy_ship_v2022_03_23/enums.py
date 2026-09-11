@@ -23,15 +23,21 @@ class Code(str, Enum):
     ORDER_NOT_ELIGIBLE_FOR_RESCHEDULING = "OrderNotEligibleForRescheduling"
     INTERNAL_SERVER_ERROR = "InternalServerError"
 
+    __str__ = str.__str__
+
 
 class HandoverMethod(str, Enum):
     PICKUP = "PICKUP"
     DROPOFF = "DROPOFF"
 
+    __str__ = str.__str__
+
 
 class LabelFormat(str, Enum):
     PDF = "PDF"
     ZPL = "ZPL"
+
+    __str__ = str.__str__
 
 
 class PackageStatus(str, Enum):
@@ -48,14 +54,20 @@ class PackageStatus(str, Enum):
     DAMAGED_IN_TRANSIT = "DamagedInTransit"
     OUT_FOR_DELIVERY = "OutForDelivery"
 
+    __str__ = str.__str__
+
 
 class UnitOfLength(str, Enum):
     CM = "cm"
+
+    __str__ = str.__str__
 
 
 class UnitOfWeight(str, Enum):
     GRAMS = "grams"
     G = "g"
+
+    __str__ = str.__str__
 
 
 __all__ = [

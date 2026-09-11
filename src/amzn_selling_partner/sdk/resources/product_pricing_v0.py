@@ -10,25 +10,25 @@ from __future__ import annotations
 from collections.abc import Mapping
 from typing import Any
 
-from ..http_client import AsyncHttpClient, HttpClient, RateLimit, RequestOptions, joined, path_segment
+from .._http import AsyncHttpClient, HttpClient, RateLimit, RequestOptions, joined, path_segment
 from ..models import product_pricing_v0
 
 SERVICE = "product_pricing_v0"
 
 
-class ProductPricingV0Client:
+class ProductPricingV0Resource:
     """Synchronous ``ProductPricingV0`` resource."""
 
-    __slots__ = ("_client",)
+    __slots__ = ("_http",)
 
-    def __init__(self, client: HttpClient) -> None:
-        self._client = client
+    def __init__(self, http: HttpClient) -> None:
+        self._http = http
 
     def list_price(
         self,
-        *,
         marketplace_id: str,
         item_type: product_pricing_v0.ProductPricingV0ItemType | str,
+        *,
         asins: list[str] | None = None,
         skus: list[str] | None = None,
         item_condition: product_pricing_v0.ProductPricingV0ItemCondition | str | None = None,
@@ -57,7 +57,7 @@ class ProductPricingV0Client:
             "ItemCondition": item_condition,
             "OfferType": offer_type,
         }
-        return self._client.request(
+        return self._http.request(
             "GET",
             "/products/pricing/v0/price",
             operation="getPricing",
@@ -71,9 +71,9 @@ class ProductPricingV0Client:
 
     def list_competitive_price(
         self,
-        *,
         marketplace_id: str,
         item_type: product_pricing_v0.ProductPricingV0ItemType | str,
+        *,
         asins: list[str] | None = None,
         skus: list[str] | None = None,
         customer_type: product_pricing_v0.ProductPricingV0CustomerType | str | None = None,
@@ -100,7 +100,7 @@ class ProductPricingV0Client:
             "ItemType": item_type,
             "CustomerType": customer_type,
         }
-        return self._client.request(
+        return self._http.request(
             "GET",
             "/products/pricing/v0/competitivePrice",
             operation="getCompetitivePricing",
@@ -114,10 +114,10 @@ class ProductPricingV0Client:
 
     def list_listing_offers(
         self,
-        *,
         seller_sku: str,
         marketplace_id: str,
         item_condition: product_pricing_v0.ProductPricingV0ItemCondition | str,
+        *,
         customer_type: product_pricing_v0.ProductPricingV0CustomerType | str | None = None,
         request_options: RequestOptions | None = None,
     ) -> product_pricing_v0.GetOffersResponse:
@@ -136,7 +136,7 @@ class ProductPricingV0Client:
         GET /products/pricing/v0/listings/{SellerSKU}/offers
         """
         params: dict[str, Any] = {"MarketplaceId": marketplace_id, "ItemCondition": item_condition, "CustomerType": customer_type}
-        return self._client.request(
+        return self._http.request(
             "GET",
             f"/products/pricing/v0/listings/{path_segment(seller_sku)}/offers",
             operation="getListingOffers",
@@ -150,10 +150,10 @@ class ProductPricingV0Client:
 
     def list_item_offers(
         self,
-        *,
         asin: str,
         marketplace_id: str,
         item_condition: product_pricing_v0.ProductPricingV0ItemCondition | str,
+        *,
         customer_type: product_pricing_v0.ProductPricingV0CustomerType | str | None = None,
         request_options: RequestOptions | None = None,
     ) -> product_pricing_v0.GetOffersResponse:
@@ -170,7 +170,7 @@ class ProductPricingV0Client:
         GET /products/pricing/v0/items/{Asin}/offers
         """
         params: dict[str, Any] = {"MarketplaceId": marketplace_id, "ItemCondition": item_condition, "CustomerType": customer_type}
-        return self._client.request(
+        return self._http.request(
             "GET",
             f"/products/pricing/v0/items/{path_segment(asin)}/offers",
             operation="getItemOffers",
@@ -184,8 +184,8 @@ class ProductPricingV0Client:
 
     def create_item_offer(
         self,
-        *,
         body: product_pricing_v0.GetItemOffersBatchRequest | Mapping[str, Any],
+        *,
         request_options: RequestOptions | None = None,
     ) -> product_pricing_v0.GetItemOffersBatchResponse:
         """Returns the lowest priced offers for a batch of items based on ASIN.
@@ -200,7 +200,7 @@ class ProductPricingV0Client:
 
         POST /batches/products/pricing/v0/itemOffers
         """
-        return self._client.request(
+        return self._http.request(
             "POST",
             "/batches/products/pricing/v0/itemOffers",
             operation="getItemOffersBatch",
@@ -214,8 +214,8 @@ class ProductPricingV0Client:
 
     def create_listing_offer(
         self,
-        *,
         body: product_pricing_v0.GetListingOffersBatchRequest | Mapping[str, Any],
+        *,
         request_options: RequestOptions | None = None,
     ) -> product_pricing_v0.GetListingOffersBatchResponse:
         """Returns the lowest priced offers for a batch of listings by SKU.
@@ -230,7 +230,7 @@ class ProductPricingV0Client:
 
         POST /batches/products/pricing/v0/listingOffers
         """
-        return self._client.request(
+        return self._http.request(
             "POST",
             "/batches/products/pricing/v0/listingOffers",
             operation="getListingOffersBatch",
@@ -243,19 +243,19 @@ class ProductPricingV0Client:
         )
 
 
-class AsyncProductPricingV0Client:
+class AsyncProductPricingV0Resource:
     """Asynchronous ``ProductPricingV0`` resource."""
 
-    __slots__ = ("_client",)
+    __slots__ = ("_http",)
 
-    def __init__(self, client: AsyncHttpClient) -> None:
-        self._client = client
+    def __init__(self, http: AsyncHttpClient) -> None:
+        self._http = http
 
     async def list_price(
         self,
-        *,
         marketplace_id: str,
         item_type: product_pricing_v0.ProductPricingV0ItemType | str,
+        *,
         asins: list[str] | None = None,
         skus: list[str] | None = None,
         item_condition: product_pricing_v0.ProductPricingV0ItemCondition | str | None = None,
@@ -284,7 +284,7 @@ class AsyncProductPricingV0Client:
             "ItemCondition": item_condition,
             "OfferType": offer_type,
         }
-        return await self._client.request(
+        return await self._http.request(
             "GET",
             "/products/pricing/v0/price",
             operation="getPricing",
@@ -298,9 +298,9 @@ class AsyncProductPricingV0Client:
 
     async def list_competitive_price(
         self,
-        *,
         marketplace_id: str,
         item_type: product_pricing_v0.ProductPricingV0ItemType | str,
+        *,
         asins: list[str] | None = None,
         skus: list[str] | None = None,
         customer_type: product_pricing_v0.ProductPricingV0CustomerType | str | None = None,
@@ -327,7 +327,7 @@ class AsyncProductPricingV0Client:
             "ItemType": item_type,
             "CustomerType": customer_type,
         }
-        return await self._client.request(
+        return await self._http.request(
             "GET",
             "/products/pricing/v0/competitivePrice",
             operation="getCompetitivePricing",
@@ -341,10 +341,10 @@ class AsyncProductPricingV0Client:
 
     async def list_listing_offers(
         self,
-        *,
         seller_sku: str,
         marketplace_id: str,
         item_condition: product_pricing_v0.ProductPricingV0ItemCondition | str,
+        *,
         customer_type: product_pricing_v0.ProductPricingV0CustomerType | str | None = None,
         request_options: RequestOptions | None = None,
     ) -> product_pricing_v0.GetOffersResponse:
@@ -363,7 +363,7 @@ class AsyncProductPricingV0Client:
         GET /products/pricing/v0/listings/{SellerSKU}/offers
         """
         params: dict[str, Any] = {"MarketplaceId": marketplace_id, "ItemCondition": item_condition, "CustomerType": customer_type}
-        return await self._client.request(
+        return await self._http.request(
             "GET",
             f"/products/pricing/v0/listings/{path_segment(seller_sku)}/offers",
             operation="getListingOffers",
@@ -377,10 +377,10 @@ class AsyncProductPricingV0Client:
 
     async def list_item_offers(
         self,
-        *,
         asin: str,
         marketplace_id: str,
         item_condition: product_pricing_v0.ProductPricingV0ItemCondition | str,
+        *,
         customer_type: product_pricing_v0.ProductPricingV0CustomerType | str | None = None,
         request_options: RequestOptions | None = None,
     ) -> product_pricing_v0.GetOffersResponse:
@@ -397,7 +397,7 @@ class AsyncProductPricingV0Client:
         GET /products/pricing/v0/items/{Asin}/offers
         """
         params: dict[str, Any] = {"MarketplaceId": marketplace_id, "ItemCondition": item_condition, "CustomerType": customer_type}
-        return await self._client.request(
+        return await self._http.request(
             "GET",
             f"/products/pricing/v0/items/{path_segment(asin)}/offers",
             operation="getItemOffers",
@@ -411,8 +411,8 @@ class AsyncProductPricingV0Client:
 
     async def create_item_offer(
         self,
-        *,
         body: product_pricing_v0.GetItemOffersBatchRequest | Mapping[str, Any],
+        *,
         request_options: RequestOptions | None = None,
     ) -> product_pricing_v0.GetItemOffersBatchResponse:
         """Returns the lowest priced offers for a batch of items based on ASIN.
@@ -427,7 +427,7 @@ class AsyncProductPricingV0Client:
 
         POST /batches/products/pricing/v0/itemOffers
         """
-        return await self._client.request(
+        return await self._http.request(
             "POST",
             "/batches/products/pricing/v0/itemOffers",
             operation="getItemOffersBatch",
@@ -441,8 +441,8 @@ class AsyncProductPricingV0Client:
 
     async def create_listing_offer(
         self,
-        *,
         body: product_pricing_v0.GetListingOffersBatchRequest | Mapping[str, Any],
+        *,
         request_options: RequestOptions | None = None,
     ) -> product_pricing_v0.GetListingOffersBatchResponse:
         """Returns the lowest priced offers for a batch of listings by SKU.
@@ -457,7 +457,7 @@ class AsyncProductPricingV0Client:
 
         POST /batches/products/pricing/v0/listingOffers
         """
-        return await self._client.request(
+        return await self._http.request(
             "POST",
             "/batches/products/pricing/v0/listingOffers",
             operation="getListingOffersBatch",
@@ -470,4 +470,4 @@ class AsyncProductPricingV0Client:
         )
 
 
-__all__ = ["AsyncProductPricingV0Client", "ProductPricingV0Client"]
+__all__ = ["AsyncProductPricingV0Resource", "ProductPricingV0Resource"]

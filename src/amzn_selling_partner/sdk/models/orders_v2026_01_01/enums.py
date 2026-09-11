@@ -19,14 +19,20 @@ class BusinessHourDayOfWeek(str, Enum):
     FRI = "FRI"
     SAT = "SAT"
 
+    __str__ = str.__str__
+
 
 class ConstraintType(str, Enum):
     MANDATORY = "MANDATORY"
+
+    __str__ = str.__str__
 
 
 class ExceptionDateExceptionDateType(str, Enum):
     CLOSED = "CLOSED"
     OPEN = "OPEN"
+
+    __str__ = str.__str__
 
 
 class FulfillmentStatus(str, Enum):
@@ -38,11 +44,15 @@ class FulfillmentStatus(str, Enum):
     CANCELLED = "CANCELLED"
     UNFULFILLABLE = "UNFULFILLABLE"
 
+    __str__ = str.__str__
+
 
 class ItemSubstitutionPreferenceSubstitutionType(str, Enum):
     CUSTOMER_PREFERENCE = "CUSTOMER_PREFERENCE"
     AMAZON_RECOMMENDED = "AMAZON_RECOMMENDED"
     DO_NOT_SUBSTITUTE = "DO_NOT_SUBSTITUTE"
+
+    __str__ = str.__str__
 
 
 class MeasurementUnit(str, Enum):
@@ -71,10 +81,14 @@ class MeasurementUnit(str, Enum):
     CUBIC_CENTIMETERS = "CUBIC_CENTIMETERS"
     COUNT = "COUNT"
 
+    __str__ = str.__str__
+
 
 class OrdersV20260101FulfilledBy(str, Enum):
     MERCHANT = "MERCHANT"
     AMAZON = "AMAZON"
+
+    __str__ = str.__str__
 
 
 class OrdersV20260101FulfillmentStatuses(str, Enum):
@@ -85,6 +99,8 @@ class OrdersV20260101FulfillmentStatuses(str, Enum):
     SHIPPED = "SHIPPED"
     CANCELLED = "CANCELLED"
     UNFULFILLABLE = "UNFULFILLABLE"
+
+    __str__ = str.__str__
 
 
 class OrdersV20260101IncludedData(str, Enum):
@@ -100,6 +116,8 @@ class OrdersV20260101IncludedData(str, Enum):
     PAYMENT = "PAYMENT"
     FULFILLMENT_ORDERS = "FULFILLMENT_ORDERS"
 
+    __str__ = str.__str__
+
 
 class PackageStatusStatus(str, Enum):
     PENDING = "PENDING"
@@ -108,6 +126,8 @@ class PackageStatusStatus(str, Enum):
     DELIVERED = "DELIVERED"
     CANCELLED = "CANCELLED"
     UNDELIVERABLE = "UNDELIVERABLE"
+
+    __str__ = str.__str__
 
 
 __all__ = [

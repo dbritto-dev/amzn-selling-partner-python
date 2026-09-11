@@ -14,6 +14,8 @@ class FulfillmentOutboundV20260704Shipments(str, Enum):
     INCLUDE = "INCLUDE"
     EXCLUDE = "EXCLUDE"
 
+    __str__ = str.__str__
+
 
 __all__ = [
     "FulfillmentOutboundV20260704Shipments",

@@ -11,19 +11,19 @@ import datetime
 from collections.abc import AsyncIterator, Iterator, Mapping
 from typing import Any
 
-from ..http_client import AsyncHttpClient, HttpClient, RateLimit, RequestOptions, apaginate, joined, paginate, path_segment
+from .._http import AsyncHttpClient, HttpClient, RateLimit, RequestOptions, apaginate, joined, paginate, path_segment
 from ..models import data_kiosk_v2023_11_15
 
 SERVICE = "data_kiosk_v2023_11_15"
 
 
-class DataKioskV20231115Client:
+class DataKioskV20231115Resource:
     """Synchronous ``DataKioskV20231115`` resource."""
 
-    __slots__ = ("_client",)
+    __slots__ = ("_http",)
 
-    def __init__(self, client: HttpClient) -> None:
-        self._client = client
+    def __init__(self, http: HttpClient) -> None:
+        self._http = http
 
     def list_queries(
         self,
@@ -54,7 +54,7 @@ class DataKioskV20231115Client:
             "createdUntil": created_until,
             "paginationToken": pagination_token,
         }
-        return self._client.request(
+        return self._http.request(
             "GET",
             "/dataKiosk/2023-11-15/queries",
             operation="getQueries",
@@ -97,8 +97,8 @@ class DataKioskV20231115Client:
 
     def create_query(
         self,
-        *,
         body: data_kiosk_v2023_11_15.CreateQuerySpecification | Mapping[str, Any],
+        *,
         request_options: RequestOptions | None = None,
     ) -> data_kiosk_v2023_11_15.CreateQueryResponse:
         """Creates a Data Kiosk query request.
@@ -115,7 +115,7 @@ class DataKioskV20231115Client:
 
         POST /dataKiosk/2023-11-15/queries
         """
-        return self._client.request(
+        return self._http.request(
             "POST",
             "/dataKiosk/2023-11-15/queries",
             operation="createQuery",
@@ -129,8 +129,8 @@ class DataKioskV20231115Client:
 
     def get_query(
         self,
-        *,
         query_id: str,
+        *,
         request_options: RequestOptions | None = None,
     ) -> data_kiosk_v2023_11_15.Query:
         """Returns query details for the query specified by the `queryId` parameter. See the `createQuery` operation for details about query retention.
@@ -145,7 +145,7 @@ class DataKioskV20231115Client:
 
         GET /dataKiosk/2023-11-15/queries/{queryId}
         """
-        return self._client.request(
+        return self._http.request(
             "GET",
             f"/dataKiosk/2023-11-15/queries/{path_segment(query_id)}",
             operation="getQuery",
@@ -158,8 +158,8 @@ class DataKioskV20231115Client:
 
     def delete_query(
         self,
-        *,
         query_id: str,
+        *,
         request_options: RequestOptions | None = None,
     ) -> None:
         """Cancels the query specified by the `queryId` parameter. Only queries with a non-terminal `processingStatus` (`IN_QUEUE`, `IN_PROGRESS`) can be cancelled. Cancelling a query that already has a `processingStatus` of `CANCELLED` will no-op. Cancelled queries are returned in subsequent calls to the `getQuery` and `getQueries` operations.
@@ -174,7 +174,7 @@ class DataKioskV20231115Client:
 
         DELETE /dataKiosk/2023-11-15/queries/{queryId}
         """
-        return self._client.request(
+        return self._http.request(
             "DELETE",
             f"/dataKiosk/2023-11-15/queries/{path_segment(query_id)}",
             operation="cancelQuery",
@@ -186,8 +186,8 @@ class DataKioskV20231115Client:
 
     def get_document(
         self,
-        *,
         document_id: str,
+        *,
         request_options: RequestOptions | None = None,
     ) -> data_kiosk_v2023_11_15.GetDocumentResponse:
         """Returns the information required for retrieving a Data Kiosk document's contents. See the `createQuery` operation for details about document retention.
@@ -202,7 +202,7 @@ class DataKioskV20231115Client:
 
         GET /dataKiosk/2023-11-15/documents/{documentId}
         """
-        return self._client.request(
+        return self._http.request(
             "GET",
             f"/dataKiosk/2023-11-15/documents/{path_segment(document_id)}",
             operation="getDocument",
@@ -214,13 +214,13 @@ class DataKioskV20231115Client:
         )
 
 
-class AsyncDataKioskV20231115Client:
+class AsyncDataKioskV20231115Resource:
     """Asynchronous ``DataKioskV20231115`` resource."""
 
-    __slots__ = ("_client",)
+    __slots__ = ("_http",)
 
-    def __init__(self, client: AsyncHttpClient) -> None:
-        self._client = client
+    def __init__(self, http: AsyncHttpClient) -> None:
+        self._http = http
 
     async def list_queries(
         self,
@@ -251,7 +251,7 @@ class AsyncDataKioskV20231115Client:
             "createdUntil": created_until,
             "paginationToken": pagination_token,
         }
-        return await self._client.request(
+        return await self._http.request(
             "GET",
             "/dataKiosk/2023-11-15/queries",
             operation="getQueries",
@@ -294,8 +294,8 @@ class AsyncDataKioskV20231115Client:
 
     async def create_query(
         self,
-        *,
         body: data_kiosk_v2023_11_15.CreateQuerySpecification | Mapping[str, Any],
+        *,
         request_options: RequestOptions | None = None,
     ) -> data_kiosk_v2023_11_15.CreateQueryResponse:
         """Creates a Data Kiosk query request.
@@ -312,7 +312,7 @@ class AsyncDataKioskV20231115Client:
 
         POST /dataKiosk/2023-11-15/queries
         """
-        return await self._client.request(
+        return await self._http.request(
             "POST",
             "/dataKiosk/2023-11-15/queries",
             operation="createQuery",
@@ -326,8 +326,8 @@ class AsyncDataKioskV20231115Client:
 
     async def get_query(
         self,
-        *,
         query_id: str,
+        *,
         request_options: RequestOptions | None = None,
     ) -> data_kiosk_v2023_11_15.Query:
         """Returns query details for the query specified by the `queryId` parameter. See the `createQuery` operation for details about query retention.
@@ -342,7 +342,7 @@ class AsyncDataKioskV20231115Client:
 
         GET /dataKiosk/2023-11-15/queries/{queryId}
         """
-        return await self._client.request(
+        return await self._http.request(
             "GET",
             f"/dataKiosk/2023-11-15/queries/{path_segment(query_id)}",
             operation="getQuery",
@@ -355,8 +355,8 @@ class AsyncDataKioskV20231115Client:
 
     async def delete_query(
         self,
-        *,
         query_id: str,
+        *,
         request_options: RequestOptions | None = None,
     ) -> None:
         """Cancels the query specified by the `queryId` parameter. Only queries with a non-terminal `processingStatus` (`IN_QUEUE`, `IN_PROGRESS`) can be cancelled. Cancelling a query that already has a `processingStatus` of `CANCELLED` will no-op. Cancelled queries are returned in subsequent calls to the `getQuery` and `getQueries` operations.
@@ -371,7 +371,7 @@ class AsyncDataKioskV20231115Client:
 
         DELETE /dataKiosk/2023-11-15/queries/{queryId}
         """
-        return await self._client.request(
+        return await self._http.request(
             "DELETE",
             f"/dataKiosk/2023-11-15/queries/{path_segment(query_id)}",
             operation="cancelQuery",
@@ -383,8 +383,8 @@ class AsyncDataKioskV20231115Client:
 
     async def get_document(
         self,
-        *,
         document_id: str,
+        *,
         request_options: RequestOptions | None = None,
     ) -> data_kiosk_v2023_11_15.GetDocumentResponse:
         """Returns the information required for retrieving a Data Kiosk document's contents. See the `createQuery` operation for details about document retention.
@@ -399,7 +399,7 @@ class AsyncDataKioskV20231115Client:
 
         GET /dataKiosk/2023-11-15/documents/{documentId}
         """
-        return await self._client.request(
+        return await self._http.request(
             "GET",
             f"/dataKiosk/2023-11-15/documents/{path_segment(document_id)}",
             operation="getDocument",
@@ -411,4 +411,4 @@ class AsyncDataKioskV20231115Client:
         )
 
 
-__all__ = ["AsyncDataKioskV20231115Client", "DataKioskV20231115Client"]
+__all__ = ["AsyncDataKioskV20231115Resource", "DataKioskV20231115Resource"]

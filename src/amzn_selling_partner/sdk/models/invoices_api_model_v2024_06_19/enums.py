@@ -16,9 +16,13 @@ class ExportStatus(str, Enum):
     DONE = "DONE"
     ERROR = "ERROR"
 
+    __str__ = str.__str__
+
 
 class FileFormat(str, Enum):
     XML = "XML"
+
+    __str__ = str.__str__
 
 
 class GovernmentInvoiceCreationStatus(str, Enum):
@@ -26,10 +30,14 @@ class GovernmentInvoiceCreationStatus(str, Enum):
     SUCCESS = "SUCCESS"
     ERROR = "ERROR"
 
+    __str__ = str.__str__
+
 
 class InvoicesApiModelV20240619SortOrder(str, Enum):
     DESC = "DESC"
     ASC = "ASC"
+
+    __str__ = str.__str__
 
 
 class InvoicesApiModelV20240619Status(str, Enum):
@@ -37,6 +45,8 @@ class InvoicesApiModelV20240619Status(str, Enum):
     PROCESSING = "PROCESSING"
     DONE = "DONE"
     ERROR = "ERROR"
+
+    __str__ = str.__str__
 
 
 __all__ = [

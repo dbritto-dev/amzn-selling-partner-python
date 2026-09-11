@@ -9,19 +9,19 @@ from __future__ import annotations
 
 from typing import Any
 
-from ..http_client import AsyncHttpClient, HttpClient, RequestOptions
+from .._http import AsyncHttpClient, HttpClient, RequestOptions
 from ..models import tracking_v2026_01_30
 
 SERVICE = "tracking_v2026_01_30"
 
 
-class TrackingV20260130Client:
+class TrackingV20260130Resource:
     """Synchronous ``TrackingV20260130`` resource."""
 
-    __slots__ = ("_client",)
+    __slots__ = ("_http",)
 
-    def __init__(self, client: HttpClient) -> None:
-        self._client = client
+    def __init__(self, http: HttpClient) -> None:
+        self._http = http
 
     def list_track(
         self,
@@ -52,7 +52,7 @@ class TrackingV20260130Client:
             "carrierTracking.carrierCode": carrier_tracking_carrier_code,
         }
         headers: dict[str, Any] = {"Accept-Language": accept_language}
-        return self._client.request(
+        return self._http.request(
             "GET",
             "/tracking/2026-01-30/shipments/track",
             operation="getShipmentTracking",
@@ -65,13 +65,13 @@ class TrackingV20260130Client:
         )
 
 
-class AsyncTrackingV20260130Client:
+class AsyncTrackingV20260130Resource:
     """Asynchronous ``TrackingV20260130`` resource."""
 
-    __slots__ = ("_client",)
+    __slots__ = ("_http",)
 
-    def __init__(self, client: AsyncHttpClient) -> None:
-        self._client = client
+    def __init__(self, http: AsyncHttpClient) -> None:
+        self._http = http
 
     async def list_track(
         self,
@@ -102,7 +102,7 @@ class AsyncTrackingV20260130Client:
             "carrierTracking.carrierCode": carrier_tracking_carrier_code,
         }
         headers: dict[str, Any] = {"Accept-Language": accept_language}
-        return await self._client.request(
+        return await self._http.request(
             "GET",
             "/tracking/2026-01-30/shipments/track",
             operation="getShipmentTracking",
@@ -115,4 +115,4 @@ class AsyncTrackingV20260130Client:
         )
 
 
-__all__ = ["AsyncTrackingV20260130Client", "TrackingV20260130Client"]
+__all__ = ["AsyncTrackingV20260130Resource", "TrackingV20260130Resource"]

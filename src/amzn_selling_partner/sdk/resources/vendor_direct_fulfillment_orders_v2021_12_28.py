@@ -11,25 +11,25 @@ import datetime
 from collections.abc import AsyncIterator, Iterator, Mapping
 from typing import Any
 
-from ..http_client import AsyncHttpClient, HttpClient, RateLimit, RequestOptions, apaginate, paginate, path_segment
+from .._http import AsyncHttpClient, HttpClient, RateLimit, RequestOptions, apaginate, paginate, path_segment
 from ..models import vendor_direct_fulfillment_orders_v2021_12_28
 
 SERVICE = "vendor_direct_fulfillment_orders_v2021_12_28"
 
 
-class VendorDirectFulfillmentOrdersV20211228Client:
+class VendorDirectFulfillmentOrdersV20211228Resource:
     """Synchronous ``VendorDirectFulfillmentOrdersV20211228`` resource."""
 
-    __slots__ = ("_client",)
+    __slots__ = ("_http",)
 
-    def __init__(self, client: HttpClient) -> None:
-        self._client = client
+    def __init__(self, http: HttpClient) -> None:
+        self._http = http
 
     def list_purchase_orders(
         self,
-        *,
         created_after: datetime.datetime,
         created_before: datetime.datetime,
+        *,
         ship_from_party_id: str | None = None,
         status: vendor_direct_fulfillment_orders_v2021_12_28.VendorDirectFulfillmentOrdersV20211228Status | str | None = None,
         limit: int | None = None,
@@ -60,7 +60,7 @@ class VendorDirectFulfillmentOrdersV20211228Client:
             "nextToken": next_token,
             "includeDetails": include_details,
         }
-        return self._client.request(
+        return self._http.request(
             "GET",
             "/vendor/directFulfillment/orders/2021-12-28/purchaseOrders",
             operation="getOrders",
@@ -74,9 +74,9 @@ class VendorDirectFulfillmentOrdersV20211228Client:
 
     def iter_list_purchase_orders(
         self,
-        *,
         created_after: datetime.datetime,
         created_before: datetime.datetime,
+        *,
         ship_from_party_id: str | None = None,
         status: vendor_direct_fulfillment_orders_v2021_12_28.VendorDirectFulfillmentOrdersV20211228Status | str | None = None,
         limit: int | None = None,
@@ -108,8 +108,8 @@ class VendorDirectFulfillmentOrdersV20211228Client:
 
     def get_purchase_order(
         self,
-        *,
         purchase_order_number: str,
+        *,
         request_options: RequestOptions | None = None,
     ) -> vendor_direct_fulfillment_orders_v2021_12_28.Order:
         """Returns purchase order information for the purchaseOrderNumber that you specify.
@@ -124,7 +124,7 @@ class VendorDirectFulfillmentOrdersV20211228Client:
 
         GET /vendor/directFulfillment/orders/2021-12-28/purchaseOrders/{purchaseOrderNumber}
         """
-        return self._client.request(
+        return self._http.request(
             "GET",
             f"/vendor/directFulfillment/orders/2021-12-28/purchaseOrders/{path_segment(purchase_order_number)}",
             operation="getOrder",
@@ -137,8 +137,8 @@ class VendorDirectFulfillmentOrdersV20211228Client:
 
     def create_acknowledgement(
         self,
-        *,
         body: vendor_direct_fulfillment_orders_v2021_12_28.SubmitAcknowledgementRequest | Mapping[str, Any],
+        *,
         request_options: RequestOptions | None = None,
     ) -> vendor_direct_fulfillment_orders_v2021_12_28.TransactionId:
         """Submits acknowledgements for one or more purchase orders.
@@ -153,7 +153,7 @@ class VendorDirectFulfillmentOrdersV20211228Client:
 
         POST /vendor/directFulfillment/orders/2021-12-28/acknowledgements
         """
-        return self._client.request(
+        return self._http.request(
             "POST",
             "/vendor/directFulfillment/orders/2021-12-28/acknowledgements",
             operation="submitAcknowledgement",
@@ -166,19 +166,19 @@ class VendorDirectFulfillmentOrdersV20211228Client:
         )
 
 
-class AsyncVendorDirectFulfillmentOrdersV20211228Client:
+class AsyncVendorDirectFulfillmentOrdersV20211228Resource:
     """Asynchronous ``VendorDirectFulfillmentOrdersV20211228`` resource."""
 
-    __slots__ = ("_client",)
+    __slots__ = ("_http",)
 
-    def __init__(self, client: AsyncHttpClient) -> None:
-        self._client = client
+    def __init__(self, http: AsyncHttpClient) -> None:
+        self._http = http
 
     async def list_purchase_orders(
         self,
-        *,
         created_after: datetime.datetime,
         created_before: datetime.datetime,
+        *,
         ship_from_party_id: str | None = None,
         status: vendor_direct_fulfillment_orders_v2021_12_28.VendorDirectFulfillmentOrdersV20211228Status | str | None = None,
         limit: int | None = None,
@@ -209,7 +209,7 @@ class AsyncVendorDirectFulfillmentOrdersV20211228Client:
             "nextToken": next_token,
             "includeDetails": include_details,
         }
-        return await self._client.request(
+        return await self._http.request(
             "GET",
             "/vendor/directFulfillment/orders/2021-12-28/purchaseOrders",
             operation="getOrders",
@@ -223,9 +223,9 @@ class AsyncVendorDirectFulfillmentOrdersV20211228Client:
 
     def iter_list_purchase_orders(
         self,
-        *,
         created_after: datetime.datetime,
         created_before: datetime.datetime,
+        *,
         ship_from_party_id: str | None = None,
         status: vendor_direct_fulfillment_orders_v2021_12_28.VendorDirectFulfillmentOrdersV20211228Status | str | None = None,
         limit: int | None = None,
@@ -257,8 +257,8 @@ class AsyncVendorDirectFulfillmentOrdersV20211228Client:
 
     async def get_purchase_order(
         self,
-        *,
         purchase_order_number: str,
+        *,
         request_options: RequestOptions | None = None,
     ) -> vendor_direct_fulfillment_orders_v2021_12_28.Order:
         """Returns purchase order information for the purchaseOrderNumber that you specify.
@@ -273,7 +273,7 @@ class AsyncVendorDirectFulfillmentOrdersV20211228Client:
 
         GET /vendor/directFulfillment/orders/2021-12-28/purchaseOrders/{purchaseOrderNumber}
         """
-        return await self._client.request(
+        return await self._http.request(
             "GET",
             f"/vendor/directFulfillment/orders/2021-12-28/purchaseOrders/{path_segment(purchase_order_number)}",
             operation="getOrder",
@@ -286,8 +286,8 @@ class AsyncVendorDirectFulfillmentOrdersV20211228Client:
 
     async def create_acknowledgement(
         self,
-        *,
         body: vendor_direct_fulfillment_orders_v2021_12_28.SubmitAcknowledgementRequest | Mapping[str, Any],
+        *,
         request_options: RequestOptions | None = None,
     ) -> vendor_direct_fulfillment_orders_v2021_12_28.TransactionId:
         """Submits acknowledgements for one or more purchase orders.
@@ -302,7 +302,7 @@ class AsyncVendorDirectFulfillmentOrdersV20211228Client:
 
         POST /vendor/directFulfillment/orders/2021-12-28/acknowledgements
         """
-        return await self._client.request(
+        return await self._http.request(
             "POST",
             "/vendor/directFulfillment/orders/2021-12-28/acknowledgements",
             operation="submitAcknowledgement",
@@ -315,4 +315,4 @@ class AsyncVendorDirectFulfillmentOrdersV20211228Client:
         )
 
 
-__all__ = ["AsyncVendorDirectFulfillmentOrdersV20211228Client", "VendorDirectFulfillmentOrdersV20211228Client"]
+__all__ = ["AsyncVendorDirectFulfillmentOrdersV20211228Resource", "VendorDirectFulfillmentOrdersV20211228Resource"]

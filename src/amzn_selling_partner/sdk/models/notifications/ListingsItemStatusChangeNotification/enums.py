@@ -15,6 +15,8 @@ class ListingsItemStatusChangeNotificationPayloadStatus(str, Enum):
     DISCOVERABLE = "DISCOVERABLE"
     DELETED = "DELETED"
 
+    __str__ = str.__str__
+
 
 __all__ = [
     "ListingsItemStatusChangeNotificationPayloadStatus",

@@ -10,24 +10,24 @@ from __future__ import annotations
 from collections.abc import AsyncIterator, Iterator, Mapping
 from typing import Any
 
-from ..http_client import AsyncHttpClient, HttpClient, RateLimit, RequestOptions, apaginate, joined, paginate, path_segment
+from .._http import AsyncHttpClient, HttpClient, RateLimit, RequestOptions, apaginate, joined, paginate, path_segment
 from ..models import orders_v0
 
 SERVICE = "orders_v0"
 
 
-class OrdersV0Client:
+class OrdersV0Resource:
     """Synchronous ``OrdersV0`` resource."""
 
-    __slots__ = ("_client",)
+    __slots__ = ("_http",)
 
-    def __init__(self, client: HttpClient) -> None:
-        self._client = client
+    def __init__(self, http: HttpClient) -> None:
+        self._http = http
 
     def list_orders(
         self,
-        *,
         marketplace_ids: list[str],
+        *,
         created_after: str | None = None,
         created_before: str | None = None,
         last_updated_after: str | None = None,
@@ -89,7 +89,7 @@ class OrdersV0Client:
             "LatestDeliveryDateBefore": latest_delivery_date_before,
             "LatestDeliveryDateAfter": latest_delivery_date_after,
         }
-        return self._client.request(
+        return self._http.request(
             "GET",
             "/orders/v0/orders",
             operation="getOrders",
@@ -103,8 +103,8 @@ class OrdersV0Client:
 
     def iter_list_orders(
         self,
-        *,
         marketplace_ids: list[str],
+        *,
         created_after: str | None = None,
         created_before: str | None = None,
         last_updated_after: str | None = None,
@@ -166,8 +166,8 @@ class OrdersV0Client:
 
     def get_order(
         self,
-        *,
         order_id: str,
+        *,
         request_options: RequestOptions | None = None,
     ) -> orders_v0.GetOrderResponse:
         """Returns the order that you specify.
@@ -184,7 +184,7 @@ class OrdersV0Client:
 
         GET /orders/v0/orders/{orderId}
         """
-        return self._client.request(
+        return self._http.request(
             "GET",
             f"/orders/v0/orders/{path_segment(order_id)}",
             operation="getOrder",
@@ -197,8 +197,8 @@ class OrdersV0Client:
 
     def list_order_buyer_info(
         self,
-        *,
         order_id: str,
+        *,
         request_options: RequestOptions | None = None,
     ) -> orders_v0.GetOrderBuyerInfoResponse:
         """Returns buyer information for the order that you specify.
@@ -215,7 +215,7 @@ class OrdersV0Client:
 
         GET /orders/v0/orders/{orderId}/buyerInfo
         """
-        return self._client.request(
+        return self._http.request(
             "GET",
             f"/orders/v0/orders/{path_segment(order_id)}/buyerInfo",
             operation="getOrderBuyerInfo",
@@ -228,8 +228,8 @@ class OrdersV0Client:
 
     def list_order_address(
         self,
-        *,
         order_id: str,
+        *,
         request_options: RequestOptions | None = None,
     ) -> orders_v0.GetOrderAddressResponse:
         """Returns the shipping address for the order that you specify.
@@ -246,7 +246,7 @@ class OrdersV0Client:
 
         GET /orders/v0/orders/{orderId}/address
         """
-        return self._client.request(
+        return self._http.request(
             "GET",
             f"/orders/v0/orders/{path_segment(order_id)}/address",
             operation="getOrderAddress",
@@ -259,8 +259,8 @@ class OrdersV0Client:
 
     def list_order_order_items(
         self,
-        *,
         order_id: str,
+        *,
         next_token: str | None = None,
         request_options: RequestOptions | None = None,
     ) -> orders_v0.GetOrderItemsResponse:
@@ -281,7 +281,7 @@ class OrdersV0Client:
         GET /orders/v0/orders/{orderId}/orderItems
         """
         params: dict[str, Any] = {"NextToken": next_token}
-        return self._client.request(
+        return self._http.request(
             "GET",
             f"/orders/v0/orders/{path_segment(order_id)}/orderItems",
             operation="getOrderItems",
@@ -295,8 +295,8 @@ class OrdersV0Client:
 
     def iter_list_order_order_items(
         self,
-        *,
         order_id: str,
+        *,
         next_token: str | None = None,
         request_options: RequestOptions | None = None,
     ) -> Iterator[orders_v0.OrderItem]:
@@ -314,8 +314,8 @@ class OrdersV0Client:
 
     def list_buyer_info(
         self,
-        *,
         order_id: str,
+        *,
         next_token: str | None = None,
         request_options: RequestOptions | None = None,
     ) -> orders_v0.GetOrderItemsBuyerInfoResponse:
@@ -334,7 +334,7 @@ class OrdersV0Client:
         GET /orders/v0/orders/{orderId}/orderItems/buyerInfo
         """
         params: dict[str, Any] = {"NextToken": next_token}
-        return self._client.request(
+        return self._http.request(
             "GET",
             f"/orders/v0/orders/{path_segment(order_id)}/orderItems/buyerInfo",
             operation="getOrderItemsBuyerInfo",
@@ -348,8 +348,8 @@ class OrdersV0Client:
 
     def iter_list_buyer_info(
         self,
-        *,
         order_id: str,
+        *,
         next_token: str | None = None,
         request_options: RequestOptions | None = None,
     ) -> Iterator[orders_v0.OrderItemBuyerInfo]:
@@ -367,9 +367,9 @@ class OrdersV0Client:
 
     def create_order_shipment(
         self,
-        *,
         order_id: str,
         body: orders_v0.UpdateShipmentStatusRequest | Mapping[str, Any],
+        *,
         request_options: RequestOptions | None = None,
     ) -> None:
         """Update the shipment status for an order that you specify.
@@ -384,7 +384,7 @@ class OrdersV0Client:
 
         POST /orders/v0/orders/{orderId}/shipment
         """
-        return self._client.request(
+        return self._http.request(
             "POST",
             f"/orders/v0/orders/{path_segment(order_id)}/shipment",
             operation="updateShipmentStatus",
@@ -397,8 +397,8 @@ class OrdersV0Client:
 
     def list_order_regulated_info(
         self,
-        *,
         order_id: str,
+        *,
         request_options: RequestOptions | None = None,
     ) -> orders_v0.GetOrderRegulatedInfoResponse:
         """Returns regulated information for the order that you specify.
@@ -413,7 +413,7 @@ class OrdersV0Client:
 
         GET /orders/v0/orders/{orderId}/regulatedInfo
         """
-        return self._client.request(
+        return self._http.request(
             "GET",
             f"/orders/v0/orders/{path_segment(order_id)}/regulatedInfo",
             operation="getOrderRegulatedInfo",
@@ -426,9 +426,9 @@ class OrdersV0Client:
 
     def update_order_regulated_info(
         self,
-        *,
         order_id: str,
         body: orders_v0.UpdateVerificationStatusRequest | Mapping[str, Any],
+        *,
         request_options: RequestOptions | None = None,
     ) -> None:
         """Updates (approves or rejects) the verification status of an order containing regulated products.
@@ -443,7 +443,7 @@ class OrdersV0Client:
 
         PATCH /orders/v0/orders/{orderId}/regulatedInfo
         """
-        return self._client.request(
+        return self._http.request(
             "PATCH",
             f"/orders/v0/orders/{path_segment(order_id)}/regulatedInfo",
             operation="updateVerificationStatus",
@@ -456,9 +456,9 @@ class OrdersV0Client:
 
     def create_order_shipment_confirmation(
         self,
-        *,
         order_id: str,
         body: orders_v0.ConfirmShipmentRequest | Mapping[str, Any],
+        *,
         request_options: RequestOptions | None = None,
     ) -> None:
         """Updates the shipment confirmation status for a specified order.
@@ -473,7 +473,7 @@ class OrdersV0Client:
 
         POST /orders/v0/orders/{orderId}/shipmentConfirmation
         """
-        return self._client.request(
+        return self._http.request(
             "POST",
             f"/orders/v0/orders/{path_segment(order_id)}/shipmentConfirmation",
             operation="confirmShipment",
@@ -485,18 +485,18 @@ class OrdersV0Client:
         )
 
 
-class AsyncOrdersV0Client:
+class AsyncOrdersV0Resource:
     """Asynchronous ``OrdersV0`` resource."""
 
-    __slots__ = ("_client",)
+    __slots__ = ("_http",)
 
-    def __init__(self, client: AsyncHttpClient) -> None:
-        self._client = client
+    def __init__(self, http: AsyncHttpClient) -> None:
+        self._http = http
 
     async def list_orders(
         self,
-        *,
         marketplace_ids: list[str],
+        *,
         created_after: str | None = None,
         created_before: str | None = None,
         last_updated_after: str | None = None,
@@ -558,7 +558,7 @@ class AsyncOrdersV0Client:
             "LatestDeliveryDateBefore": latest_delivery_date_before,
             "LatestDeliveryDateAfter": latest_delivery_date_after,
         }
-        return await self._client.request(
+        return await self._http.request(
             "GET",
             "/orders/v0/orders",
             operation="getOrders",
@@ -572,8 +572,8 @@ class AsyncOrdersV0Client:
 
     def iter_list_orders(
         self,
-        *,
         marketplace_ids: list[str],
+        *,
         created_after: str | None = None,
         created_before: str | None = None,
         last_updated_after: str | None = None,
@@ -635,8 +635,8 @@ class AsyncOrdersV0Client:
 
     async def get_order(
         self,
-        *,
         order_id: str,
+        *,
         request_options: RequestOptions | None = None,
     ) -> orders_v0.GetOrderResponse:
         """Returns the order that you specify.
@@ -653,7 +653,7 @@ class AsyncOrdersV0Client:
 
         GET /orders/v0/orders/{orderId}
         """
-        return await self._client.request(
+        return await self._http.request(
             "GET",
             f"/orders/v0/orders/{path_segment(order_id)}",
             operation="getOrder",
@@ -666,8 +666,8 @@ class AsyncOrdersV0Client:
 
     async def list_order_buyer_info(
         self,
-        *,
         order_id: str,
+        *,
         request_options: RequestOptions | None = None,
     ) -> orders_v0.GetOrderBuyerInfoResponse:
         """Returns buyer information for the order that you specify.
@@ -684,7 +684,7 @@ class AsyncOrdersV0Client:
 
         GET /orders/v0/orders/{orderId}/buyerInfo
         """
-        return await self._client.request(
+        return await self._http.request(
             "GET",
             f"/orders/v0/orders/{path_segment(order_id)}/buyerInfo",
             operation="getOrderBuyerInfo",
@@ -697,8 +697,8 @@ class AsyncOrdersV0Client:
 
     async def list_order_address(
         self,
-        *,
         order_id: str,
+        *,
         request_options: RequestOptions | None = None,
     ) -> orders_v0.GetOrderAddressResponse:
         """Returns the shipping address for the order that you specify.
@@ -715,7 +715,7 @@ class AsyncOrdersV0Client:
 
         GET /orders/v0/orders/{orderId}/address
         """
-        return await self._client.request(
+        return await self._http.request(
             "GET",
             f"/orders/v0/orders/{path_segment(order_id)}/address",
             operation="getOrderAddress",
@@ -728,8 +728,8 @@ class AsyncOrdersV0Client:
 
     async def list_order_order_items(
         self,
-        *,
         order_id: str,
+        *,
         next_token: str | None = None,
         request_options: RequestOptions | None = None,
     ) -> orders_v0.GetOrderItemsResponse:
@@ -750,7 +750,7 @@ class AsyncOrdersV0Client:
         GET /orders/v0/orders/{orderId}/orderItems
         """
         params: dict[str, Any] = {"NextToken": next_token}
-        return await self._client.request(
+        return await self._http.request(
             "GET",
             f"/orders/v0/orders/{path_segment(order_id)}/orderItems",
             operation="getOrderItems",
@@ -764,8 +764,8 @@ class AsyncOrdersV0Client:
 
     def iter_list_order_order_items(
         self,
-        *,
         order_id: str,
+        *,
         next_token: str | None = None,
         request_options: RequestOptions | None = None,
     ) -> AsyncIterator[orders_v0.OrderItem]:
@@ -783,8 +783,8 @@ class AsyncOrdersV0Client:
 
     async def list_buyer_info(
         self,
-        *,
         order_id: str,
+        *,
         next_token: str | None = None,
         request_options: RequestOptions | None = None,
     ) -> orders_v0.GetOrderItemsBuyerInfoResponse:
@@ -803,7 +803,7 @@ class AsyncOrdersV0Client:
         GET /orders/v0/orders/{orderId}/orderItems/buyerInfo
         """
         params: dict[str, Any] = {"NextToken": next_token}
-        return await self._client.request(
+        return await self._http.request(
             "GET",
             f"/orders/v0/orders/{path_segment(order_id)}/orderItems/buyerInfo",
             operation="getOrderItemsBuyerInfo",
@@ -817,8 +817,8 @@ class AsyncOrdersV0Client:
 
     def iter_list_buyer_info(
         self,
-        *,
         order_id: str,
+        *,
         next_token: str | None = None,
         request_options: RequestOptions | None = None,
     ) -> AsyncIterator[orders_v0.OrderItemBuyerInfo]:
@@ -836,9 +836,9 @@ class AsyncOrdersV0Client:
 
     async def create_order_shipment(
         self,
-        *,
         order_id: str,
         body: orders_v0.UpdateShipmentStatusRequest | Mapping[str, Any],
+        *,
         request_options: RequestOptions | None = None,
     ) -> None:
         """Update the shipment status for an order that you specify.
@@ -853,7 +853,7 @@ class AsyncOrdersV0Client:
 
         POST /orders/v0/orders/{orderId}/shipment
         """
-        return await self._client.request(
+        return await self._http.request(
             "POST",
             f"/orders/v0/orders/{path_segment(order_id)}/shipment",
             operation="updateShipmentStatus",
@@ -866,8 +866,8 @@ class AsyncOrdersV0Client:
 
     async def list_order_regulated_info(
         self,
-        *,
         order_id: str,
+        *,
         request_options: RequestOptions | None = None,
     ) -> orders_v0.GetOrderRegulatedInfoResponse:
         """Returns regulated information for the order that you specify.
@@ -882,7 +882,7 @@ class AsyncOrdersV0Client:
 
         GET /orders/v0/orders/{orderId}/regulatedInfo
         """
-        return await self._client.request(
+        return await self._http.request(
             "GET",
             f"/orders/v0/orders/{path_segment(order_id)}/regulatedInfo",
             operation="getOrderRegulatedInfo",
@@ -895,9 +895,9 @@ class AsyncOrdersV0Client:
 
     async def update_order_regulated_info(
         self,
-        *,
         order_id: str,
         body: orders_v0.UpdateVerificationStatusRequest | Mapping[str, Any],
+        *,
         request_options: RequestOptions | None = None,
     ) -> None:
         """Updates (approves or rejects) the verification status of an order containing regulated products.
@@ -912,7 +912,7 @@ class AsyncOrdersV0Client:
 
         PATCH /orders/v0/orders/{orderId}/regulatedInfo
         """
-        return await self._client.request(
+        return await self._http.request(
             "PATCH",
             f"/orders/v0/orders/{path_segment(order_id)}/regulatedInfo",
             operation="updateVerificationStatus",
@@ -925,9 +925,9 @@ class AsyncOrdersV0Client:
 
     async def create_order_shipment_confirmation(
         self,
-        *,
         order_id: str,
         body: orders_v0.ConfirmShipmentRequest | Mapping[str, Any],
+        *,
         request_options: RequestOptions | None = None,
     ) -> None:
         """Updates the shipment confirmation status for a specified order.
@@ -942,7 +942,7 @@ class AsyncOrdersV0Client:
 
         POST /orders/v0/orders/{orderId}/shipmentConfirmation
         """
-        return await self._client.request(
+        return await self._http.request(
             "POST",
             f"/orders/v0/orders/{path_segment(order_id)}/shipmentConfirmation",
             operation="confirmShipment",
@@ -954,4 +954,4 @@ class AsyncOrdersV0Client:
         )
 
 
-__all__ = ["AsyncOrdersV0Client", "OrdersV0Client"]
+__all__ = ["AsyncOrdersV0Resource", "OrdersV0Resource"]

@@ -10,19 +10,19 @@ from __future__ import annotations
 from collections.abc import Mapping
 from typing import Any
 
-from ..http_client import AsyncHttpClient, HttpClient, RequestOptions, path_segment
+from .._http import AsyncHttpClient, HttpClient, RequestOptions, path_segment
 from ..models import supply_sources_v2020_07_01
 
 SERVICE = "supply_sources_v2020_07_01"
 
 
-class SupplySourcesV20200701Client:
+class SupplySourcesV20200701Resource:
     """Synchronous ``SupplySourcesV20200701`` resource."""
 
-    __slots__ = ("_client",)
+    __slots__ = ("_http",)
 
-    def __init__(self, client: HttpClient) -> None:
-        self._client = client
+    def __init__(self, http: HttpClient) -> None:
+        self._http = http
 
     def list_supply_sources(
         self,
@@ -36,7 +36,7 @@ class SupplySourcesV20200701Client:
         GET /supplySources/2020-07-01/supplySources
         """
         params: dict[str, Any] = {"nextPageToken": next_page_token, "pageSize": page_size}
-        return self._client.request(
+        return self._http.request(
             "GET",
             "/supplySources/2020-07-01/supplySources",
             operation="getSupplySources",
@@ -49,15 +49,15 @@ class SupplySourcesV20200701Client:
 
     def create_supply_source(
         self,
-        *,
         body: supply_sources_v2020_07_01.CreateSupplySourceRequest | Mapping[str, Any],
+        *,
         request_options: RequestOptions | None = None,
     ) -> supply_sources_v2020_07_01.CreateSupplySourceResponse:
         """Create a new supply source.
 
         POST /supplySources/2020-07-01/supplySources
         """
-        return self._client.request(
+        return self._http.request(
             "POST",
             "/supplySources/2020-07-01/supplySources",
             operation="createSupplySource",
@@ -70,15 +70,15 @@ class SupplySourcesV20200701Client:
 
     def get_supply_source(
         self,
-        *,
         supply_source_id: str,
+        *,
         request_options: RequestOptions | None = None,
     ) -> supply_sources_v2020_07_01.SupplySource:
         """Retrieve a supply source.
 
         GET /supplySources/2020-07-01/supplySources/{supplySourceId}
         """
-        return self._client.request(
+        return self._http.request(
             "GET",
             f"/supplySources/2020-07-01/supplySources/{path_segment(supply_source_id)}",
             operation="getSupplySource",
@@ -90,16 +90,16 @@ class SupplySourcesV20200701Client:
 
     def update_supply_source(
         self,
-        *,
         supply_source_id: str,
         body: supply_sources_v2020_07_01.UpdateSupplySourceRequest | Mapping[str, Any],
+        *,
         request_options: RequestOptions | None = None,
     ) -> supply_sources_v2020_07_01.ErrorList:
         """Update the configuration and capabilities of a supply source.
 
         PUT /supplySources/2020-07-01/supplySources/{supplySourceId}
         """
-        return self._client.request(
+        return self._http.request(
             "PUT",
             f"/supplySources/2020-07-01/supplySources/{path_segment(supply_source_id)}",
             operation="updateSupplySource",
@@ -112,15 +112,15 @@ class SupplySourcesV20200701Client:
 
     def delete_supply_source(
         self,
-        *,
         supply_source_id: str,
+        *,
         request_options: RequestOptions | None = None,
     ) -> supply_sources_v2020_07_01.ErrorList:
         """Archive a supply source, making it inactive. Cannot be undone.
 
         DELETE /supplySources/2020-07-01/supplySources/{supplySourceId}
         """
-        return self._client.request(
+        return self._http.request(
             "DELETE",
             f"/supplySources/2020-07-01/supplySources/{path_segment(supply_source_id)}",
             operation="archiveSupplySource",
@@ -132,16 +132,16 @@ class SupplySourcesV20200701Client:
 
     def update_supply_source_status(
         self,
-        *,
         supply_source_id: str,
         body: supply_sources_v2020_07_01.UpdateSupplySourceStatusRequest | Mapping[str, Any],
+        *,
         request_options: RequestOptions | None = None,
     ) -> supply_sources_v2020_07_01.ErrorList:
         """Update the status of a supply source.
 
         PUT /supplySources/2020-07-01/supplySources/{supplySourceId}/status
         """
-        return self._client.request(
+        return self._http.request(
             "PUT",
             f"/supplySources/2020-07-01/supplySources/{path_segment(supply_source_id)}/status",
             operation="updateSupplySourceStatus",
@@ -153,13 +153,13 @@ class SupplySourcesV20200701Client:
         )
 
 
-class AsyncSupplySourcesV20200701Client:
+class AsyncSupplySourcesV20200701Resource:
     """Asynchronous ``SupplySourcesV20200701`` resource."""
 
-    __slots__ = ("_client",)
+    __slots__ = ("_http",)
 
-    def __init__(self, client: AsyncHttpClient) -> None:
-        self._client = client
+    def __init__(self, http: AsyncHttpClient) -> None:
+        self._http = http
 
     async def list_supply_sources(
         self,
@@ -173,7 +173,7 @@ class AsyncSupplySourcesV20200701Client:
         GET /supplySources/2020-07-01/supplySources
         """
         params: dict[str, Any] = {"nextPageToken": next_page_token, "pageSize": page_size}
-        return await self._client.request(
+        return await self._http.request(
             "GET",
             "/supplySources/2020-07-01/supplySources",
             operation="getSupplySources",
@@ -186,15 +186,15 @@ class AsyncSupplySourcesV20200701Client:
 
     async def create_supply_source(
         self,
-        *,
         body: supply_sources_v2020_07_01.CreateSupplySourceRequest | Mapping[str, Any],
+        *,
         request_options: RequestOptions | None = None,
     ) -> supply_sources_v2020_07_01.CreateSupplySourceResponse:
         """Create a new supply source.
 
         POST /supplySources/2020-07-01/supplySources
         """
-        return await self._client.request(
+        return await self._http.request(
             "POST",
             "/supplySources/2020-07-01/supplySources",
             operation="createSupplySource",
@@ -207,15 +207,15 @@ class AsyncSupplySourcesV20200701Client:
 
     async def get_supply_source(
         self,
-        *,
         supply_source_id: str,
+        *,
         request_options: RequestOptions | None = None,
     ) -> supply_sources_v2020_07_01.SupplySource:
         """Retrieve a supply source.
 
         GET /supplySources/2020-07-01/supplySources/{supplySourceId}
         """
-        return await self._client.request(
+        return await self._http.request(
             "GET",
             f"/supplySources/2020-07-01/supplySources/{path_segment(supply_source_id)}",
             operation="getSupplySource",
@@ -227,16 +227,16 @@ class AsyncSupplySourcesV20200701Client:
 
     async def update_supply_source(
         self,
-        *,
         supply_source_id: str,
         body: supply_sources_v2020_07_01.UpdateSupplySourceRequest | Mapping[str, Any],
+        *,
         request_options: RequestOptions | None = None,
     ) -> supply_sources_v2020_07_01.ErrorList:
         """Update the configuration and capabilities of a supply source.
 
         PUT /supplySources/2020-07-01/supplySources/{supplySourceId}
         """
-        return await self._client.request(
+        return await self._http.request(
             "PUT",
             f"/supplySources/2020-07-01/supplySources/{path_segment(supply_source_id)}",
             operation="updateSupplySource",
@@ -249,15 +249,15 @@ class AsyncSupplySourcesV20200701Client:
 
     async def delete_supply_source(
         self,
-        *,
         supply_source_id: str,
+        *,
         request_options: RequestOptions | None = None,
     ) -> supply_sources_v2020_07_01.ErrorList:
         """Archive a supply source, making it inactive. Cannot be undone.
 
         DELETE /supplySources/2020-07-01/supplySources/{supplySourceId}
         """
-        return await self._client.request(
+        return await self._http.request(
             "DELETE",
             f"/supplySources/2020-07-01/supplySources/{path_segment(supply_source_id)}",
             operation="archiveSupplySource",
@@ -269,16 +269,16 @@ class AsyncSupplySourcesV20200701Client:
 
     async def update_supply_source_status(
         self,
-        *,
         supply_source_id: str,
         body: supply_sources_v2020_07_01.UpdateSupplySourceStatusRequest | Mapping[str, Any],
+        *,
         request_options: RequestOptions | None = None,
     ) -> supply_sources_v2020_07_01.ErrorList:
         """Update the status of a supply source.
 
         PUT /supplySources/2020-07-01/supplySources/{supplySourceId}/status
         """
-        return await self._client.request(
+        return await self._http.request(
             "PUT",
             f"/supplySources/2020-07-01/supplySources/{path_segment(supply_source_id)}/status",
             operation="updateSupplySourceStatus",
@@ -290,4 +290,4 @@ class AsyncSupplySourcesV20200701Client:
         )
 
 
-__all__ = ["AsyncSupplySourcesV20200701Client", "SupplySourcesV20200701Client"]
+__all__ = ["AsyncSupplySourcesV20200701Resource", "SupplySourcesV20200701Resource"]

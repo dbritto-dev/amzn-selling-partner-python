@@ -10,24 +10,24 @@ from __future__ import annotations
 from collections.abc import Mapping
 from typing import Any
 
-from ..http_client import AsyncHttpClient, HttpClient, RateLimit, RequestOptions, path_segment
+from .._http import AsyncHttpClient, HttpClient, RateLimit, RequestOptions, path_segment
 from ..models import merchant_fulfillment_v0
 
 SERVICE = "merchant_fulfillment_v0"
 
 
-class MerchantFulfillmentV0Client:
+class MerchantFulfillmentV0Resource:
     """Synchronous ``MerchantFulfillmentV0`` resource."""
 
-    __slots__ = ("_client",)
+    __slots__ = ("_http",)
 
-    def __init__(self, client: HttpClient) -> None:
-        self._client = client
+    def __init__(self, http: HttpClient) -> None:
+        self._http = http
 
     def create_eligible_shipping_service(
         self,
-        *,
         body: merchant_fulfillment_v0.GetEligibleShipmentServicesRequest | Mapping[str, Any],
+        *,
         request_options: RequestOptions | None = None,
     ) -> merchant_fulfillment_v0.GetEligibleShipmentServicesResponse:
         """Returns a list of shipping service offers that satisfy the specified shipment request details.
@@ -42,7 +42,7 @@ class MerchantFulfillmentV0Client:
 
         POST /mfn/v0/eligibleShippingServices
         """
-        return self._client.request(
+        return self._http.request(
             "POST",
             "/mfn/v0/eligibleShippingServices",
             operation="getEligibleShipmentServices",
@@ -56,8 +56,8 @@ class MerchantFulfillmentV0Client:
 
     def get_shipment(
         self,
-        *,
         shipment_id: str,
+        *,
         request_options: RequestOptions | None = None,
     ) -> merchant_fulfillment_v0.GetShipmentResponse:
         """Returns the shipment information for an existing shipment.
@@ -72,7 +72,7 @@ class MerchantFulfillmentV0Client:
 
         GET /mfn/v0/shipments/{shipmentId}
         """
-        return self._client.request(
+        return self._http.request(
             "GET",
             f"/mfn/v0/shipments/{path_segment(shipment_id)}",
             operation="getShipment",
@@ -85,8 +85,8 @@ class MerchantFulfillmentV0Client:
 
     def delete_shipment(
         self,
-        *,
         shipment_id: str,
+        *,
         request_options: RequestOptions | None = None,
     ) -> merchant_fulfillment_v0.CancelShipmentResponse:
         """Cancel the shipment indicated by the specified shipment identifier.
@@ -101,7 +101,7 @@ class MerchantFulfillmentV0Client:
 
         DELETE /mfn/v0/shipments/{shipmentId}
         """
-        return self._client.request(
+        return self._http.request(
             "DELETE",
             f"/mfn/v0/shipments/{path_segment(shipment_id)}",
             operation="cancelShipment",
@@ -114,8 +114,8 @@ class MerchantFulfillmentV0Client:
 
     def create_shipment(
         self,
-        *,
         body: merchant_fulfillment_v0.CreateShipmentRequest | Mapping[str, Any],
+        *,
         request_options: RequestOptions | None = None,
     ) -> merchant_fulfillment_v0.CreateShipmentResponse:
         """Create a shipment with the information provided.
@@ -130,7 +130,7 @@ class MerchantFulfillmentV0Client:
 
         POST /mfn/v0/shipments
         """
-        return self._client.request(
+        return self._http.request(
             "POST",
             "/mfn/v0/shipments",
             operation="createShipment",
@@ -144,8 +144,8 @@ class MerchantFulfillmentV0Client:
 
     def create_additional_seller_input(
         self,
-        *,
         body: merchant_fulfillment_v0.GetAdditionalSellerInputsRequest | Mapping[str, Any],
+        *,
         request_options: RequestOptions | None = None,
     ) -> merchant_fulfillment_v0.GetAdditionalSellerInputsResponse:
         """Gets a list of additional seller inputs required for a ship method. This is generally used for international shipping.
@@ -160,7 +160,7 @@ class MerchantFulfillmentV0Client:
 
         POST /mfn/v0/additionalSellerInputs
         """
-        return self._client.request(
+        return self._http.request(
             "POST",
             "/mfn/v0/additionalSellerInputs",
             operation="getAdditionalSellerInputs",
@@ -173,18 +173,18 @@ class MerchantFulfillmentV0Client:
         )
 
 
-class AsyncMerchantFulfillmentV0Client:
+class AsyncMerchantFulfillmentV0Resource:
     """Asynchronous ``MerchantFulfillmentV0`` resource."""
 
-    __slots__ = ("_client",)
+    __slots__ = ("_http",)
 
-    def __init__(self, client: AsyncHttpClient) -> None:
-        self._client = client
+    def __init__(self, http: AsyncHttpClient) -> None:
+        self._http = http
 
     async def create_eligible_shipping_service(
         self,
-        *,
         body: merchant_fulfillment_v0.GetEligibleShipmentServicesRequest | Mapping[str, Any],
+        *,
         request_options: RequestOptions | None = None,
     ) -> merchant_fulfillment_v0.GetEligibleShipmentServicesResponse:
         """Returns a list of shipping service offers that satisfy the specified shipment request details.
@@ -199,7 +199,7 @@ class AsyncMerchantFulfillmentV0Client:
 
         POST /mfn/v0/eligibleShippingServices
         """
-        return await self._client.request(
+        return await self._http.request(
             "POST",
             "/mfn/v0/eligibleShippingServices",
             operation="getEligibleShipmentServices",
@@ -213,8 +213,8 @@ class AsyncMerchantFulfillmentV0Client:
 
     async def get_shipment(
         self,
-        *,
         shipment_id: str,
+        *,
         request_options: RequestOptions | None = None,
     ) -> merchant_fulfillment_v0.GetShipmentResponse:
         """Returns the shipment information for an existing shipment.
@@ -229,7 +229,7 @@ class AsyncMerchantFulfillmentV0Client:
 
         GET /mfn/v0/shipments/{shipmentId}
         """
-        return await self._client.request(
+        return await self._http.request(
             "GET",
             f"/mfn/v0/shipments/{path_segment(shipment_id)}",
             operation="getShipment",
@@ -242,8 +242,8 @@ class AsyncMerchantFulfillmentV0Client:
 
     async def delete_shipment(
         self,
-        *,
         shipment_id: str,
+        *,
         request_options: RequestOptions | None = None,
     ) -> merchant_fulfillment_v0.CancelShipmentResponse:
         """Cancel the shipment indicated by the specified shipment identifier.
@@ -258,7 +258,7 @@ class AsyncMerchantFulfillmentV0Client:
 
         DELETE /mfn/v0/shipments/{shipmentId}
         """
-        return await self._client.request(
+        return await self._http.request(
             "DELETE",
             f"/mfn/v0/shipments/{path_segment(shipment_id)}",
             operation="cancelShipment",
@@ -271,8 +271,8 @@ class AsyncMerchantFulfillmentV0Client:
 
     async def create_shipment(
         self,
-        *,
         body: merchant_fulfillment_v0.CreateShipmentRequest | Mapping[str, Any],
+        *,
         request_options: RequestOptions | None = None,
     ) -> merchant_fulfillment_v0.CreateShipmentResponse:
         """Create a shipment with the information provided.
@@ -287,7 +287,7 @@ class AsyncMerchantFulfillmentV0Client:
 
         POST /mfn/v0/shipments
         """
-        return await self._client.request(
+        return await self._http.request(
             "POST",
             "/mfn/v0/shipments",
             operation="createShipment",
@@ -301,8 +301,8 @@ class AsyncMerchantFulfillmentV0Client:
 
     async def create_additional_seller_input(
         self,
-        *,
         body: merchant_fulfillment_v0.GetAdditionalSellerInputsRequest | Mapping[str, Any],
+        *,
         request_options: RequestOptions | None = None,
     ) -> merchant_fulfillment_v0.GetAdditionalSellerInputsResponse:
         """Gets a list of additional seller inputs required for a ship method. This is generally used for international shipping.
@@ -317,7 +317,7 @@ class AsyncMerchantFulfillmentV0Client:
 
         POST /mfn/v0/additionalSellerInputs
         """
-        return await self._client.request(
+        return await self._http.request(
             "POST",
             "/mfn/v0/additionalSellerInputs",
             operation="getAdditionalSellerInputs",
@@ -330,4 +330,4 @@ class AsyncMerchantFulfillmentV0Client:
         )
 
 
-__all__ = ["AsyncMerchantFulfillmentV0Client", "MerchantFulfillmentV0Client"]
+__all__ = ["AsyncMerchantFulfillmentV0Resource", "MerchantFulfillmentV0Resource"]

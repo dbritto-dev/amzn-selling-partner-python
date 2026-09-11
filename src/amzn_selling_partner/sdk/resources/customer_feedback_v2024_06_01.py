@@ -9,26 +9,26 @@ from __future__ import annotations
 
 from typing import Any
 
-from ..http_client import AsyncHttpClient, HttpClient, RequestOptions, path_segment
+from .._http import AsyncHttpClient, HttpClient, RequestOptions, path_segment
 from ..models import customer_feedback_v2024_06_01
 
 SERVICE = "customer_feedback_v2024_06_01"
 
 
-class CustomerFeedbackV20240601Client:
+class CustomerFeedbackV20240601Resource:
     """Synchronous ``CustomerFeedbackV20240601`` resource."""
 
-    __slots__ = ("_client",)
+    __slots__ = ("_http",)
 
-    def __init__(self, client: HttpClient) -> None:
-        self._client = client
+    def __init__(self, http: HttpClient) -> None:
+        self._http = http
 
     def get_item_review_topics(
         self,
-        *,
         asin: str,
         marketplace_id: str,
         sort_by: str,
+        *,
         request_options: RequestOptions | None = None,
     ) -> customer_feedback_v2024_06_01.ItemReviewTopicsResponse | None:
         """Retrieve an item's ten most positive and ten most negative review topics.
@@ -36,7 +36,7 @@ class CustomerFeedbackV20240601Client:
         GET /customerFeedback/2024-06-01/items/{asin}/reviews/topics
         """
         params: dict[str, Any] = {"marketplaceId": marketplace_id, "sortBy": sort_by}
-        return self._client.request(
+        return self._http.request(
             "GET",
             f"/customerFeedback/2024-06-01/items/{path_segment(asin)}/reviews/topics",
             operation="getItemReviewTopics",
@@ -50,9 +50,9 @@ class CustomerFeedbackV20240601Client:
 
     def list_item_browse_node(
         self,
-        *,
         asin: str,
         marketplace_id: str,
+        *,
         request_options: RequestOptions | None = None,
     ) -> customer_feedback_v2024_06_01.BrowseNodeResponse | None:
         """This API returns the associated browse node of the requested ASIN. A browse node is a location in a browse tree that is used for navigation, product classification, and website content on the Amazon retail website.
@@ -60,7 +60,7 @@ class CustomerFeedbackV20240601Client:
         GET /customerFeedback/2024-06-01/items/{asin}/browseNode
         """
         params: dict[str, Any] = {"marketplaceId": marketplace_id}
-        return self._client.request(
+        return self._http.request(
             "GET",
             f"/customerFeedback/2024-06-01/items/{path_segment(asin)}/browseNode",
             operation="getItemBrowseNode",
@@ -74,10 +74,10 @@ class CustomerFeedbackV20240601Client:
 
     def get_browse_node_review_topics(
         self,
-        *,
         browse_node_id: str,
         marketplace_id: str,
         sort_by: str,
+        *,
         request_options: RequestOptions | None = None,
     ) -> customer_feedback_v2024_06_01.BrowseNodeReviewTopicsResponse | None:
         """Retrieve a browse node's ten most positive and ten most negative review topics.
@@ -85,7 +85,7 @@ class CustomerFeedbackV20240601Client:
         GET /customerFeedback/2024-06-01/browseNodes/{browseNodeId}/reviews/topics
         """
         params: dict[str, Any] = {"marketplaceId": marketplace_id, "sortBy": sort_by}
-        return self._client.request(
+        return self._http.request(
             "GET",
             f"/customerFeedback/2024-06-01/browseNodes/{path_segment(browse_node_id)}/reviews/topics",
             operation="getBrowseNodeReviewTopics",
@@ -99,9 +99,9 @@ class CustomerFeedbackV20240601Client:
 
     def get_item_review_trends(
         self,
-        *,
         asin: str,
         marketplace_id: str,
+        *,
         request_options: RequestOptions | None = None,
     ) -> customer_feedback_v2024_06_01.ItemReviewTrendsResponse | None:
         """Retrieve an item's positive and negative review trends for the past six months.
@@ -109,7 +109,7 @@ class CustomerFeedbackV20240601Client:
         GET /customerFeedback/2024-06-01/items/{asin}/reviews/trends
         """
         params: dict[str, Any] = {"marketplaceId": marketplace_id}
-        return self._client.request(
+        return self._http.request(
             "GET",
             f"/customerFeedback/2024-06-01/items/{path_segment(asin)}/reviews/trends",
             operation="getItemReviewTrends",
@@ -123,9 +123,9 @@ class CustomerFeedbackV20240601Client:
 
     def get_browse_node_review_trends(
         self,
-        *,
         browse_node_id: str,
         marketplace_id: str,
+        *,
         request_options: RequestOptions | None = None,
     ) -> customer_feedback_v2024_06_01.BrowseNodeReviewTrendsResponse | None:
         """Retrieve the positive and negative review trends of items in a browse node for the past six months.
@@ -133,7 +133,7 @@ class CustomerFeedbackV20240601Client:
         GET /customerFeedback/2024-06-01/browseNodes/{browseNodeId}/reviews/trends
         """
         params: dict[str, Any] = {"marketplaceId": marketplace_id}
-        return self._client.request(
+        return self._http.request(
             "GET",
             f"/customerFeedback/2024-06-01/browseNodes/{path_segment(browse_node_id)}/reviews/trends",
             operation="getBrowseNodeReviewTrends",
@@ -147,9 +147,9 @@ class CustomerFeedbackV20240601Client:
 
     def get_browse_node_return_topics(
         self,
-        *,
         browse_node_id: str,
         marketplace_id: str,
+        *,
         request_options: RequestOptions | None = None,
     ) -> customer_feedback_v2024_06_01.BrowseNodeReturnTopicsResponse | None:
         """Retrieve the topics that customers mention when they return items in a browse node.
@@ -157,7 +157,7 @@ class CustomerFeedbackV20240601Client:
         GET /customerFeedback/2024-06-01/browseNodes/{browseNodeId}/returns/topics
         """
         params: dict[str, Any] = {"marketplaceId": marketplace_id}
-        return self._client.request(
+        return self._http.request(
             "GET",
             f"/customerFeedback/2024-06-01/browseNodes/{path_segment(browse_node_id)}/returns/topics",
             operation="getBrowseNodeReturnTopics",
@@ -171,9 +171,9 @@ class CustomerFeedbackV20240601Client:
 
     def get_browse_node_return_trends(
         self,
-        *,
         browse_node_id: str,
         marketplace_id: str,
+        *,
         request_options: RequestOptions | None = None,
     ) -> customer_feedback_v2024_06_01.BrowseNodeReturnTrendsResponse | None:
         """Retrieve the trends of topics that customers mention when they return items in a browse node.
@@ -181,7 +181,7 @@ class CustomerFeedbackV20240601Client:
         GET /customerFeedback/2024-06-01/browseNodes/{browseNodeId}/returns/trends
         """
         params: dict[str, Any] = {"marketplaceId": marketplace_id}
-        return self._client.request(
+        return self._http.request(
             "GET",
             f"/customerFeedback/2024-06-01/browseNodes/{path_segment(browse_node_id)}/returns/trends",
             operation="getBrowseNodeReturnTrends",
@@ -194,20 +194,20 @@ class CustomerFeedbackV20240601Client:
         )
 
 
-class AsyncCustomerFeedbackV20240601Client:
+class AsyncCustomerFeedbackV20240601Resource:
     """Asynchronous ``CustomerFeedbackV20240601`` resource."""
 
-    __slots__ = ("_client",)
+    __slots__ = ("_http",)
 
-    def __init__(self, client: AsyncHttpClient) -> None:
-        self._client = client
+    def __init__(self, http: AsyncHttpClient) -> None:
+        self._http = http
 
     async def get_item_review_topics(
         self,
-        *,
         asin: str,
         marketplace_id: str,
         sort_by: str,
+        *,
         request_options: RequestOptions | None = None,
     ) -> customer_feedback_v2024_06_01.ItemReviewTopicsResponse | None:
         """Retrieve an item's ten most positive and ten most negative review topics.
@@ -215,7 +215,7 @@ class AsyncCustomerFeedbackV20240601Client:
         GET /customerFeedback/2024-06-01/items/{asin}/reviews/topics
         """
         params: dict[str, Any] = {"marketplaceId": marketplace_id, "sortBy": sort_by}
-        return await self._client.request(
+        return await self._http.request(
             "GET",
             f"/customerFeedback/2024-06-01/items/{path_segment(asin)}/reviews/topics",
             operation="getItemReviewTopics",
@@ -229,9 +229,9 @@ class AsyncCustomerFeedbackV20240601Client:
 
     async def list_item_browse_node(
         self,
-        *,
         asin: str,
         marketplace_id: str,
+        *,
         request_options: RequestOptions | None = None,
     ) -> customer_feedback_v2024_06_01.BrowseNodeResponse | None:
         """This API returns the associated browse node of the requested ASIN. A browse node is a location in a browse tree that is used for navigation, product classification, and website content on the Amazon retail website.
@@ -239,7 +239,7 @@ class AsyncCustomerFeedbackV20240601Client:
         GET /customerFeedback/2024-06-01/items/{asin}/browseNode
         """
         params: dict[str, Any] = {"marketplaceId": marketplace_id}
-        return await self._client.request(
+        return await self._http.request(
             "GET",
             f"/customerFeedback/2024-06-01/items/{path_segment(asin)}/browseNode",
             operation="getItemBrowseNode",
@@ -253,10 +253,10 @@ class AsyncCustomerFeedbackV20240601Client:
 
     async def get_browse_node_review_topics(
         self,
-        *,
         browse_node_id: str,
         marketplace_id: str,
         sort_by: str,
+        *,
         request_options: RequestOptions | None = None,
     ) -> customer_feedback_v2024_06_01.BrowseNodeReviewTopicsResponse | None:
         """Retrieve a browse node's ten most positive and ten most negative review topics.
@@ -264,7 +264,7 @@ class AsyncCustomerFeedbackV20240601Client:
         GET /customerFeedback/2024-06-01/browseNodes/{browseNodeId}/reviews/topics
         """
         params: dict[str, Any] = {"marketplaceId": marketplace_id, "sortBy": sort_by}
-        return await self._client.request(
+        return await self._http.request(
             "GET",
             f"/customerFeedback/2024-06-01/browseNodes/{path_segment(browse_node_id)}/reviews/topics",
             operation="getBrowseNodeReviewTopics",
@@ -278,9 +278,9 @@ class AsyncCustomerFeedbackV20240601Client:
 
     async def get_item_review_trends(
         self,
-        *,
         asin: str,
         marketplace_id: str,
+        *,
         request_options: RequestOptions | None = None,
     ) -> customer_feedback_v2024_06_01.ItemReviewTrendsResponse | None:
         """Retrieve an item's positive and negative review trends for the past six months.
@@ -288,7 +288,7 @@ class AsyncCustomerFeedbackV20240601Client:
         GET /customerFeedback/2024-06-01/items/{asin}/reviews/trends
         """
         params: dict[str, Any] = {"marketplaceId": marketplace_id}
-        return await self._client.request(
+        return await self._http.request(
             "GET",
             f"/customerFeedback/2024-06-01/items/{path_segment(asin)}/reviews/trends",
             operation="getItemReviewTrends",
@@ -302,9 +302,9 @@ class AsyncCustomerFeedbackV20240601Client:
 
     async def get_browse_node_review_trends(
         self,
-        *,
         browse_node_id: str,
         marketplace_id: str,
+        *,
         request_options: RequestOptions | None = None,
     ) -> customer_feedback_v2024_06_01.BrowseNodeReviewTrendsResponse | None:
         """Retrieve the positive and negative review trends of items in a browse node for the past six months.
@@ -312,7 +312,7 @@ class AsyncCustomerFeedbackV20240601Client:
         GET /customerFeedback/2024-06-01/browseNodes/{browseNodeId}/reviews/trends
         """
         params: dict[str, Any] = {"marketplaceId": marketplace_id}
-        return await self._client.request(
+        return await self._http.request(
             "GET",
             f"/customerFeedback/2024-06-01/browseNodes/{path_segment(browse_node_id)}/reviews/trends",
             operation="getBrowseNodeReviewTrends",
@@ -326,9 +326,9 @@ class AsyncCustomerFeedbackV20240601Client:
 
     async def get_browse_node_return_topics(
         self,
-        *,
         browse_node_id: str,
         marketplace_id: str,
+        *,
         request_options: RequestOptions | None = None,
     ) -> customer_feedback_v2024_06_01.BrowseNodeReturnTopicsResponse | None:
         """Retrieve the topics that customers mention when they return items in a browse node.
@@ -336,7 +336,7 @@ class AsyncCustomerFeedbackV20240601Client:
         GET /customerFeedback/2024-06-01/browseNodes/{browseNodeId}/returns/topics
         """
         params: dict[str, Any] = {"marketplaceId": marketplace_id}
-        return await self._client.request(
+        return await self._http.request(
             "GET",
             f"/customerFeedback/2024-06-01/browseNodes/{path_segment(browse_node_id)}/returns/topics",
             operation="getBrowseNodeReturnTopics",
@@ -350,9 +350,9 @@ class AsyncCustomerFeedbackV20240601Client:
 
     async def get_browse_node_return_trends(
         self,
-        *,
         browse_node_id: str,
         marketplace_id: str,
+        *,
         request_options: RequestOptions | None = None,
     ) -> customer_feedback_v2024_06_01.BrowseNodeReturnTrendsResponse | None:
         """Retrieve the trends of topics that customers mention when they return items in a browse node.
@@ -360,7 +360,7 @@ class AsyncCustomerFeedbackV20240601Client:
         GET /customerFeedback/2024-06-01/browseNodes/{browseNodeId}/returns/trends
         """
         params: dict[str, Any] = {"marketplaceId": marketplace_id}
-        return await self._client.request(
+        return await self._http.request(
             "GET",
             f"/customerFeedback/2024-06-01/browseNodes/{path_segment(browse_node_id)}/returns/trends",
             operation="getBrowseNodeReturnTrends",
@@ -373,4 +373,4 @@ class AsyncCustomerFeedbackV20240601Client:
         )
 
 
-__all__ = ["AsyncCustomerFeedbackV20240601Client", "CustomerFeedbackV20240601Client"]
+__all__ = ["AsyncCustomerFeedbackV20240601Resource", "CustomerFeedbackV20240601Resource"]

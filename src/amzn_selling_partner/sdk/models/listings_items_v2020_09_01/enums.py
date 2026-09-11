@@ -15,22 +15,30 @@ class IssueSeverity(str, Enum):
     WARNING = "WARNING"
     INFO = "INFO"
 
+    __str__ = str.__str__
+
 
 class ListingsItemPutRequestRequirements(str, Enum):
     LISTING = "LISTING"
     LISTING_PRODUCT_ONLY = "LISTING_PRODUCT_ONLY"
     LISTING_OFFER_ONLY = "LISTING_OFFER_ONLY"
 
+    __str__ = str.__str__
+
 
 class ListingsItemSubmissionResponseStatus(str, Enum):
     ACCEPTED = "ACCEPTED"
     INVALID = "INVALID"
+
+    __str__ = str.__str__
 
 
 class PatchOperationOp(str, Enum):
     ADD = "add"
     REPLACE = "replace"
     DELETE = "delete"
+
+    __str__ = str.__str__
 
 
 __all__ = [

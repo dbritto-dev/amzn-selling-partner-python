@@ -1,2 +1,2 @@
 export { pythonEmitter } from './python/index.js';
-export { myEmittersPlugin } from './plugin.js';
+export { plugin } from './plugin.js';

@@ -13,27 +13,37 @@ from enum import Enum
 class AllOwnersConstraint(str, Enum):
     MUST_MATCH = "MUST_MATCH"
 
+    __str__ = str.__str__
+
 
 class BoxContentInformationSource(str, Enum):
     BOX_CONTENT_PROVIDED = "BOX_CONTENT_PROVIDED"
     MANUAL_PROCESS = "MANUAL_PROCESS"
     BARCODE_2_D = "BARCODE_2D"
 
+    __str__ = str.__str__
+
 
 class FulfillmentInboundV20240320SortBy(str, Enum):
     LAST_UPDATED_TIME = "LAST_UPDATED_TIME"
     CREATION_TIME = "CREATION_TIME"
+
+    __str__ = str.__str__
 
 
 class FulfillmentInboundV20240320SortOrder(str, Enum):
     ASC = "ASC"
     DESC = "DESC"
 
+    __str__ = str.__str__
+
 
 class FulfillmentInboundV20240320Status(str, Enum):
     ACTIVE = "ACTIVE"
     VOIDED = "VOIDED"
     SHIPPED = "SHIPPED"
+
+    __str__ = str.__str__
 
 
 class ItemLabelPageType(str, Enum):
@@ -49,16 +59,22 @@ class ItemLabelPageType(str, Enum):
     A4_44_48X25 = "A4_44_48x25"
     LETTER_30 = "Letter_30"
 
+    __str__ = str.__str__
+
 
 class LabelOwner(str, Enum):
     AMAZON = "AMAZON"
     SELLER = "SELLER"
     NONE = "NONE"
 
+    __str__ = str.__str__
+
 
 class LabelPrintType(str, Enum):
     STANDARD_FORMAT = "STANDARD_FORMAT"
     THERMAL_PRINTING = "THERMAL_PRINTING"
+
+    __str__ = str.__str__
 
 
 class OperationStatus(str, Enum):
@@ -66,11 +82,15 @@ class OperationStatus(str, Enum):
     FAILED = "FAILED"
     IN_PROGRESS = "IN_PROGRESS"
 
+    __str__ = str.__str__
+
 
 class OwnerConstraint(str, Enum):
     AMAZON_ONLY = "AMAZON_ONLY"
     NONE_ONLY = "NONE_ONLY"
     SELLER_ONLY = "SELLER_ONLY"
+
+    __str__ = str.__str__
 
 
 class PrepCategory(str, Enum):
@@ -89,11 +109,15 @@ class PrepCategory(str, Enum):
     UNKNOWN = "UNKNOWN"
     NONE = "NONE"
 
+    __str__ = str.__str__
+
 
 class PrepOwner(str, Enum):
     AMAZON = "AMAZON"
     SELLER = "SELLER"
     NONE = "NONE"
+
+    __str__ = str.__str__
 
 
 class PrepType(str, Enum):
@@ -114,6 +138,8 @@ class PrepType(str, Enum):
     ITEM_SUFFOSTK = "ITEM_SUFFOSTK"
     ITEM_TAPING = "ITEM_TAPING"
 
+    __str__ = str.__str__
+
 
 class ReasonComment(str, Enum):
     APPOINTMENT_REQUESTED_BY_MISTAKE = "APPOINTMENT_REQUESTED_BY_MISTAKE"
@@ -126,20 +152,28 @@ class ReasonComment(str, Enum):
     INCREASED_QUANTITY = "INCREASED_QUANTITY"
     OTHER = "OTHER"
 
+    __str__ = str.__str__
+
 
 class Stackability(str, Enum):
     STACKABLE = "STACKABLE"
     NON_STACKABLE = "NON_STACKABLE"
+
+    __str__ = str.__str__
 
 
 class UnitOfMeasurement(str, Enum):
     IN = "IN"
     CM = "CM"
 
+    __str__ = str.__str__
+
 
 class UnitOfWeight(str, Enum):
     LB = "LB"
     KG = "KG"
+
+    __str__ = str.__str__
 
 
 __all__ = [

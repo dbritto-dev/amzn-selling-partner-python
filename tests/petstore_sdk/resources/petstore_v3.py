@@ -11,19 +11,19 @@ import datetime
 from collections.abc import AsyncIterator, Iterator, Mapping
 from typing import Any
 
-from ..http_client import AsyncHttpClient, HttpClient, RateLimit, RequestOptions, apaginate, joined, paginate, path_segment
+from .._http import AsyncHttpClient, HttpClient, RateLimit, RequestOptions, apaginate, joined, paginate, path_segment
 from ..models import petstore_v3
 
 SERVICE = "petstore_v3"
 
 
-class PetstoreV3Client:
+class PetstoreV3Resource:
     """Synchronous ``PetstoreV3`` resource."""
 
-    __slots__ = ("_client",)
+    __slots__ = ("_http",)
 
-    def __init__(self, client: HttpClient) -> None:
-        self._client = client
+    def __init__(self, http: HttpClient) -> None:
+        self._http = http
 
     def list_pets(
         self,
@@ -47,7 +47,7 @@ class PetstoreV3Client:
         """
         params: dict[str, Any] = {"limit": limit, "tags": tags, "status": status, "nextToken": next_token}
         headers: dict[str, Any] = {"X-Request-Id": x_request_id}
-        return self._client.request(
+        return self._http.request(
             "GET",
             "/v3/pets",
             operation="listPets",
@@ -89,12 +89,12 @@ class PetstoreV3Client:
 
     def create_pet(
         self,
-        *,
         body: petstore_v3.NewPet | Mapping[str, Any],
+        *,
         request_options: RequestOptions | None = None,
     ) -> petstore_v3.Pet:
         """POST /v3/pets"""
-        return self._client.request(
+        return self._http.request(
             "POST",
             "/v3/pets",
             operation="createPet",
@@ -107,14 +107,14 @@ class PetstoreV3Client:
 
     def get_pet(
         self,
-        *,
         pet_id: int,
+        *,
         include: list[str] | None = None,
         request_options: RequestOptions | None = None,
     ) -> petstore_v3.Pet:
         """GET /v3/pets/{petId}"""
         params: dict[str, Any] = {"include": joined(include, ",")}
-        return self._client.request(
+        return self._http.request(
             "GET",
             f"/v3/pets/{path_segment(pet_id)}",
             operation="getPet",
@@ -127,12 +127,12 @@ class PetstoreV3Client:
 
     def delete_pet(
         self,
-        *,
         pet_id: int,
+        *,
         request_options: RequestOptions | None = None,
     ) -> None:
         """DELETE /v3/pets/{petId}"""
-        return self._client.request(
+        return self._http.request(
             "DELETE",
             f"/v3/pets/{path_segment(pet_id)}",
             operation="deletePet",
@@ -142,13 +142,13 @@ class PetstoreV3Client:
 
     def update_pet_photo(
         self,
-        *,
         pet_id: int,
         body: bytes,
+        *,
         request_options: RequestOptions | None = None,
     ) -> petstore_v3.Pet:
         """PUT /v3/pets/{petId}/photo"""
-        return self._client.request(
+        return self._http.request(
             "PUT",
             f"/v3/pets/{path_segment(pet_id)}/photo",
             operation="uploadPhoto",
@@ -167,7 +167,7 @@ class PetstoreV3Client:
     ) -> list[petstore_v3.Dog | petstore_v3.Cat]:
         """GET /v3/animals"""
         params: dict[str, Any] = {"ids": joined(ids, "|"), "since": since}
-        return self._client.request(
+        return self._http.request(
             "GET",
             "/v3/animals",
             operation="listAnimals",
@@ -183,7 +183,7 @@ class PetstoreV3Client:
         request_options: RequestOptions | None = None,
     ) -> petstore_v3.Node:
         """GET /v3/tree"""
-        return self._client.request(
+        return self._http.request(
             "GET",
             "/v3/tree",
             operation="getTree",
@@ -200,7 +200,7 @@ class PetstoreV3Client:
     ) -> petstore_v3.AuditPage:
         """GET /v3/audit"""
         params: dict[str, Any] = {"nextToken": next_token}
-        return self._client.request(
+        return self._http.request(
             "GET",
             "/v3/audit",
             operation="listAudit",
@@ -216,7 +216,7 @@ class PetstoreV3Client:
         request_options: RequestOptions | None = None,
     ) -> str:
         """GET /v3/events"""
-        return self._client.request(
+        return self._http.request(
             "GET",
             "/v3/events",
             operation="streamEvents",
@@ -227,14 +227,14 @@ class PetstoreV3Client:
 
     def get_label(
         self,
-        *,
         label: str,
+        *,
         filter: dict[str, str] | None = None,
         request_options: RequestOptions | None = None,
     ) -> petstore_v3.Pet:
         """GET /v3/labels/{label}"""
         params: dict[str, Any] = {"filter": filter}
-        return self._client.request(
+        return self._http.request(
             "GET",
             f"/v3/labels/{path_segment(label)}",
             operation="getByLabel",
@@ -245,13 +245,13 @@ class PetstoreV3Client:
         )
 
 
-class AsyncPetstoreV3Client:
+class AsyncPetstoreV3Resource:
     """Asynchronous ``PetstoreV3`` resource."""
 
-    __slots__ = ("_client",)
+    __slots__ = ("_http",)
 
-    def __init__(self, client: AsyncHttpClient) -> None:
-        self._client = client
+    def __init__(self, http: AsyncHttpClient) -> None:
+        self._http = http
 
     async def list_pets(
         self,
@@ -275,7 +275,7 @@ class AsyncPetstoreV3Client:
         """
         params: dict[str, Any] = {"limit": limit, "tags": tags, "status": status, "nextToken": next_token}
         headers: dict[str, Any] = {"X-Request-Id": x_request_id}
-        return await self._client.request(
+        return await self._http.request(
             "GET",
             "/v3/pets",
             operation="listPets",
@@ -317,12 +317,12 @@ class AsyncPetstoreV3Client:
 
     async def create_pet(
         self,
-        *,
         body: petstore_v3.NewPet | Mapping[str, Any],
+        *,
         request_options: RequestOptions | None = None,
     ) -> petstore_v3.Pet:
         """POST /v3/pets"""
-        return await self._client.request(
+        return await self._http.request(
             "POST",
             "/v3/pets",
             operation="createPet",
@@ -335,14 +335,14 @@ class AsyncPetstoreV3Client:
 
     async def get_pet(
         self,
-        *,
         pet_id: int,
+        *,
         include: list[str] | None = None,
         request_options: RequestOptions | None = None,
     ) -> petstore_v3.Pet:
         """GET /v3/pets/{petId}"""
         params: dict[str, Any] = {"include": joined(include, ",")}
-        return await self._client.request(
+        return await self._http.request(
             "GET",
             f"/v3/pets/{path_segment(pet_id)}",
             operation="getPet",
@@ -355,12 +355,12 @@ class AsyncPetstoreV3Client:
 
     async def delete_pet(
         self,
-        *,
         pet_id: int,
+        *,
         request_options: RequestOptions | None = None,
     ) -> None:
         """DELETE /v3/pets/{petId}"""
-        return await self._client.request(
+        return await self._http.request(
             "DELETE",
             f"/v3/pets/{path_segment(pet_id)}",
             operation="deletePet",
@@ -370,13 +370,13 @@ class AsyncPetstoreV3Client:
 
     async def update_pet_photo(
         self,
-        *,
         pet_id: int,
         body: bytes,
+        *,
         request_options: RequestOptions | None = None,
     ) -> petstore_v3.Pet:
         """PUT /v3/pets/{petId}/photo"""
-        return await self._client.request(
+        return await self._http.request(
             "PUT",
             f"/v3/pets/{path_segment(pet_id)}/photo",
             operation="uploadPhoto",
@@ -395,7 +395,7 @@ class AsyncPetstoreV3Client:
     ) -> list[petstore_v3.Dog | petstore_v3.Cat]:
         """GET /v3/animals"""
         params: dict[str, Any] = {"ids": joined(ids, "|"), "since": since}
-        return await self._client.request(
+        return await self._http.request(
             "GET",
             "/v3/animals",
             operation="listAnimals",
@@ -411,7 +411,7 @@ class AsyncPetstoreV3Client:
         request_options: RequestOptions | None = None,
     ) -> petstore_v3.Node:
         """GET /v3/tree"""
-        return await self._client.request(
+        return await self._http.request(
             "GET",
             "/v3/tree",
             operation="getTree",
@@ -428,7 +428,7 @@ class AsyncPetstoreV3Client:
     ) -> petstore_v3.AuditPage:
         """GET /v3/audit"""
         params: dict[str, Any] = {"nextToken": next_token}
-        return await self._client.request(
+        return await self._http.request(
             "GET",
             "/v3/audit",
             operation="listAudit",
@@ -444,7 +444,7 @@ class AsyncPetstoreV3Client:
         request_options: RequestOptions | None = None,
     ) -> str:
         """GET /v3/events"""
-        return await self._client.request(
+        return await self._http.request(
             "GET",
             "/v3/events",
             operation="streamEvents",
@@ -455,14 +455,14 @@ class AsyncPetstoreV3Client:
 
     async def get_label(
         self,
-        *,
         label: str,
+        *,
         filter: dict[str, str] | None = None,
         request_options: RequestOptions | None = None,
     ) -> petstore_v3.Pet:
         """GET /v3/labels/{label}"""
         params: dict[str, Any] = {"filter": filter}
-        return await self._client.request(
+        return await self._http.request(
             "GET",
             f"/v3/labels/{path_segment(label)}",
             operation="getByLabel",
@@ -473,4 +473,4 @@ class AsyncPetstoreV3Client:
         )
 
 
-__all__ = ["AsyncPetstoreV3Client", "PetstoreV3Client"]
+__all__ = ["AsyncPetstoreV3Resource", "PetstoreV3Resource"]

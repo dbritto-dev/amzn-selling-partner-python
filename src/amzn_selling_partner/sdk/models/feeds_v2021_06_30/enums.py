@@ -17,6 +17,8 @@ class FeedProcessingStatus(str, Enum):
     IN_PROGRESS = "IN_PROGRESS"
     IN_QUEUE = "IN_QUEUE"
 
+    __str__ = str.__str__
+
 
 class FeedsV20210630ProcessingStatuses(str, Enum):
     CANCELLED = "CANCELLED"
@@ -24,6 +26,8 @@ class FeedsV20210630ProcessingStatuses(str, Enum):
     FATAL = "FATAL"
     IN_PROGRESS = "IN_PROGRESS"
     IN_QUEUE = "IN_QUEUE"
+
+    __str__ = str.__str__
 
 
 __all__ = [

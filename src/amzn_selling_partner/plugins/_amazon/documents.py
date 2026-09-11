@@ -201,7 +201,7 @@ def _url_and_id(doc: Any) -> tuple[str, str]:
 
 
 def _rdt_options(report_type: str | None) -> Any:
-    from ...sdk.http_client import RequestOptions
+    from ...sdk._http import RequestOptions
 
     if report_type and report_type in RESTRICTED_REPORT_TYPES:
         return RequestOptions(auth={"rdt": True})

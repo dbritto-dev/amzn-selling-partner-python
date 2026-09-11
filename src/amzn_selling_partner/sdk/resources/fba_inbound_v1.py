@@ -9,25 +9,25 @@ from __future__ import annotations
 
 from typing import Any
 
-from ..http_client import AsyncHttpClient, HttpClient, RateLimit, RequestOptions, joined
+from .._http import AsyncHttpClient, HttpClient, RateLimit, RequestOptions, joined
 from ..models import fba_inbound_v1
 
 SERVICE = "fba_inbound_v1"
 
 
-class FbaInboundV1Client:
+class FbaInboundV1Resource:
     """Synchronous ``FbaInboundV1`` resource."""
 
-    __slots__ = ("_client",)
+    __slots__ = ("_http",)
 
-    def __init__(self, client: HttpClient) -> None:
-        self._client = client
+    def __init__(self, http: HttpClient) -> None:
+        self._http = http
 
     def list_item_preview(
         self,
-        *,
         asin: str,
         program: fba_inbound_v1.FbaInboundV1Program | str,
+        *,
         marketplace_ids: list[str] | None = None,
         request_options: RequestOptions | None = None,
     ) -> fba_inbound_v1.GetItemEligibilityPreviewResponse:
@@ -44,7 +44,7 @@ class FbaInboundV1Client:
         GET /fba/inbound/v1/eligibility/itemPreview
         """
         params: dict[str, Any] = {"marketplaceIds": joined(marketplace_ids, ","), "asin": asin, "program": program}
-        return self._client.request(
+        return self._http.request(
             "GET",
             "/fba/inbound/v1/eligibility/itemPreview",
             operation="getItemEligibilityPreview",
@@ -57,19 +57,19 @@ class FbaInboundV1Client:
         )
 
 
-class AsyncFbaInboundV1Client:
+class AsyncFbaInboundV1Resource:
     """Asynchronous ``FbaInboundV1`` resource."""
 
-    __slots__ = ("_client",)
+    __slots__ = ("_http",)
 
-    def __init__(self, client: AsyncHttpClient) -> None:
-        self._client = client
+    def __init__(self, http: AsyncHttpClient) -> None:
+        self._http = http
 
     async def list_item_preview(
         self,
-        *,
         asin: str,
         program: fba_inbound_v1.FbaInboundV1Program | str,
+        *,
         marketplace_ids: list[str] | None = None,
         request_options: RequestOptions | None = None,
     ) -> fba_inbound_v1.GetItemEligibilityPreviewResponse:
@@ -86,7 +86,7 @@ class AsyncFbaInboundV1Client:
         GET /fba/inbound/v1/eligibility/itemPreview
         """
         params: dict[str, Any] = {"marketplaceIds": joined(marketplace_ids, ","), "asin": asin, "program": program}
-        return await self._client.request(
+        return await self._http.request(
             "GET",
             "/fba/inbound/v1/eligibility/itemPreview",
             operation="getItemEligibilityPreview",
@@ -99,4 +99,4 @@ class AsyncFbaInboundV1Client:
         )
 
 
-__all__ = ["AsyncFbaInboundV1Client", "FbaInboundV1Client"]
+__all__ = ["AsyncFbaInboundV1Resource", "FbaInboundV1Resource"]

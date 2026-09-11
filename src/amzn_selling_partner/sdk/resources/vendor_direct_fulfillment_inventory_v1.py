@@ -10,25 +10,25 @@ from __future__ import annotations
 from collections.abc import Mapping
 from typing import Any
 
-from ..http_client import AsyncHttpClient, HttpClient, RateLimit, RequestOptions, path_segment
+from .._http import AsyncHttpClient, HttpClient, RateLimit, RequestOptions, path_segment
 from ..models import vendor_direct_fulfillment_inventory_v1
 
 SERVICE = "vendor_direct_fulfillment_inventory_v1"
 
 
-class VendorDirectFulfillmentInventoryV1Client:
+class VendorDirectFulfillmentInventoryV1Resource:
     """Synchronous ``VendorDirectFulfillmentInventoryV1`` resource."""
 
-    __slots__ = ("_client",)
+    __slots__ = ("_http",)
 
-    def __init__(self, client: HttpClient) -> None:
-        self._client = client
+    def __init__(self, http: HttpClient) -> None:
+        self._http = http
 
     def create_warehous_item(
         self,
-        *,
         warehouse_id: str,
         body: vendor_direct_fulfillment_inventory_v1.SubmitInventoryUpdateRequest | Mapping[str, Any],
+        *,
         request_options: RequestOptions | None = None,
     ) -> vendor_direct_fulfillment_inventory_v1.SubmitInventoryUpdateResponse:
         """Submits inventory updates for the specified warehouse for either a partial or full feed of inventory items.
@@ -43,7 +43,7 @@ class VendorDirectFulfillmentInventoryV1Client:
 
         POST /vendor/directFulfillment/inventory/v1/warehouses/{warehouseId}/items
         """
-        return self._client.request(
+        return self._http.request(
             "POST",
             f"/vendor/directFulfillment/inventory/v1/warehouses/{path_segment(warehouse_id)}/items",
             operation="submitInventoryUpdate",
@@ -56,19 +56,19 @@ class VendorDirectFulfillmentInventoryV1Client:
         )
 
 
-class AsyncVendorDirectFulfillmentInventoryV1Client:
+class AsyncVendorDirectFulfillmentInventoryV1Resource:
     """Asynchronous ``VendorDirectFulfillmentInventoryV1`` resource."""
 
-    __slots__ = ("_client",)
+    __slots__ = ("_http",)
 
-    def __init__(self, client: AsyncHttpClient) -> None:
-        self._client = client
+    def __init__(self, http: AsyncHttpClient) -> None:
+        self._http = http
 
     async def create_warehous_item(
         self,
-        *,
         warehouse_id: str,
         body: vendor_direct_fulfillment_inventory_v1.SubmitInventoryUpdateRequest | Mapping[str, Any],
+        *,
         request_options: RequestOptions | None = None,
     ) -> vendor_direct_fulfillment_inventory_v1.SubmitInventoryUpdateResponse:
         """Submits inventory updates for the specified warehouse for either a partial or full feed of inventory items.
@@ -83,7 +83,7 @@ class AsyncVendorDirectFulfillmentInventoryV1Client:
 
         POST /vendor/directFulfillment/inventory/v1/warehouses/{warehouseId}/items
         """
-        return await self._client.request(
+        return await self._http.request(
             "POST",
             f"/vendor/directFulfillment/inventory/v1/warehouses/{path_segment(warehouse_id)}/items",
             operation="submitInventoryUpdate",
@@ -96,4 +96,4 @@ class AsyncVendorDirectFulfillmentInventoryV1Client:
         )
 
 
-__all__ = ["AsyncVendorDirectFulfillmentInventoryV1Client", "VendorDirectFulfillmentInventoryV1Client"]
+__all__ = ["AsyncVendorDirectFulfillmentInventoryV1Resource", "VendorDirectFulfillmentInventoryV1Resource"]

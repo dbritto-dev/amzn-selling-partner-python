@@ -10,24 +10,24 @@ from __future__ import annotations
 from collections.abc import AsyncIterator, Iterator, Mapping
 from typing import Any
 
-from ..http_client import AsyncHttpClient, HttpClient, RateLimit, RequestOptions, apaginate, joined, paginate, path_segment
+from .._http import AsyncHttpClient, HttpClient, RateLimit, RequestOptions, apaginate, joined, paginate, path_segment
 from ..models import notifications_v1
 
 SERVICE = "notifications_v1"
 
 
-class NotificationsV1Client:
+class NotificationsV1Resource:
     """Synchronous ``NotificationsV1`` resource."""
 
-    __slots__ = ("_client",)
+    __slots__ = ("_http",)
 
-    def __init__(self, client: HttpClient) -> None:
-        self._client = client
+    def __init__(self, http: HttpClient) -> None:
+        self._http = http
 
     def list_subscriptions(
         self,
-        *,
         notification_types: list[str],
+        *,
         payload_version: str | None = None,
         page_size: int | None = None,
         next_token: str | None = None,
@@ -55,7 +55,7 @@ class NotificationsV1Client:
             "pageSize": page_size,
             "nextToken": next_token,
         }
-        return self._client.request(
+        return self._http.request(
             "GET",
             "/notifications/v1/subscriptions",
             operation="getSubscriptions",
@@ -69,8 +69,8 @@ class NotificationsV1Client:
 
     def iter_list_subscriptions(
         self,
-        *,
         notification_types: list[str],
+        *,
         payload_version: str | None = None,
         page_size: int | None = None,
         next_token: str | None = None,
@@ -96,8 +96,8 @@ class NotificationsV1Client:
 
     def get_subscription(
         self,
-        *,
         notification_type: str,
+        *,
         payload_version: str | None = None,
         request_options: RequestOptions | None = None,
     ) -> notifications_v1.GetSubscriptionResponse:
@@ -114,7 +114,7 @@ class NotificationsV1Client:
         GET /notifications/v1/subscriptions/{notificationType}
         """
         params: dict[str, Any] = {"payloadVersion": payload_version}
-        return self._client.request(
+        return self._http.request(
             "GET",
             f"/notifications/v1/subscriptions/{path_segment(notification_type)}",
             operation="getSubscription",
@@ -128,9 +128,9 @@ class NotificationsV1Client:
 
     def create_subscription(
         self,
-        *,
         notification_type: str,
         body: notifications_v1.CreateSubscriptionRequest | Mapping[str, Any],
+        *,
         request_options: RequestOptions | None = None,
     ) -> notifications_v1.CreateSubscriptionResponse:
         """Creates a subscription for the specified notification type to be delivered to the specified destination. Before you can subscribe, you must first create the destination by calling the `createDestination` operation. If the notification type that you specify supports multiple payload versions, you can use this operation to subscribe to a different payload version if you already have an existing subscription for a different payload version.
@@ -145,7 +145,7 @@ class NotificationsV1Client:
 
         POST /notifications/v1/subscriptions/{notificationType}
         """
-        return self._client.request(
+        return self._http.request(
             "POST",
             f"/notifications/v1/subscriptions/{path_segment(notification_type)}",
             operation="createSubscription",
@@ -159,9 +159,9 @@ class NotificationsV1Client:
 
     def get_subscription_by_id(
         self,
-        *,
         notification_type: str,
         subscription_id: str,
+        *,
         request_options: RequestOptions | None = None,
     ) -> notifications_v1.GetSubscriptionByIdResponse:
         """Returns information about a subscription for the specified notification type. The `getSubscriptionById` operation is grantless. For more information, refer to [Grantless Operations](https://developer-docs.amazon.com/sp-api/docs/grantless-operations) in the Selling Partner API Developer Guide.
@@ -176,7 +176,7 @@ class NotificationsV1Client:
 
         GET /notifications/v1/subscriptions/{notificationType}/{subscriptionId}
         """
-        return self._client.request(
+        return self._http.request(
             "GET",
             f"/notifications/v1/subscriptions/{path_segment(notification_type)}/{path_segment(subscription_id)}",
             operation="getSubscriptionById",
@@ -189,9 +189,9 @@ class NotificationsV1Client:
 
     def delete_subscription(
         self,
-        *,
         notification_type: str,
         subscription_id: str,
+        *,
         request_options: RequestOptions | None = None,
     ) -> notifications_v1.DeleteSubscriptionByIdResponse:
         """Deletes the subscription indicated by the subscription identifier and notification type that you specify. The subscription identifier can be for any subscription associated with your application. After you successfully call this operation, notifications will stop being sent for the associated subscription. The `deleteSubscriptionById` operation is grantless. For more information, refer to [Grantless Operations](https://developer-docs.amazon.com/sp-api/docs/grantless-operations) in the Selling Partner API Developer Guide.
@@ -206,7 +206,7 @@ class NotificationsV1Client:
 
         DELETE /notifications/v1/subscriptions/{notificationType}/{subscriptionId}
         """
-        return self._client.request(
+        return self._http.request(
             "DELETE",
             f"/notifications/v1/subscriptions/{path_segment(notification_type)}/{path_segment(subscription_id)}",
             operation="deleteSubscriptionById",
@@ -219,9 +219,9 @@ class NotificationsV1Client:
 
     def create_subscription_test_notification(
         self,
-        *,
         notification_type: str,
         body: notifications_v1.SendTestNotificationRequest | Mapping[str, Any],
+        *,
         request_options: RequestOptions | None = None,
     ) -> notifications_v1.SendTestNotificationResponse:
         """Sends a mock notification of the specified type to your SQS. The `sendTestNotification` API is grantless. For more information, see "Grantless operations" in the Selling Partner API Developer Guide.
@@ -236,7 +236,7 @@ class NotificationsV1Client:
 
         POST /notifications/v1/subscriptions/{notificationType}/testNotification
         """
-        return self._client.request(
+        return self._http.request(
             "POST",
             f"/notifications/v1/subscriptions/{path_segment(notification_type)}/testNotification",
             operation="sendTestNotification",
@@ -265,7 +265,7 @@ class NotificationsV1Client:
 
         GET /notifications/v1/destinations
         """
-        return self._client.request(
+        return self._http.request(
             "GET",
             "/notifications/v1/destinations",
             operation="getDestinations",
@@ -278,8 +278,8 @@ class NotificationsV1Client:
 
     def create_destination(
         self,
-        *,
         body: notifications_v1.CreateDestinationRequest | Mapping[str, Any],
+        *,
         request_options: RequestOptions | None = None,
     ) -> notifications_v1.CreateDestinationResponse:
         """Creates a destination resource to receive notifications. The `createDestination` operation is grantless. For more information, refer to [Grantless Operations](https://developer-docs.amazon.com/sp-api/docs/grantless-operations) in the Selling Partner API Developer Guide.
@@ -294,7 +294,7 @@ class NotificationsV1Client:
 
         POST /notifications/v1/destinations
         """
-        return self._client.request(
+        return self._http.request(
             "POST",
             "/notifications/v1/destinations",
             operation="createDestination",
@@ -308,8 +308,8 @@ class NotificationsV1Client:
 
     def get_destination(
         self,
-        *,
         destination_id: str,
+        *,
         request_options: RequestOptions | None = None,
     ) -> notifications_v1.GetDestinationResponse:
         """Returns information about the destination that you specify. The `getDestination` operation is grantless. For more information, refer to [Grantless Operations](https://developer-docs.amazon.com/sp-api/docs/grantless-operations) in the Selling Partner API Developer Guide.
@@ -324,7 +324,7 @@ class NotificationsV1Client:
 
         GET /notifications/v1/destinations/{destinationId}
         """
-        return self._client.request(
+        return self._http.request(
             "GET",
             f"/notifications/v1/destinations/{path_segment(destination_id)}",
             operation="getDestination",
@@ -337,8 +337,8 @@ class NotificationsV1Client:
 
     def delete_destination(
         self,
-        *,
         destination_id: str,
+        *,
         request_options: RequestOptions | None = None,
     ) -> notifications_v1.DeleteDestinationResponse:
         """Deletes the destination that you specify. The `deleteDestination` operation is grantless. For more information, refer to [Grantless Operations](https://developer-docs.amazon.com/sp-api/docs/grantless-operations) in the Selling Partner API Developer Guide.
@@ -353,7 +353,7 @@ class NotificationsV1Client:
 
         DELETE /notifications/v1/destinations/{destinationId}
         """
-        return self._client.request(
+        return self._http.request(
             "DELETE",
             f"/notifications/v1/destinations/{path_segment(destination_id)}",
             operation="deleteDestination",
@@ -365,18 +365,18 @@ class NotificationsV1Client:
         )
 
 
-class AsyncNotificationsV1Client:
+class AsyncNotificationsV1Resource:
     """Asynchronous ``NotificationsV1`` resource."""
 
-    __slots__ = ("_client",)
+    __slots__ = ("_http",)
 
-    def __init__(self, client: AsyncHttpClient) -> None:
-        self._client = client
+    def __init__(self, http: AsyncHttpClient) -> None:
+        self._http = http
 
     async def list_subscriptions(
         self,
-        *,
         notification_types: list[str],
+        *,
         payload_version: str | None = None,
         page_size: int | None = None,
         next_token: str | None = None,
@@ -404,7 +404,7 @@ class AsyncNotificationsV1Client:
             "pageSize": page_size,
             "nextToken": next_token,
         }
-        return await self._client.request(
+        return await self._http.request(
             "GET",
             "/notifications/v1/subscriptions",
             operation="getSubscriptions",
@@ -418,8 +418,8 @@ class AsyncNotificationsV1Client:
 
     def iter_list_subscriptions(
         self,
-        *,
         notification_types: list[str],
+        *,
         payload_version: str | None = None,
         page_size: int | None = None,
         next_token: str | None = None,
@@ -445,8 +445,8 @@ class AsyncNotificationsV1Client:
 
     async def get_subscription(
         self,
-        *,
         notification_type: str,
+        *,
         payload_version: str | None = None,
         request_options: RequestOptions | None = None,
     ) -> notifications_v1.GetSubscriptionResponse:
@@ -463,7 +463,7 @@ class AsyncNotificationsV1Client:
         GET /notifications/v1/subscriptions/{notificationType}
         """
         params: dict[str, Any] = {"payloadVersion": payload_version}
-        return await self._client.request(
+        return await self._http.request(
             "GET",
             f"/notifications/v1/subscriptions/{path_segment(notification_type)}",
             operation="getSubscription",
@@ -477,9 +477,9 @@ class AsyncNotificationsV1Client:
 
     async def create_subscription(
         self,
-        *,
         notification_type: str,
         body: notifications_v1.CreateSubscriptionRequest | Mapping[str, Any],
+        *,
         request_options: RequestOptions | None = None,
     ) -> notifications_v1.CreateSubscriptionResponse:
         """Creates a subscription for the specified notification type to be delivered to the specified destination. Before you can subscribe, you must first create the destination by calling the `createDestination` operation. If the notification type that you specify supports multiple payload versions, you can use this operation to subscribe to a different payload version if you already have an existing subscription for a different payload version.
@@ -494,7 +494,7 @@ class AsyncNotificationsV1Client:
 
         POST /notifications/v1/subscriptions/{notificationType}
         """
-        return await self._client.request(
+        return await self._http.request(
             "POST",
             f"/notifications/v1/subscriptions/{path_segment(notification_type)}",
             operation="createSubscription",
@@ -508,9 +508,9 @@ class AsyncNotificationsV1Client:
 
     async def get_subscription_by_id(
         self,
-        *,
         notification_type: str,
         subscription_id: str,
+        *,
         request_options: RequestOptions | None = None,
     ) -> notifications_v1.GetSubscriptionByIdResponse:
         """Returns information about a subscription for the specified notification type. The `getSubscriptionById` operation is grantless. For more information, refer to [Grantless Operations](https://developer-docs.amazon.com/sp-api/docs/grantless-operations) in the Selling Partner API Developer Guide.
@@ -525,7 +525,7 @@ class AsyncNotificationsV1Client:
 
         GET /notifications/v1/subscriptions/{notificationType}/{subscriptionId}
         """
-        return await self._client.request(
+        return await self._http.request(
             "GET",
             f"/notifications/v1/subscriptions/{path_segment(notification_type)}/{path_segment(subscription_id)}",
             operation="getSubscriptionById",
@@ -538,9 +538,9 @@ class AsyncNotificationsV1Client:
 
     async def delete_subscription(
         self,
-        *,
         notification_type: str,
         subscription_id: str,
+        *,
         request_options: RequestOptions | None = None,
     ) -> notifications_v1.DeleteSubscriptionByIdResponse:
         """Deletes the subscription indicated by the subscription identifier and notification type that you specify. The subscription identifier can be for any subscription associated with your application. After you successfully call this operation, notifications will stop being sent for the associated subscription. The `deleteSubscriptionById` operation is grantless. For more information, refer to [Grantless Operations](https://developer-docs.amazon.com/sp-api/docs/grantless-operations) in the Selling Partner API Developer Guide.
@@ -555,7 +555,7 @@ class AsyncNotificationsV1Client:
 
         DELETE /notifications/v1/subscriptions/{notificationType}/{subscriptionId}
         """
-        return await self._client.request(
+        return await self._http.request(
             "DELETE",
             f"/notifications/v1/subscriptions/{path_segment(notification_type)}/{path_segment(subscription_id)}",
             operation="deleteSubscriptionById",
@@ -568,9 +568,9 @@ class AsyncNotificationsV1Client:
 
     async def create_subscription_test_notification(
         self,
-        *,
         notification_type: str,
         body: notifications_v1.SendTestNotificationRequest | Mapping[str, Any],
+        *,
         request_options: RequestOptions | None = None,
     ) -> notifications_v1.SendTestNotificationResponse:
         """Sends a mock notification of the specified type to your SQS. The `sendTestNotification` API is grantless. For more information, see "Grantless operations" in the Selling Partner API Developer Guide.
@@ -585,7 +585,7 @@ class AsyncNotificationsV1Client:
 
         POST /notifications/v1/subscriptions/{notificationType}/testNotification
         """
-        return await self._client.request(
+        return await self._http.request(
             "POST",
             f"/notifications/v1/subscriptions/{path_segment(notification_type)}/testNotification",
             operation="sendTestNotification",
@@ -614,7 +614,7 @@ class AsyncNotificationsV1Client:
 
         GET /notifications/v1/destinations
         """
-        return await self._client.request(
+        return await self._http.request(
             "GET",
             "/notifications/v1/destinations",
             operation="getDestinations",
@@ -627,8 +627,8 @@ class AsyncNotificationsV1Client:
 
     async def create_destination(
         self,
-        *,
         body: notifications_v1.CreateDestinationRequest | Mapping[str, Any],
+        *,
         request_options: RequestOptions | None = None,
     ) -> notifications_v1.CreateDestinationResponse:
         """Creates a destination resource to receive notifications. The `createDestination` operation is grantless. For more information, refer to [Grantless Operations](https://developer-docs.amazon.com/sp-api/docs/grantless-operations) in the Selling Partner API Developer Guide.
@@ -643,7 +643,7 @@ class AsyncNotificationsV1Client:
 
         POST /notifications/v1/destinations
         """
-        return await self._client.request(
+        return await self._http.request(
             "POST",
             "/notifications/v1/destinations",
             operation="createDestination",
@@ -657,8 +657,8 @@ class AsyncNotificationsV1Client:
 
     async def get_destination(
         self,
-        *,
         destination_id: str,
+        *,
         request_options: RequestOptions | None = None,
     ) -> notifications_v1.GetDestinationResponse:
         """Returns information about the destination that you specify. The `getDestination` operation is grantless. For more information, refer to [Grantless Operations](https://developer-docs.amazon.com/sp-api/docs/grantless-operations) in the Selling Partner API Developer Guide.
@@ -673,7 +673,7 @@ class AsyncNotificationsV1Client:
 
         GET /notifications/v1/destinations/{destinationId}
         """
-        return await self._client.request(
+        return await self._http.request(
             "GET",
             f"/notifications/v1/destinations/{path_segment(destination_id)}",
             operation="getDestination",
@@ -686,8 +686,8 @@ class AsyncNotificationsV1Client:
 
     async def delete_destination(
         self,
-        *,
         destination_id: str,
+        *,
         request_options: RequestOptions | None = None,
     ) -> notifications_v1.DeleteDestinationResponse:
         """Deletes the destination that you specify. The `deleteDestination` operation is grantless. For more information, refer to [Grantless Operations](https://developer-docs.amazon.com/sp-api/docs/grantless-operations) in the Selling Partner API Developer Guide.
@@ -702,7 +702,7 @@ class AsyncNotificationsV1Client:
 
         DELETE /notifications/v1/destinations/{destinationId}
         """
-        return await self._client.request(
+        return await self._http.request(
             "DELETE",
             f"/notifications/v1/destinations/{path_segment(destination_id)}",
             operation="deleteDestination",
@@ -714,4 +714,4 @@ class AsyncNotificationsV1Client:
         )
 
 
-__all__ = ["AsyncNotificationsV1Client", "NotificationsV1Client"]
+__all__ = ["AsyncNotificationsV1Resource", "NotificationsV1Resource"]

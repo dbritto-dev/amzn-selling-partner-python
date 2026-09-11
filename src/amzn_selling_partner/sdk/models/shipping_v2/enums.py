@@ -14,6 +14,8 @@ class AccessPointAssistanceType(str, Enum):
     STAFF_ASSISTED = "STAFF_ASSISTED"
     SELF_ASSISTED = "SELF_ASSISTED"
 
+    __str__ = str.__str__
+
 
 class AccessPointType(str, Enum):
     HELIX = "HELIX"
@@ -25,6 +27,8 @@ class AccessPointType(str, Enum):
     V_3_P = "3P"
     CAMPUS_ROOM = "CAMPUS_ROOM"
 
+    __str__ = str.__str__
+
 
 class AccountStatus(str, Enum):
     ACTIVE = "ACTIVE"
@@ -32,21 +36,29 @@ class AccountStatus(str, Enum):
     PENDING = "PENDING"
     SUSPENDED = "SUSPENDED"
 
+    __str__ = str.__str__
+
 
 class AccountType(str, Enum):
     SHIPPER_ACCOUNT = "SHIPPER_ACCOUNT"
     SHIPPER_ACCOUNT_WITH_INVOICE = "SHIPPER_ACCOUNT_WITH_INVOICE"
     AMAZON_ACCOUNT = "AMAZON_ACCOUNT"
 
+    __str__ = str.__str__
+
 
 class ChannelType(str, Enum):
     AMAZON = "AMAZON"
     EXTERNAL = "EXTERNAL"
 
+    __str__ = str.__str__
+
 
 class ChargeComponentChargeType(str, Enum):
     TAX = "TAX"
     DISCOUNT = "DISCOUNT"
+
+    __str__ = str.__str__
 
 
 class ClaimReason(str, Enum):
@@ -56,16 +68,22 @@ class ClaimReason(str, Enum):
     ITEM_MISSING_SWITCHEROO = "ITEM_MISSING_SWITCHEROO"
     COD_ABUSE = "COD_ABUSE"
 
+    __str__ = str.__str__
+
 
 class ClientReferenceDetailClientReferenceType(str, Enum):
     INTEGRATOR_SHIPPER_ID = "IntegratorShipperId"
     INTEGRATOR_MERCHANT_ID = "IntegratorMerchantId"
+
+    __str__ = str.__str__
 
 
 class DangerousGoodsDetailsPackingGroup(str, Enum):
     I_ = "I"
     II = "II"
     III = "III"
+
+    __str__ = str.__str__
 
 
 class DangerousGoodsDetailsPackingInstruction(str, Enum):
@@ -82,6 +100,8 @@ class DangerousGoodsDetailsPackingInstruction(str, Enum):
     PI969_SECTION_II = "PI969_SECTION_II"
     PI970_SECTION_I = "PI970_SECTION_I"
     PI970_SECTION_II = "PI970_SECTION_II"
+
+    __str__ = str.__str__
 
 
 class DetailCodes(str, Enum):
@@ -116,10 +136,14 @@ class DetailCodes(str, Enum):
     UNDELIVERABLE = "Undeliverable"
     ARRIVED_AT_LOCAL_FACILITY = "ArrivedAtLocalFacility"
 
+    __str__ = str.__str__
+
 
 class DimensionsUnit(str, Enum):
     INCH = "INCH"
     CENTIMETER = "CENTIMETER"
+
+    __str__ = str.__str__
 
 
 class DocumentFormat(str, Enum):
@@ -127,10 +151,14 @@ class DocumentFormat(str, Enum):
     PNG = "PNG"
     ZPL = "ZPL"
 
+    __str__ = str.__str__
+
 
 class DocumentSizeUnit(str, Enum):
     INCH = "INCH"
     CENTIMETER = "CENTIMETER"
+
+    __str__ = str.__str__
 
 
 class DocumentType(str, Enum):
@@ -138,6 +166,8 @@ class DocumentType(str, Enum):
     LABEL = "LABEL"
     RECEIPT = "RECEIPT"
     CUSTOM_FORM = "CUSTOM_FORM"
+
+    __str__ = str.__str__
 
 
 class EventCode(str, Enum):
@@ -156,10 +186,14 @@ class EventCode(str, Enum):
     AVAILABLE_FOR_PICKUP = "AvailableForPickup"
     RECIPIENT_REQUESTED_ALTERNATE_DELIVERY_TIMING = "RecipientRequestedAlternateDeliveryTiming"
 
+    __str__ = str.__str__
+
 
 class GenerationStatus(str, Enum):
     COMPLETED = "Completed"
     IN_PROGRESS = "InProgress"
+
+    __str__ = str.__str__
 
 
 class IneligibilityReasonCode(str, Enum):
@@ -174,16 +208,22 @@ class IneligibilityReasonCode(str, Enum):
     TERMS_AND_CONDITIONS_NOT_ACCEPTED = "TERMS_AND_CONDITIONS_NOT_ACCEPTED"
     UNKNOWN = "UNKNOWN"
 
+    __str__ = str.__str__
+
 
 class InputType(str, Enum):
     TEXTBOX = "TEXTBOX"
     PASSWORD = "PASSWORD"
+
+    __str__ = str.__str__
 
 
 class LabelAttribute(str, Enum):
     PACKAGE_CLIENT_REFERENCE_ID = "PACKAGE_CLIENT_REFERENCE_ID"
     SELLER_DISPLAY_NAME = "SELLER_DISPLAY_NAME"
     COLLECT_ON_DELIVERY_AMOUNT = "COLLECT_ON_DELIVERY_AMOUNT"
+
+    __str__ = str.__str__
 
 
 class LiquidVolumeUnit(str, Enum):
@@ -195,16 +235,22 @@ class LiquidVolumeUnit(str, Enum):
     QT = "QT"
     C = "C"
 
+    __str__ = str.__str__
+
 
 class NdrAction(str, Enum):
     RESCHEDULE = "RESCHEDULE"
     REATTEMPT = "REATTEMPT"
     RTO = "RTO"
 
+    __str__ = str.__str__
+
 
 class PaymentType(str, Enum):
     PAY_THROUGH_AMAZON = "PAY_THROUGH_AMAZON"
     PAY_DIRECT_TO_CARRIER = "PAY_DIRECT_TO_CARRIER"
+
+    __str__ = str.__str__
 
 
 class RateItemID(str, Enum):
@@ -242,21 +288,29 @@ class RateItemID(str, Enum):
     DEMAND_SURCHARGE = "DEMAND_SURCHARGE"
     NONSTANDARD_FEE = "NONSTANDARD_FEE"
 
+    __str__ = str.__str__
+
 
 class RateItemType(str, Enum):
     MANDATORY = "MANDATORY"
     OPTIONAL = "OPTIONAL"
     INCLUDED = "INCLUDED"
 
+    __str__ = str.__str__
+
 
 class SettlementType(str, Enum):
     REFUND = "REFUND"
     CERTIFICATE_OF_FACT = "CERTIFICATE_OF_FACT"
 
+    __str__ = str.__str__
+
 
 class ShipmentType(str, Enum):
     FORWARD = "FORWARD"
     RETURNS = "RETURNS"
+
+    __str__ = str.__str__
 
 
 class ShippingV2AccessPointTypes(str, Enum):
@@ -268,6 +322,8 @@ class ShippingV2AccessPointTypes(str, Enum):
     CORE_LOCKER = "CORE_LOCKER"
     V_3_P = "3P"
     CAMPUS_ROOM = "CAMPUS_ROOM"
+
+    __str__ = str.__str__
 
 
 class ShippingV2XAmznShippingBusinessId(str, Enum):
@@ -282,6 +338,8 @@ class ShippingV2XAmznShippingBusinessId(str, Enum):
     AMAZON_SHIPPING_FR = "AmazonShipping_FR"
     AMAZON_SHIPPING_JP = "AmazonShipping_JP"
 
+    __str__ = str.__str__
+
 
 class Status(str, Enum):
     PRE_TRANSIT = "PreTransit"
@@ -295,9 +353,13 @@ class Status(str, Enum):
     PICKUP_CANCELLED = "PickupCancelled"
     AWAITING_CUSTOMER_PICKUP = "AwaitingCustomerPickup"
 
+    __str__ = str.__str__
+
 
 class TaxType(str, Enum):
     GST = "GST"
+
+    __str__ = str.__str__
 
 
 class WeightUnit(str, Enum):
@@ -305,6 +367,8 @@ class WeightUnit(str, Enum):
     KILOGRAM = "KILOGRAM"
     OUNCE = "OUNCE"
     POUND = "POUND"
+
+    __str__ = str.__str__
 
 
 __all__ = [

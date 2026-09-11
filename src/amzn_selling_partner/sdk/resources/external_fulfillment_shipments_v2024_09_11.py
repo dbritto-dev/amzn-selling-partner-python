@@ -11,24 +11,24 @@ import datetime
 from collections.abc import AsyncIterator, Iterator, Mapping
 from typing import Any
 
-from ..http_client import AsyncHttpClient, HttpClient, RequestOptions, apaginate, paginate, path_segment
+from .._http import AsyncHttpClient, HttpClient, RequestOptions, apaginate, paginate, path_segment
 from ..models import external_fulfillment_shipments_v2024_09_11
 
 SERVICE = "external_fulfillment_shipments_v2024_09_11"
 
 
-class ExternalFulfillmentShipmentsV20240911Client:
+class ExternalFulfillmentShipmentsV20240911Resource:
     """Synchronous ``ExternalFulfillmentShipmentsV20240911`` resource."""
 
-    __slots__ = ("_client",)
+    __slots__ = ("_http",)
 
-    def __init__(self, client: HttpClient) -> None:
-        self._client = client
+    def __init__(self, http: HttpClient) -> None:
+        self._http = http
 
     def list_shipments(
         self,
-        *,
         status: external_fulfillment_shipments_v2024_09_11.ExternalFulfillmentShipmentsV20240911Status | str,
+        *,
         location_id: str | None = None,
         marketplace_id: str | None = None,
         channel_name: str | None = None,
@@ -52,7 +52,7 @@ class ExternalFulfillmentShipmentsV20240911Client:
             "maxResults": max_results,
             "paginationToken": pagination_token,
         }
-        return self._client.request(
+        return self._http.request(
             "GET",
             "/externalFulfillment/2024-09-11/shipments",
             operation="getShipments",
@@ -65,8 +65,8 @@ class ExternalFulfillmentShipmentsV20240911Client:
 
     def iter_list_shipments(
         self,
-        *,
         status: external_fulfillment_shipments_v2024_09_11.ExternalFulfillmentShipmentsV20240911Status | str,
+        *,
         location_id: str | None = None,
         marketplace_id: str | None = None,
         channel_name: str | None = None,
@@ -99,15 +99,15 @@ class ExternalFulfillmentShipmentsV20240911Client:
 
     def get_shipment(
         self,
-        *,
         shipment_id: str,
+        *,
         request_options: RequestOptions | None = None,
     ) -> external_fulfillment_shipments_v2024_09_11.Shipment:
         """Get a single shipment with the ID you specify.
 
         GET /externalFulfillment/2024-09-11/shipments/{shipmentId}
         """
-        return self._client.request(
+        return self._http.request(
             "GET",
             f"/externalFulfillment/2024-09-11/shipments/{path_segment(shipment_id)}",
             operation="getShipment",
@@ -119,10 +119,10 @@ class ExternalFulfillmentShipmentsV20240911Client:
 
     def create_shipment(
         self,
-        *,
         shipment_id: str,
-        operation: external_fulfillment_shipments_v2024_09_11.ExternalFulfillmentShipmentsV20240911Operation | str,
         body: external_fulfillment_shipments_v2024_09_11.ShipmentAcknowledgementRequest | Mapping[str, Any],
+        operation: external_fulfillment_shipments_v2024_09_11.ExternalFulfillmentShipmentsV20240911Operation | str,
+        *,
         request_options: RequestOptions | None = None,
     ) -> None:
         """Confirm or reject the specified shipment.
@@ -130,7 +130,7 @@ class ExternalFulfillmentShipmentsV20240911Client:
         POST /externalFulfillment/2024-09-11/shipments/{shipmentId}
         """
         params: dict[str, Any] = {"operation": operation}
-        return self._client.request(
+        return self._http.request(
             "POST",
             f"/externalFulfillment/2024-09-11/shipments/{path_segment(shipment_id)}",
             operation="processShipment",
@@ -143,16 +143,16 @@ class ExternalFulfillmentShipmentsV20240911Client:
 
     def create_shipment_package(
         self,
-        *,
         shipment_id: str,
         body: external_fulfillment_shipments_v2024_09_11.Packages | Mapping[str, Any],
+        *,
         request_options: RequestOptions | None = None,
     ) -> None:
         """Provide details about the packages in the specified shipment.
 
         POST /externalFulfillment/2024-09-11/shipments/{shipmentId}/packages
         """
-        return self._client.request(
+        return self._http.request(
             "POST",
             f"/externalFulfillment/2024-09-11/shipments/{path_segment(shipment_id)}/packages",
             operation="createPackages",
@@ -164,17 +164,17 @@ class ExternalFulfillmentShipmentsV20240911Client:
 
     def update_package(
         self,
-        *,
         shipment_id: str,
         package_id: str,
         body: external_fulfillment_shipments_v2024_09_11.Package | Mapping[str, Any],
+        *,
         request_options: RequestOptions | None = None,
     ) -> None:
         """Updates the details about the packages that will be used to fulfill the specified shipment.
 
         PUT /externalFulfillment/2024-09-11/shipments/{shipmentId}/packages/{packageId}
         """
-        return self._client.request(
+        return self._http.request(
             "PUT",
             f"/externalFulfillment/2024-09-11/shipments/{path_segment(shipment_id)}/packages/{path_segment(package_id)}",
             operation="updatePackage",
@@ -186,17 +186,17 @@ class ExternalFulfillmentShipmentsV20240911Client:
 
     def update_package_status(
         self,
-        *,
         shipment_id: str,
         package_id: str,
         body: external_fulfillment_shipments_v2024_09_11.PackageDeliveryStatus | Mapping[str, Any],
+        *,
         request_options: RequestOptions | None = None,
     ) -> None:
         """Updates the status of the packages.
 
         PATCH /externalFulfillment/2024-09-11/shipments/{shipmentId}/packages/{packageId}
         """
-        return self._client.request(
+        return self._http.request(
             "PATCH",
             f"/externalFulfillment/2024-09-11/shipments/{path_segment(shipment_id)}/packages/{path_segment(package_id)}",
             operation="updatePackageStatus",
@@ -208,9 +208,9 @@ class ExternalFulfillmentShipmentsV20240911Client:
 
     def list_shipment_shipping_options(
         self,
-        *,
         shipment_id: str,
         package_id: str,
+        *,
         request_options: RequestOptions | None = None,
     ) -> external_fulfillment_shipments_v2024_09_11.ShippingOptionsResponse:
         """Get a list of shipping options for a package in a shipment given the shipment's marketplace and channel. If the marketplace and channel have a pre-determined shipping option, then this operation returns an empty response.
@@ -218,7 +218,7 @@ class ExternalFulfillmentShipmentsV20240911Client:
         GET /externalFulfillment/2024-09-11/shipments/{shipmentId}/shippingOptions
         """
         params: dict[str, Any] = {"packageId": package_id}
-        return self._client.request(
+        return self._http.request(
             "GET",
             f"/externalFulfillment/2024-09-11/shipments/{path_segment(shipment_id)}/shippingOptions",
             operation="retrieveShippingOptions",
@@ -231,15 +231,15 @@ class ExternalFulfillmentShipmentsV20240911Client:
 
     def list_shipment_invoice(
         self,
-        *,
         shipment_id: str,
+        *,
         request_options: RequestOptions | None = None,
     ) -> external_fulfillment_shipments_v2024_09_11.InvoiceResponse:
         """Retrieve invoices for the shipment you specify.
 
         GET /externalFulfillment/2024-09-11/shipments/{shipmentId}/invoice
         """
-        return self._client.request(
+        return self._http.request(
             "GET",
             f"/externalFulfillment/2024-09-11/shipments/{path_segment(shipment_id)}/invoice",
             operation="retrieveInvoice",
@@ -251,15 +251,15 @@ class ExternalFulfillmentShipmentsV20240911Client:
 
     def create_shipment_invoice(
         self,
-        *,
         shipment_id: str,
+        *,
         request_options: RequestOptions | None = None,
     ) -> external_fulfillment_shipments_v2024_09_11.InvoiceResponse:
         """Get invoices for the shipment you specify.
 
         POST /externalFulfillment/2024-09-11/shipments/{shipmentId}/invoice
         """
-        return self._client.request(
+        return self._http.request(
             "POST",
             f"/externalFulfillment/2024-09-11/shipments/{path_segment(shipment_id)}/invoice",
             operation="generateInvoice",
@@ -271,10 +271,10 @@ class ExternalFulfillmentShipmentsV20240911Client:
 
     def update_shipment_ship_labels(
         self,
-        *,
         shipment_id: str,
-        operation: external_fulfillment_shipments_v2024_09_11.ExternalFulfillmentShipmentsV20240911Operation | str,
         body: external_fulfillment_shipments_v2024_09_11.ShipLabelsInput | Mapping[str, Any],
+        operation: external_fulfillment_shipments_v2024_09_11.ExternalFulfillmentShipmentsV20240911Operation | str,
+        *,
         shipping_option_id: str | None = None,
         request_options: RequestOptions | None = None,
     ) -> external_fulfillment_shipments_v2024_09_11.ShipLabelsResponse:
@@ -283,7 +283,7 @@ class ExternalFulfillmentShipmentsV20240911Client:
         PUT /externalFulfillment/2024-09-11/shipments/{shipmentId}/shipLabels
         """
         params: dict[str, Any] = {"shippingOptionId": shipping_option_id, "operation": operation}
-        return self._client.request(
+        return self._http.request(
             "PUT",
             f"/externalFulfillment/2024-09-11/shipments/{path_segment(shipment_id)}/shipLabels",
             operation="generateShipLabels",
@@ -296,18 +296,18 @@ class ExternalFulfillmentShipmentsV20240911Client:
         )
 
 
-class AsyncExternalFulfillmentShipmentsV20240911Client:
+class AsyncExternalFulfillmentShipmentsV20240911Resource:
     """Asynchronous ``ExternalFulfillmentShipmentsV20240911`` resource."""
 
-    __slots__ = ("_client",)
+    __slots__ = ("_http",)
 
-    def __init__(self, client: AsyncHttpClient) -> None:
-        self._client = client
+    def __init__(self, http: AsyncHttpClient) -> None:
+        self._http = http
 
     async def list_shipments(
         self,
-        *,
         status: external_fulfillment_shipments_v2024_09_11.ExternalFulfillmentShipmentsV20240911Status | str,
+        *,
         location_id: str | None = None,
         marketplace_id: str | None = None,
         channel_name: str | None = None,
@@ -331,7 +331,7 @@ class AsyncExternalFulfillmentShipmentsV20240911Client:
             "maxResults": max_results,
             "paginationToken": pagination_token,
         }
-        return await self._client.request(
+        return await self._http.request(
             "GET",
             "/externalFulfillment/2024-09-11/shipments",
             operation="getShipments",
@@ -344,8 +344,8 @@ class AsyncExternalFulfillmentShipmentsV20240911Client:
 
     def iter_list_shipments(
         self,
-        *,
         status: external_fulfillment_shipments_v2024_09_11.ExternalFulfillmentShipmentsV20240911Status | str,
+        *,
         location_id: str | None = None,
         marketplace_id: str | None = None,
         channel_name: str | None = None,
@@ -378,15 +378,15 @@ class AsyncExternalFulfillmentShipmentsV20240911Client:
 
     async def get_shipment(
         self,
-        *,
         shipment_id: str,
+        *,
         request_options: RequestOptions | None = None,
     ) -> external_fulfillment_shipments_v2024_09_11.Shipment:
         """Get a single shipment with the ID you specify.
 
         GET /externalFulfillment/2024-09-11/shipments/{shipmentId}
         """
-        return await self._client.request(
+        return await self._http.request(
             "GET",
             f"/externalFulfillment/2024-09-11/shipments/{path_segment(shipment_id)}",
             operation="getShipment",
@@ -398,10 +398,10 @@ class AsyncExternalFulfillmentShipmentsV20240911Client:
 
     async def create_shipment(
         self,
-        *,
         shipment_id: str,
-        operation: external_fulfillment_shipments_v2024_09_11.ExternalFulfillmentShipmentsV20240911Operation | str,
         body: external_fulfillment_shipments_v2024_09_11.ShipmentAcknowledgementRequest | Mapping[str, Any],
+        operation: external_fulfillment_shipments_v2024_09_11.ExternalFulfillmentShipmentsV20240911Operation | str,
+        *,
         request_options: RequestOptions | None = None,
     ) -> None:
         """Confirm or reject the specified shipment.
@@ -409,7 +409,7 @@ class AsyncExternalFulfillmentShipmentsV20240911Client:
         POST /externalFulfillment/2024-09-11/shipments/{shipmentId}
         """
         params: dict[str, Any] = {"operation": operation}
-        return await self._client.request(
+        return await self._http.request(
             "POST",
             f"/externalFulfillment/2024-09-11/shipments/{path_segment(shipment_id)}",
             operation="processShipment",
@@ -422,16 +422,16 @@ class AsyncExternalFulfillmentShipmentsV20240911Client:
 
     async def create_shipment_package(
         self,
-        *,
         shipment_id: str,
         body: external_fulfillment_shipments_v2024_09_11.Packages | Mapping[str, Any],
+        *,
         request_options: RequestOptions | None = None,
     ) -> None:
         """Provide details about the packages in the specified shipment.
 
         POST /externalFulfillment/2024-09-11/shipments/{shipmentId}/packages
         """
-        return await self._client.request(
+        return await self._http.request(
             "POST",
             f"/externalFulfillment/2024-09-11/shipments/{path_segment(shipment_id)}/packages",
             operation="createPackages",
@@ -443,17 +443,17 @@ class AsyncExternalFulfillmentShipmentsV20240911Client:
 
     async def update_package(
         self,
-        *,
         shipment_id: str,
         package_id: str,
         body: external_fulfillment_shipments_v2024_09_11.Package | Mapping[str, Any],
+        *,
         request_options: RequestOptions | None = None,
     ) -> None:
         """Updates the details about the packages that will be used to fulfill the specified shipment.
 
         PUT /externalFulfillment/2024-09-11/shipments/{shipmentId}/packages/{packageId}
         """
-        return await self._client.request(
+        return await self._http.request(
             "PUT",
             f"/externalFulfillment/2024-09-11/shipments/{path_segment(shipment_id)}/packages/{path_segment(package_id)}",
             operation="updatePackage",
@@ -465,17 +465,17 @@ class AsyncExternalFulfillmentShipmentsV20240911Client:
 
     async def update_package_status(
         self,
-        *,
         shipment_id: str,
         package_id: str,
         body: external_fulfillment_shipments_v2024_09_11.PackageDeliveryStatus | Mapping[str, Any],
+        *,
         request_options: RequestOptions | None = None,
     ) -> None:
         """Updates the status of the packages.
 
         PATCH /externalFulfillment/2024-09-11/shipments/{shipmentId}/packages/{packageId}
         """
-        return await self._client.request(
+        return await self._http.request(
             "PATCH",
             f"/externalFulfillment/2024-09-11/shipments/{path_segment(shipment_id)}/packages/{path_segment(package_id)}",
             operation="updatePackageStatus",
@@ -487,9 +487,9 @@ class AsyncExternalFulfillmentShipmentsV20240911Client:
 
     async def list_shipment_shipping_options(
         self,
-        *,
         shipment_id: str,
         package_id: str,
+        *,
         request_options: RequestOptions | None = None,
     ) -> external_fulfillment_shipments_v2024_09_11.ShippingOptionsResponse:
         """Get a list of shipping options for a package in a shipment given the shipment's marketplace and channel. If the marketplace and channel have a pre-determined shipping option, then this operation returns an empty response.
@@ -497,7 +497,7 @@ class AsyncExternalFulfillmentShipmentsV20240911Client:
         GET /externalFulfillment/2024-09-11/shipments/{shipmentId}/shippingOptions
         """
         params: dict[str, Any] = {"packageId": package_id}
-        return await self._client.request(
+        return await self._http.request(
             "GET",
             f"/externalFulfillment/2024-09-11/shipments/{path_segment(shipment_id)}/shippingOptions",
             operation="retrieveShippingOptions",
@@ -510,15 +510,15 @@ class AsyncExternalFulfillmentShipmentsV20240911Client:
 
     async def list_shipment_invoice(
         self,
-        *,
         shipment_id: str,
+        *,
         request_options: RequestOptions | None = None,
     ) -> external_fulfillment_shipments_v2024_09_11.InvoiceResponse:
         """Retrieve invoices for the shipment you specify.
 
         GET /externalFulfillment/2024-09-11/shipments/{shipmentId}/invoice
         """
-        return await self._client.request(
+        return await self._http.request(
             "GET",
             f"/externalFulfillment/2024-09-11/shipments/{path_segment(shipment_id)}/invoice",
             operation="retrieveInvoice",
@@ -530,15 +530,15 @@ class AsyncExternalFulfillmentShipmentsV20240911Client:
 
     async def create_shipment_invoice(
         self,
-        *,
         shipment_id: str,
+        *,
         request_options: RequestOptions | None = None,
     ) -> external_fulfillment_shipments_v2024_09_11.InvoiceResponse:
         """Get invoices for the shipment you specify.
 
         POST /externalFulfillment/2024-09-11/shipments/{shipmentId}/invoice
         """
-        return await self._client.request(
+        return await self._http.request(
             "POST",
             f"/externalFulfillment/2024-09-11/shipments/{path_segment(shipment_id)}/invoice",
             operation="generateInvoice",
@@ -550,10 +550,10 @@ class AsyncExternalFulfillmentShipmentsV20240911Client:
 
     async def update_shipment_ship_labels(
         self,
-        *,
         shipment_id: str,
-        operation: external_fulfillment_shipments_v2024_09_11.ExternalFulfillmentShipmentsV20240911Operation | str,
         body: external_fulfillment_shipments_v2024_09_11.ShipLabelsInput | Mapping[str, Any],
+        operation: external_fulfillment_shipments_v2024_09_11.ExternalFulfillmentShipmentsV20240911Operation | str,
+        *,
         shipping_option_id: str | None = None,
         request_options: RequestOptions | None = None,
     ) -> external_fulfillment_shipments_v2024_09_11.ShipLabelsResponse:
@@ -562,7 +562,7 @@ class AsyncExternalFulfillmentShipmentsV20240911Client:
         PUT /externalFulfillment/2024-09-11/shipments/{shipmentId}/shipLabels
         """
         params: dict[str, Any] = {"shippingOptionId": shipping_option_id, "operation": operation}
-        return await self._client.request(
+        return await self._http.request(
             "PUT",
             f"/externalFulfillment/2024-09-11/shipments/{path_segment(shipment_id)}/shipLabels",
             operation="generateShipLabels",
@@ -575,4 +575,4 @@ class AsyncExternalFulfillmentShipmentsV20240911Client:
         )
 
 
-__all__ = ["AsyncExternalFulfillmentShipmentsV20240911Client", "ExternalFulfillmentShipmentsV20240911Client"]
+__all__ = ["AsyncExternalFulfillmentShipmentsV20240911Resource", "ExternalFulfillmentShipmentsV20240911Resource"]

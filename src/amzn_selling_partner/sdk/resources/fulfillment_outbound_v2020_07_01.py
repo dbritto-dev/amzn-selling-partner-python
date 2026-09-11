@@ -11,24 +11,24 @@ import datetime
 from collections.abc import AsyncIterator, Iterator, Mapping
 from typing import Any
 
-from ..http_client import AsyncHttpClient, HttpClient, RateLimit, RequestOptions, apaginate, paginate, path_segment
+from .._http import AsyncHttpClient, HttpClient, RateLimit, RequestOptions, apaginate, paginate, path_segment
 from ..models import fulfillment_outbound_v2020_07_01
 
 SERVICE = "fulfillment_outbound_v2020_07_01"
 
 
-class FulfillmentOutboundV20200701Client:
+class FulfillmentOutboundV20200701Resource:
     """Synchronous ``FulfillmentOutboundV20200701`` resource."""
 
-    __slots__ = ("_client",)
+    __slots__ = ("_http",)
 
-    def __init__(self, client: HttpClient) -> None:
-        self._client = client
+    def __init__(self, http: HttpClient) -> None:
+        self._http = http
 
     def create_preview(
         self,
-        *,
         body: fulfillment_outbound_v2020_07_01.GetFulfillmentPreviewRequest | Mapping[str, Any],
+        *,
         request_options: RequestOptions | None = None,
     ) -> fulfillment_outbound_v2020_07_01.GetFulfillmentPreviewResponse:
         """Returns a list of fulfillment order previews based on shipping criteria that you specify.
@@ -43,7 +43,7 @@ class FulfillmentOutboundV20200701Client:
 
         POST /fba/outbound/2020-07-01/fulfillmentOrders/preview
         """
-        return self._client.request(
+        return self._http.request(
             "POST",
             "/fba/outbound/2020-07-01/fulfillmentOrders/preview",
             operation="getFulfillmentPreview",
@@ -57,8 +57,8 @@ class FulfillmentOutboundV20200701Client:
 
     def create_delivery_offer(
         self,
-        *,
         body: fulfillment_outbound_v2020_07_01.GetDeliveryOffersRequest | Mapping[str, Any],
+        *,
         request_options: RequestOptions | None = None,
     ) -> fulfillment_outbound_v2020_07_01.GetDeliveryOffersResponse:
         """Returns delivery options that include an estimated delivery date and offer expiration, based on criteria that you specify.
@@ -73,7 +73,7 @@ class FulfillmentOutboundV20200701Client:
 
         POST /fba/outbound/2020-07-01/deliveryOffers
         """
-        return self._client.request(
+        return self._http.request(
             "POST",
             "/fba/outbound/2020-07-01/deliveryOffers",
             operation="deliveryOffers",
@@ -105,7 +105,7 @@ class FulfillmentOutboundV20200701Client:
         GET /fba/outbound/2020-07-01/fulfillmentOrders
         """
         params: dict[str, Any] = {"queryStartDate": query_start_date, "nextToken": next_token}
-        return self._client.request(
+        return self._http.request(
             "GET",
             "/fba/outbound/2020-07-01/fulfillmentOrders",
             operation="listAllFulfillmentOrders",
@@ -137,8 +137,8 @@ class FulfillmentOutboundV20200701Client:
 
     def create_fulfillment_order(
         self,
-        *,
         body: fulfillment_outbound_v2020_07_01.CreateFulfillmentOrderRequest | Mapping[str, Any],
+        *,
         request_options: RequestOptions | None = None,
     ) -> fulfillment_outbound_v2020_07_01.CreateFulfillmentOrderResponse:
         """Requests that Amazon ship items from the seller's inventory in Amazon's fulfillment network to a destination address.
@@ -153,7 +153,7 @@ class FulfillmentOutboundV20200701Client:
 
         POST /fba/outbound/2020-07-01/fulfillmentOrders
         """
-        return self._client.request(
+        return self._http.request(
             "POST",
             "/fba/outbound/2020-07-01/fulfillmentOrders",
             operation="createFulfillmentOrder",
@@ -167,8 +167,8 @@ class FulfillmentOutboundV20200701Client:
 
     def list_tracking(
         self,
-        *,
         package_number: int,
+        *,
         request_options: RequestOptions | None = None,
     ) -> fulfillment_outbound_v2020_07_01.GetPackageTrackingDetailsResponse:
         """Returns delivery tracking information for a package in an outbound shipment for a Multi-Channel Fulfillment order.
@@ -184,7 +184,7 @@ class FulfillmentOutboundV20200701Client:
         GET /fba/outbound/2020-07-01/tracking
         """
         params: dict[str, Any] = {"packageNumber": package_number}
-        return self._client.request(
+        return self._http.request(
             "GET",
             "/fba/outbound/2020-07-01/tracking",
             operation="getPackageTrackingDetails",
@@ -198,8 +198,8 @@ class FulfillmentOutboundV20200701Client:
 
     def list_return_reason_codes(
         self,
-        *,
         seller_sku: str,
+        *,
         marketplace_id: str | None = None,
         seller_fulfillment_order_id: str | None = None,
         language: str | None = None,
@@ -223,7 +223,7 @@ class FulfillmentOutboundV20200701Client:
             "sellerFulfillmentOrderId": seller_fulfillment_order_id,
             "language": language,
         }
-        return self._client.request(
+        return self._http.request(
             "GET",
             "/fba/outbound/2020-07-01/returnReasonCodes",
             operation="listReturnReasonCodes",
@@ -237,9 +237,9 @@ class FulfillmentOutboundV20200701Client:
 
     def update_fulfillment_order_return(
         self,
-        *,
         seller_fulfillment_order_id: str,
         body: fulfillment_outbound_v2020_07_01.CreateFulfillmentReturnRequest | Mapping[str, Any],
+        *,
         request_options: RequestOptions | None = None,
     ) -> fulfillment_outbound_v2020_07_01.CreateFulfillmentReturnResponse:
         """Creates a fulfillment return.
@@ -254,7 +254,7 @@ class FulfillmentOutboundV20200701Client:
 
         PUT /fba/outbound/2020-07-01/fulfillmentOrders/{sellerFulfillmentOrderId}/return
         """
-        return self._client.request(
+        return self._http.request(
             "PUT",
             f"/fba/outbound/2020-07-01/fulfillmentOrders/{path_segment(seller_fulfillment_order_id)}/return",
             operation="createFulfillmentReturn",
@@ -268,8 +268,8 @@ class FulfillmentOutboundV20200701Client:
 
     def get_fulfillment_order(
         self,
-        *,
         seller_fulfillment_order_id: str,
+        *,
         request_options: RequestOptions | None = None,
     ) -> fulfillment_outbound_v2020_07_01.GetFulfillmentOrderResponse:
         """Returns the fulfillment order indicated by the specified order identifier.
@@ -284,7 +284,7 @@ class FulfillmentOutboundV20200701Client:
 
         GET /fba/outbound/2020-07-01/fulfillmentOrders/{sellerFulfillmentOrderId}
         """
-        return self._client.request(
+        return self._http.request(
             "GET",
             f"/fba/outbound/2020-07-01/fulfillmentOrders/{path_segment(seller_fulfillment_order_id)}",
             operation="getFulfillmentOrder",
@@ -297,9 +297,9 @@ class FulfillmentOutboundV20200701Client:
 
     def update_fulfillment_order(
         self,
-        *,
         seller_fulfillment_order_id: str,
         body: fulfillment_outbound_v2020_07_01.UpdateFulfillmentOrderRequest | Mapping[str, Any],
+        *,
         request_options: RequestOptions | None = None,
     ) -> fulfillment_outbound_v2020_07_01.UpdateFulfillmentOrderResponse:
         """Updates and/or requests shipment for a fulfillment order with an order hold on it.
@@ -314,7 +314,7 @@ class FulfillmentOutboundV20200701Client:
 
         PUT /fba/outbound/2020-07-01/fulfillmentOrders/{sellerFulfillmentOrderId}
         """
-        return self._client.request(
+        return self._http.request(
             "PUT",
             f"/fba/outbound/2020-07-01/fulfillmentOrders/{path_segment(seller_fulfillment_order_id)}",
             operation="updateFulfillmentOrder",
@@ -328,8 +328,8 @@ class FulfillmentOutboundV20200701Client:
 
     def update_fulfillment_order_cancel(
         self,
-        *,
         seller_fulfillment_order_id: str,
+        *,
         request_options: RequestOptions | None = None,
     ) -> fulfillment_outbound_v2020_07_01.CancelFulfillmentOrderResponse:
         """Requests that Amazon stop attempting to fulfill the fulfillment order indicated by the specified order identifier.
@@ -344,7 +344,7 @@ class FulfillmentOutboundV20200701Client:
 
         PUT /fba/outbound/2020-07-01/fulfillmentOrders/{sellerFulfillmentOrderId}/cancel
         """
-        return self._client.request(
+        return self._http.request(
             "PUT",
             f"/fba/outbound/2020-07-01/fulfillmentOrders/{path_segment(seller_fulfillment_order_id)}/cancel",
             operation="cancelFulfillmentOrder",
@@ -357,16 +357,16 @@ class FulfillmentOutboundV20200701Client:
 
     def update_fulfillment_order_status(
         self,
-        *,
         seller_fulfillment_order_id: str,
         body: fulfillment_outbound_v2020_07_01.SubmitFulfillmentOrderStatusUpdateRequest | Mapping[str, Any],
+        *,
         request_options: RequestOptions | None = None,
     ) -> fulfillment_outbound_v2020_07_01.SubmitFulfillmentOrderStatusUpdateResponse:
         """Requests that Amazon update the status of an order in the sandbox testing environment. This is a sandbox-only operation and must be directed to a sandbox endpoint. Refer to [Fulfillment Outbound Dynamic Sandbox Guide](https://developer-docs.amazon.com/sp-api/docs/fulfillment-outbound-dynamic-sandbox-guide) and [Selling Partner API sandbox](https://developer-docs.amazon.com/sp-api/docs/the-selling-partner-api-sandbox) for more information.
 
         PUT /fba/outbound/2020-07-01/fulfillmentOrders/{sellerFulfillmentOrderId}/status
         """
-        return self._client.request(
+        return self._http.request(
             "PUT",
             f"/fba/outbound/2020-07-01/fulfillmentOrders/{path_segment(seller_fulfillment_order_id)}/status",
             operation="submitFulfillmentOrderStatusUpdate",
@@ -379,8 +379,8 @@ class FulfillmentOutboundV20200701Client:
 
     def list_features(
         self,
-        *,
         marketplace_id: str,
+        *,
         request_options: RequestOptions | None = None,
     ) -> fulfillment_outbound_v2020_07_01.GetFeaturesResponse:
         """Returns a list of features available for Multi-Channel Fulfillment orders in the marketplace you specify, and whether the seller for which you made the call is enrolled for each feature.
@@ -396,7 +396,7 @@ class FulfillmentOutboundV20200701Client:
         GET /fba/outbound/2020-07-01/features
         """
         params: dict[str, Any] = {"marketplaceId": marketplace_id}
-        return self._client.request(
+        return self._http.request(
             "GET",
             "/fba/outbound/2020-07-01/features",
             operation="getFeatures",
@@ -410,9 +410,9 @@ class FulfillmentOutboundV20200701Client:
 
     def get_feature_inventory(
         self,
-        *,
         feature_name: str,
         marketplace_id: str,
+        *,
         next_token: str | None = None,
         query_start_date: datetime.datetime | None = None,
         request_options: RequestOptions | None = None,
@@ -430,7 +430,7 @@ class FulfillmentOutboundV20200701Client:
         GET /fba/outbound/2020-07-01/features/inventory/{featureName}
         """
         params: dict[str, Any] = {"marketplaceId": marketplace_id, "nextToken": next_token, "queryStartDate": query_start_date}
-        return self._client.request(
+        return self._http.request(
             "GET",
             f"/fba/outbound/2020-07-01/features/inventory/{path_segment(feature_name)}",
             operation="getFeatureInventory",
@@ -444,9 +444,9 @@ class FulfillmentOutboundV20200701Client:
 
     def iter_get_feature_inventory(
         self,
-        *,
         feature_name: str,
         marketplace_id: str,
+        *,
         next_token: str | None = None,
         query_start_date: datetime.datetime | None = None,
         request_options: RequestOptions | None = None,
@@ -470,10 +470,10 @@ class FulfillmentOutboundV20200701Client:
 
     def get_feature_sku(
         self,
-        *,
         feature_name: str,
         seller_sku: str,
         marketplace_id: str,
+        *,
         request_options: RequestOptions | None = None,
     ) -> fulfillment_outbound_v2020_07_01.GetFeatureSkuResponse:
         """Returns the number of items with the `sellerSku` you specify that can have orders fulfilled using the specified feature. Note that if the `sellerSku` isn't eligible, the response will contain an empty `skuInfo` object. The parameters for this operation may contain special characters that require URL encoding. To avoid errors with SKUs when encoding URLs, refer to [URL Encoding](https://developer-docs.amazon.com/sp-api/docs/url-encoding).
@@ -489,7 +489,7 @@ class FulfillmentOutboundV20200701Client:
         GET /fba/outbound/2020-07-01/features/inventory/{featureName}/{sellerSku}
         """
         params: dict[str, Any] = {"marketplaceId": marketplace_id}
-        return self._client.request(
+        return self._http.request(
             "GET",
             f"/fba/outbound/2020-07-01/features/inventory/{path_segment(feature_name)}/{path_segment(seller_sku)}",
             operation="getFeatureSKU",
@@ -502,18 +502,18 @@ class FulfillmentOutboundV20200701Client:
         )
 
 
-class AsyncFulfillmentOutboundV20200701Client:
+class AsyncFulfillmentOutboundV20200701Resource:
     """Asynchronous ``FulfillmentOutboundV20200701`` resource."""
 
-    __slots__ = ("_client",)
+    __slots__ = ("_http",)
 
-    def __init__(self, client: AsyncHttpClient) -> None:
-        self._client = client
+    def __init__(self, http: AsyncHttpClient) -> None:
+        self._http = http
 
     async def create_preview(
         self,
-        *,
         body: fulfillment_outbound_v2020_07_01.GetFulfillmentPreviewRequest | Mapping[str, Any],
+        *,
         request_options: RequestOptions | None = None,
     ) -> fulfillment_outbound_v2020_07_01.GetFulfillmentPreviewResponse:
         """Returns a list of fulfillment order previews based on shipping criteria that you specify.
@@ -528,7 +528,7 @@ class AsyncFulfillmentOutboundV20200701Client:
 
         POST /fba/outbound/2020-07-01/fulfillmentOrders/preview
         """
-        return await self._client.request(
+        return await self._http.request(
             "POST",
             "/fba/outbound/2020-07-01/fulfillmentOrders/preview",
             operation="getFulfillmentPreview",
@@ -542,8 +542,8 @@ class AsyncFulfillmentOutboundV20200701Client:
 
     async def create_delivery_offer(
         self,
-        *,
         body: fulfillment_outbound_v2020_07_01.GetDeliveryOffersRequest | Mapping[str, Any],
+        *,
         request_options: RequestOptions | None = None,
     ) -> fulfillment_outbound_v2020_07_01.GetDeliveryOffersResponse:
         """Returns delivery options that include an estimated delivery date and offer expiration, based on criteria that you specify.
@@ -558,7 +558,7 @@ class AsyncFulfillmentOutboundV20200701Client:
 
         POST /fba/outbound/2020-07-01/deliveryOffers
         """
-        return await self._client.request(
+        return await self._http.request(
             "POST",
             "/fba/outbound/2020-07-01/deliveryOffers",
             operation="deliveryOffers",
@@ -590,7 +590,7 @@ class AsyncFulfillmentOutboundV20200701Client:
         GET /fba/outbound/2020-07-01/fulfillmentOrders
         """
         params: dict[str, Any] = {"queryStartDate": query_start_date, "nextToken": next_token}
-        return await self._client.request(
+        return await self._http.request(
             "GET",
             "/fba/outbound/2020-07-01/fulfillmentOrders",
             operation="listAllFulfillmentOrders",
@@ -622,8 +622,8 @@ class AsyncFulfillmentOutboundV20200701Client:
 
     async def create_fulfillment_order(
         self,
-        *,
         body: fulfillment_outbound_v2020_07_01.CreateFulfillmentOrderRequest | Mapping[str, Any],
+        *,
         request_options: RequestOptions | None = None,
     ) -> fulfillment_outbound_v2020_07_01.CreateFulfillmentOrderResponse:
         """Requests that Amazon ship items from the seller's inventory in Amazon's fulfillment network to a destination address.
@@ -638,7 +638,7 @@ class AsyncFulfillmentOutboundV20200701Client:
 
         POST /fba/outbound/2020-07-01/fulfillmentOrders
         """
-        return await self._client.request(
+        return await self._http.request(
             "POST",
             "/fba/outbound/2020-07-01/fulfillmentOrders",
             operation="createFulfillmentOrder",
@@ -652,8 +652,8 @@ class AsyncFulfillmentOutboundV20200701Client:
 
     async def list_tracking(
         self,
-        *,
         package_number: int,
+        *,
         request_options: RequestOptions | None = None,
     ) -> fulfillment_outbound_v2020_07_01.GetPackageTrackingDetailsResponse:
         """Returns delivery tracking information for a package in an outbound shipment for a Multi-Channel Fulfillment order.
@@ -669,7 +669,7 @@ class AsyncFulfillmentOutboundV20200701Client:
         GET /fba/outbound/2020-07-01/tracking
         """
         params: dict[str, Any] = {"packageNumber": package_number}
-        return await self._client.request(
+        return await self._http.request(
             "GET",
             "/fba/outbound/2020-07-01/tracking",
             operation="getPackageTrackingDetails",
@@ -683,8 +683,8 @@ class AsyncFulfillmentOutboundV20200701Client:
 
     async def list_return_reason_codes(
         self,
-        *,
         seller_sku: str,
+        *,
         marketplace_id: str | None = None,
         seller_fulfillment_order_id: str | None = None,
         language: str | None = None,
@@ -708,7 +708,7 @@ class AsyncFulfillmentOutboundV20200701Client:
             "sellerFulfillmentOrderId": seller_fulfillment_order_id,
             "language": language,
         }
-        return await self._client.request(
+        return await self._http.request(
             "GET",
             "/fba/outbound/2020-07-01/returnReasonCodes",
             operation="listReturnReasonCodes",
@@ -722,9 +722,9 @@ class AsyncFulfillmentOutboundV20200701Client:
 
     async def update_fulfillment_order_return(
         self,
-        *,
         seller_fulfillment_order_id: str,
         body: fulfillment_outbound_v2020_07_01.CreateFulfillmentReturnRequest | Mapping[str, Any],
+        *,
         request_options: RequestOptions | None = None,
     ) -> fulfillment_outbound_v2020_07_01.CreateFulfillmentReturnResponse:
         """Creates a fulfillment return.
@@ -739,7 +739,7 @@ class AsyncFulfillmentOutboundV20200701Client:
 
         PUT /fba/outbound/2020-07-01/fulfillmentOrders/{sellerFulfillmentOrderId}/return
         """
-        return await self._client.request(
+        return await self._http.request(
             "PUT",
             f"/fba/outbound/2020-07-01/fulfillmentOrders/{path_segment(seller_fulfillment_order_id)}/return",
             operation="createFulfillmentReturn",
@@ -753,8 +753,8 @@ class AsyncFulfillmentOutboundV20200701Client:
 
     async def get_fulfillment_order(
         self,
-        *,
         seller_fulfillment_order_id: str,
+        *,
         request_options: RequestOptions | None = None,
     ) -> fulfillment_outbound_v2020_07_01.GetFulfillmentOrderResponse:
         """Returns the fulfillment order indicated by the specified order identifier.
@@ -769,7 +769,7 @@ class AsyncFulfillmentOutboundV20200701Client:
 
         GET /fba/outbound/2020-07-01/fulfillmentOrders/{sellerFulfillmentOrderId}
         """
-        return await self._client.request(
+        return await self._http.request(
             "GET",
             f"/fba/outbound/2020-07-01/fulfillmentOrders/{path_segment(seller_fulfillment_order_id)}",
             operation="getFulfillmentOrder",
@@ -782,9 +782,9 @@ class AsyncFulfillmentOutboundV20200701Client:
 
     async def update_fulfillment_order(
         self,
-        *,
         seller_fulfillment_order_id: str,
         body: fulfillment_outbound_v2020_07_01.UpdateFulfillmentOrderRequest | Mapping[str, Any],
+        *,
         request_options: RequestOptions | None = None,
     ) -> fulfillment_outbound_v2020_07_01.UpdateFulfillmentOrderResponse:
         """Updates and/or requests shipment for a fulfillment order with an order hold on it.
@@ -799,7 +799,7 @@ class AsyncFulfillmentOutboundV20200701Client:
 
         PUT /fba/outbound/2020-07-01/fulfillmentOrders/{sellerFulfillmentOrderId}
         """
-        return await self._client.request(
+        return await self._http.request(
             "PUT",
             f"/fba/outbound/2020-07-01/fulfillmentOrders/{path_segment(seller_fulfillment_order_id)}",
             operation="updateFulfillmentOrder",
@@ -813,8 +813,8 @@ class AsyncFulfillmentOutboundV20200701Client:
 
     async def update_fulfillment_order_cancel(
         self,
-        *,
         seller_fulfillment_order_id: str,
+        *,
         request_options: RequestOptions | None = None,
     ) -> fulfillment_outbound_v2020_07_01.CancelFulfillmentOrderResponse:
         """Requests that Amazon stop attempting to fulfill the fulfillment order indicated by the specified order identifier.
@@ -829,7 +829,7 @@ class AsyncFulfillmentOutboundV20200701Client:
 
         PUT /fba/outbound/2020-07-01/fulfillmentOrders/{sellerFulfillmentOrderId}/cancel
         """
-        return await self._client.request(
+        return await self._http.request(
             "PUT",
             f"/fba/outbound/2020-07-01/fulfillmentOrders/{path_segment(seller_fulfillment_order_id)}/cancel",
             operation="cancelFulfillmentOrder",
@@ -842,16 +842,16 @@ class AsyncFulfillmentOutboundV20200701Client:
 
     async def update_fulfillment_order_status(
         self,
-        *,
         seller_fulfillment_order_id: str,
         body: fulfillment_outbound_v2020_07_01.SubmitFulfillmentOrderStatusUpdateRequest | Mapping[str, Any],
+        *,
         request_options: RequestOptions | None = None,
     ) -> fulfillment_outbound_v2020_07_01.SubmitFulfillmentOrderStatusUpdateResponse:
         """Requests that Amazon update the status of an order in the sandbox testing environment. This is a sandbox-only operation and must be directed to a sandbox endpoint. Refer to [Fulfillment Outbound Dynamic Sandbox Guide](https://developer-docs.amazon.com/sp-api/docs/fulfillment-outbound-dynamic-sandbox-guide) and [Selling Partner API sandbox](https://developer-docs.amazon.com/sp-api/docs/the-selling-partner-api-sandbox) for more information.
 
         PUT /fba/outbound/2020-07-01/fulfillmentOrders/{sellerFulfillmentOrderId}/status
         """
-        return await self._client.request(
+        return await self._http.request(
             "PUT",
             f"/fba/outbound/2020-07-01/fulfillmentOrders/{path_segment(seller_fulfillment_order_id)}/status",
             operation="submitFulfillmentOrderStatusUpdate",
@@ -864,8 +864,8 @@ class AsyncFulfillmentOutboundV20200701Client:
 
     async def list_features(
         self,
-        *,
         marketplace_id: str,
+        *,
         request_options: RequestOptions | None = None,
     ) -> fulfillment_outbound_v2020_07_01.GetFeaturesResponse:
         """Returns a list of features available for Multi-Channel Fulfillment orders in the marketplace you specify, and whether the seller for which you made the call is enrolled for each feature.
@@ -881,7 +881,7 @@ class AsyncFulfillmentOutboundV20200701Client:
         GET /fba/outbound/2020-07-01/features
         """
         params: dict[str, Any] = {"marketplaceId": marketplace_id}
-        return await self._client.request(
+        return await self._http.request(
             "GET",
             "/fba/outbound/2020-07-01/features",
             operation="getFeatures",
@@ -895,9 +895,9 @@ class AsyncFulfillmentOutboundV20200701Client:
 
     async def get_feature_inventory(
         self,
-        *,
         feature_name: str,
         marketplace_id: str,
+        *,
         next_token: str | None = None,
         query_start_date: datetime.datetime | None = None,
         request_options: RequestOptions | None = None,
@@ -915,7 +915,7 @@ class AsyncFulfillmentOutboundV20200701Client:
         GET /fba/outbound/2020-07-01/features/inventory/{featureName}
         """
         params: dict[str, Any] = {"marketplaceId": marketplace_id, "nextToken": next_token, "queryStartDate": query_start_date}
-        return await self._client.request(
+        return await self._http.request(
             "GET",
             f"/fba/outbound/2020-07-01/features/inventory/{path_segment(feature_name)}",
             operation="getFeatureInventory",
@@ -929,9 +929,9 @@ class AsyncFulfillmentOutboundV20200701Client:
 
     def iter_get_feature_inventory(
         self,
-        *,
         feature_name: str,
         marketplace_id: str,
+        *,
         next_token: str | None = None,
         query_start_date: datetime.datetime | None = None,
         request_options: RequestOptions | None = None,
@@ -955,10 +955,10 @@ class AsyncFulfillmentOutboundV20200701Client:
 
     async def get_feature_sku(
         self,
-        *,
         feature_name: str,
         seller_sku: str,
         marketplace_id: str,
+        *,
         request_options: RequestOptions | None = None,
     ) -> fulfillment_outbound_v2020_07_01.GetFeatureSkuResponse:
         """Returns the number of items with the `sellerSku` you specify that can have orders fulfilled using the specified feature. Note that if the `sellerSku` isn't eligible, the response will contain an empty `skuInfo` object. The parameters for this operation may contain special characters that require URL encoding. To avoid errors with SKUs when encoding URLs, refer to [URL Encoding](https://developer-docs.amazon.com/sp-api/docs/url-encoding).
@@ -974,7 +974,7 @@ class AsyncFulfillmentOutboundV20200701Client:
         GET /fba/outbound/2020-07-01/features/inventory/{featureName}/{sellerSku}
         """
         params: dict[str, Any] = {"marketplaceId": marketplace_id}
-        return await self._client.request(
+        return await self._http.request(
             "GET",
             f"/fba/outbound/2020-07-01/features/inventory/{path_segment(feature_name)}/{path_segment(seller_sku)}",
             operation="getFeatureSKU",
@@ -987,4 +987,4 @@ class AsyncFulfillmentOutboundV20200701Client:
         )
 
 
-__all__ = ["AsyncFulfillmentOutboundV20200701Client", "FulfillmentOutboundV20200701Client"]
+__all__ = ["AsyncFulfillmentOutboundV20200701Resource", "FulfillmentOutboundV20200701Resource"]

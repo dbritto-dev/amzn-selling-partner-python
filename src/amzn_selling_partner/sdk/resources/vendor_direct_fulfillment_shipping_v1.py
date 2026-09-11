@@ -11,25 +11,25 @@ import datetime
 from collections.abc import AsyncIterator, Iterator, Mapping
 from typing import Any
 
-from ..http_client import AsyncHttpClient, HttpClient, RateLimit, RequestOptions, apaginate, paginate, path_segment
+from .._http import AsyncHttpClient, HttpClient, RateLimit, RequestOptions, apaginate, paginate, path_segment
 from ..models import vendor_direct_fulfillment_shipping_v1
 
 SERVICE = "vendor_direct_fulfillment_shipping_v1"
 
 
-class VendorDirectFulfillmentShippingV1Client:
+class VendorDirectFulfillmentShippingV1Resource:
     """Synchronous ``VendorDirectFulfillmentShippingV1`` resource."""
 
-    __slots__ = ("_client",)
+    __slots__ = ("_http",)
 
-    def __init__(self, client: HttpClient) -> None:
-        self._client = client
+    def __init__(self, http: HttpClient) -> None:
+        self._http = http
 
     def list_shipping_labels(
         self,
-        *,
         created_after: datetime.datetime,
         created_before: datetime.datetime,
+        *,
         ship_from_party_id: str | None = None,
         limit: int | None = None,
         sort_order: vendor_direct_fulfillment_shipping_v1.VendorDirectFulfillmentShippingV1SortOrder | str | None = None,
@@ -56,7 +56,7 @@ class VendorDirectFulfillmentShippingV1Client:
             "sortOrder": sort_order,
             "nextToken": next_token,
         }
-        return self._client.request(
+        return self._http.request(
             "GET",
             "/vendor/directFulfillment/shipping/v1/shippingLabels",
             operation="getShippingLabels",
@@ -70,9 +70,9 @@ class VendorDirectFulfillmentShippingV1Client:
 
     def iter_list_shipping_labels(
         self,
-        *,
         created_after: datetime.datetime,
         created_before: datetime.datetime,
+        *,
         ship_from_party_id: str | None = None,
         limit: int | None = None,
         sort_order: vendor_direct_fulfillment_shipping_v1.VendorDirectFulfillmentShippingV1SortOrder | str | None = None,
@@ -100,8 +100,8 @@ class VendorDirectFulfillmentShippingV1Client:
 
     def create_shipping_label(
         self,
-        *,
         body: vendor_direct_fulfillment_shipping_v1.SubmitShippingLabelsRequest | Mapping[str, Any],
+        *,
         request_options: RequestOptions | None = None,
     ) -> vendor_direct_fulfillment_shipping_v1.SubmitShippingLabelsResponse:
         """Creates a shipping label for a purchase order and returns a transactionId for reference.
@@ -116,7 +116,7 @@ class VendorDirectFulfillmentShippingV1Client:
 
         POST /vendor/directFulfillment/shipping/v1/shippingLabels
         """
-        return self._client.request(
+        return self._http.request(
             "POST",
             "/vendor/directFulfillment/shipping/v1/shippingLabels",
             operation="submitShippingLabelRequest",
@@ -130,8 +130,8 @@ class VendorDirectFulfillmentShippingV1Client:
 
     def get_shipping_label(
         self,
-        *,
         purchase_order_number: str,
+        *,
         request_options: RequestOptions | None = None,
     ) -> vendor_direct_fulfillment_shipping_v1.GetShippingLabelResponse:
         """Returns a shipping label for the purchaseOrderNumber that you specify.
@@ -146,7 +146,7 @@ class VendorDirectFulfillmentShippingV1Client:
 
         GET /vendor/directFulfillment/shipping/v1/shippingLabels/{purchaseOrderNumber}
         """
-        return self._client.request(
+        return self._http.request(
             "GET",
             f"/vendor/directFulfillment/shipping/v1/shippingLabels/{path_segment(purchase_order_number)}",
             operation="getShippingLabel",
@@ -159,8 +159,8 @@ class VendorDirectFulfillmentShippingV1Client:
 
     def create_shipment_confirmation(
         self,
-        *,
         body: vendor_direct_fulfillment_shipping_v1.SubmitShipmentConfirmationsRequest | Mapping[str, Any],
+        *,
         request_options: RequestOptions | None = None,
     ) -> vendor_direct_fulfillment_shipping_v1.SubmitShipmentConfirmationsResponse:
         """Submits one or more shipment confirmations for vendor orders.
@@ -175,7 +175,7 @@ class VendorDirectFulfillmentShippingV1Client:
 
         POST /vendor/directFulfillment/shipping/v1/shipmentConfirmations
         """
-        return self._client.request(
+        return self._http.request(
             "POST",
             "/vendor/directFulfillment/shipping/v1/shipmentConfirmations",
             operation="submitShipmentConfirmations",
@@ -189,8 +189,8 @@ class VendorDirectFulfillmentShippingV1Client:
 
     def create_shipment_status_update(
         self,
-        *,
         body: vendor_direct_fulfillment_shipping_v1.SubmitShipmentStatusUpdatesRequest | Mapping[str, Any],
+        *,
         request_options: RequestOptions | None = None,
     ) -> vendor_direct_fulfillment_shipping_v1.SubmitShipmentStatusUpdatesResponse:
         """This API call is only to be used by Vendor-Own-Carrier (VOC) vendors. Calling this API will submit a shipment status update for the package that a vendor has shipped. It will provide the Amazon customer visibility on their order, when the package is outside of Amazon Network visibility.
@@ -205,7 +205,7 @@ class VendorDirectFulfillmentShippingV1Client:
 
         POST /vendor/directFulfillment/shipping/v1/shipmentStatusUpdates
         """
-        return self._client.request(
+        return self._http.request(
             "POST",
             "/vendor/directFulfillment/shipping/v1/shipmentStatusUpdates",
             operation="submitShipmentStatusUpdates",
@@ -219,9 +219,9 @@ class VendorDirectFulfillmentShippingV1Client:
 
     def list_customer_invoices(
         self,
-        *,
         created_after: datetime.datetime,
         created_before: datetime.datetime,
+        *,
         ship_from_party_id: str | None = None,
         limit: int | None = None,
         sort_order: vendor_direct_fulfillment_shipping_v1.VendorDirectFulfillmentShippingV1SortOrder | str | None = None,
@@ -248,7 +248,7 @@ class VendorDirectFulfillmentShippingV1Client:
             "sortOrder": sort_order,
             "nextToken": next_token,
         }
-        return self._client.request(
+        return self._http.request(
             "GET",
             "/vendor/directFulfillment/shipping/v1/customerInvoices",
             operation="getCustomerInvoices",
@@ -262,9 +262,9 @@ class VendorDirectFulfillmentShippingV1Client:
 
     def iter_list_customer_invoices(
         self,
-        *,
         created_after: datetime.datetime,
         created_before: datetime.datetime,
+        *,
         ship_from_party_id: str | None = None,
         limit: int | None = None,
         sort_order: vendor_direct_fulfillment_shipping_v1.VendorDirectFulfillmentShippingV1SortOrder | str | None = None,
@@ -292,8 +292,8 @@ class VendorDirectFulfillmentShippingV1Client:
 
     def get_customer_invoice(
         self,
-        *,
         purchase_order_number: str,
+        *,
         request_options: RequestOptions | None = None,
     ) -> vendor_direct_fulfillment_shipping_v1.GetCustomerInvoiceResponse:
         """Returns a customer invoice based on the purchaseOrderNumber that you specify.
@@ -308,7 +308,7 @@ class VendorDirectFulfillmentShippingV1Client:
 
         GET /vendor/directFulfillment/shipping/v1/customerInvoices/{purchaseOrderNumber}
         """
-        return self._client.request(
+        return self._http.request(
             "GET",
             f"/vendor/directFulfillment/shipping/v1/customerInvoices/{path_segment(purchase_order_number)}",
             operation="getCustomerInvoice",
@@ -321,9 +321,9 @@ class VendorDirectFulfillmentShippingV1Client:
 
     def list_packing_slips(
         self,
-        *,
         created_after: datetime.datetime,
         created_before: datetime.datetime,
+        *,
         ship_from_party_id: str | None = None,
         limit: int | None = None,
         sort_order: vendor_direct_fulfillment_shipping_v1.VendorDirectFulfillmentShippingV1SortOrder | str | None = None,
@@ -350,7 +350,7 @@ class VendorDirectFulfillmentShippingV1Client:
             "sortOrder": sort_order,
             "nextToken": next_token,
         }
-        return self._client.request(
+        return self._http.request(
             "GET",
             "/vendor/directFulfillment/shipping/v1/packingSlips",
             operation="getPackingSlips",
@@ -364,9 +364,9 @@ class VendorDirectFulfillmentShippingV1Client:
 
     def iter_list_packing_slips(
         self,
-        *,
         created_after: datetime.datetime,
         created_before: datetime.datetime,
+        *,
         ship_from_party_id: str | None = None,
         limit: int | None = None,
         sort_order: vendor_direct_fulfillment_shipping_v1.VendorDirectFulfillmentShippingV1SortOrder | str | None = None,
@@ -394,8 +394,8 @@ class VendorDirectFulfillmentShippingV1Client:
 
     def get_packing_slip(
         self,
-        *,
         purchase_order_number: str,
+        *,
         request_options: RequestOptions | None = None,
     ) -> vendor_direct_fulfillment_shipping_v1.GetPackingSlipResponse:
         """Returns a packing slip based on the purchaseOrderNumber that you specify.
@@ -410,7 +410,7 @@ class VendorDirectFulfillmentShippingV1Client:
 
         GET /vendor/directFulfillment/shipping/v1/packingSlips/{purchaseOrderNumber}
         """
-        return self._client.request(
+        return self._http.request(
             "GET",
             f"/vendor/directFulfillment/shipping/v1/packingSlips/{path_segment(purchase_order_number)}",
             operation="getPackingSlip",
@@ -422,19 +422,19 @@ class VendorDirectFulfillmentShippingV1Client:
         )
 
 
-class AsyncVendorDirectFulfillmentShippingV1Client:
+class AsyncVendorDirectFulfillmentShippingV1Resource:
     """Asynchronous ``VendorDirectFulfillmentShippingV1`` resource."""
 
-    __slots__ = ("_client",)
+    __slots__ = ("_http",)
 
-    def __init__(self, client: AsyncHttpClient) -> None:
-        self._client = client
+    def __init__(self, http: AsyncHttpClient) -> None:
+        self._http = http
 
     async def list_shipping_labels(
         self,
-        *,
         created_after: datetime.datetime,
         created_before: datetime.datetime,
+        *,
         ship_from_party_id: str | None = None,
         limit: int | None = None,
         sort_order: vendor_direct_fulfillment_shipping_v1.VendorDirectFulfillmentShippingV1SortOrder | str | None = None,
@@ -461,7 +461,7 @@ class AsyncVendorDirectFulfillmentShippingV1Client:
             "sortOrder": sort_order,
             "nextToken": next_token,
         }
-        return await self._client.request(
+        return await self._http.request(
             "GET",
             "/vendor/directFulfillment/shipping/v1/shippingLabels",
             operation="getShippingLabels",
@@ -475,9 +475,9 @@ class AsyncVendorDirectFulfillmentShippingV1Client:
 
     def iter_list_shipping_labels(
         self,
-        *,
         created_after: datetime.datetime,
         created_before: datetime.datetime,
+        *,
         ship_from_party_id: str | None = None,
         limit: int | None = None,
         sort_order: vendor_direct_fulfillment_shipping_v1.VendorDirectFulfillmentShippingV1SortOrder | str | None = None,
@@ -505,8 +505,8 @@ class AsyncVendorDirectFulfillmentShippingV1Client:
 
     async def create_shipping_label(
         self,
-        *,
         body: vendor_direct_fulfillment_shipping_v1.SubmitShippingLabelsRequest | Mapping[str, Any],
+        *,
         request_options: RequestOptions | None = None,
     ) -> vendor_direct_fulfillment_shipping_v1.SubmitShippingLabelsResponse:
         """Creates a shipping label for a purchase order and returns a transactionId for reference.
@@ -521,7 +521,7 @@ class AsyncVendorDirectFulfillmentShippingV1Client:
 
         POST /vendor/directFulfillment/shipping/v1/shippingLabels
         """
-        return await self._client.request(
+        return await self._http.request(
             "POST",
             "/vendor/directFulfillment/shipping/v1/shippingLabels",
             operation="submitShippingLabelRequest",
@@ -535,8 +535,8 @@ class AsyncVendorDirectFulfillmentShippingV1Client:
 
     async def get_shipping_label(
         self,
-        *,
         purchase_order_number: str,
+        *,
         request_options: RequestOptions | None = None,
     ) -> vendor_direct_fulfillment_shipping_v1.GetShippingLabelResponse:
         """Returns a shipping label for the purchaseOrderNumber that you specify.
@@ -551,7 +551,7 @@ class AsyncVendorDirectFulfillmentShippingV1Client:
 
         GET /vendor/directFulfillment/shipping/v1/shippingLabels/{purchaseOrderNumber}
         """
-        return await self._client.request(
+        return await self._http.request(
             "GET",
             f"/vendor/directFulfillment/shipping/v1/shippingLabels/{path_segment(purchase_order_number)}",
             operation="getShippingLabel",
@@ -564,8 +564,8 @@ class AsyncVendorDirectFulfillmentShippingV1Client:
 
     async def create_shipment_confirmation(
         self,
-        *,
         body: vendor_direct_fulfillment_shipping_v1.SubmitShipmentConfirmationsRequest | Mapping[str, Any],
+        *,
         request_options: RequestOptions | None = None,
     ) -> vendor_direct_fulfillment_shipping_v1.SubmitShipmentConfirmationsResponse:
         """Submits one or more shipment confirmations for vendor orders.
@@ -580,7 +580,7 @@ class AsyncVendorDirectFulfillmentShippingV1Client:
 
         POST /vendor/directFulfillment/shipping/v1/shipmentConfirmations
         """
-        return await self._client.request(
+        return await self._http.request(
             "POST",
             "/vendor/directFulfillment/shipping/v1/shipmentConfirmations",
             operation="submitShipmentConfirmations",
@@ -594,8 +594,8 @@ class AsyncVendorDirectFulfillmentShippingV1Client:
 
     async def create_shipment_status_update(
         self,
-        *,
         body: vendor_direct_fulfillment_shipping_v1.SubmitShipmentStatusUpdatesRequest | Mapping[str, Any],
+        *,
         request_options: RequestOptions | None = None,
     ) -> vendor_direct_fulfillment_shipping_v1.SubmitShipmentStatusUpdatesResponse:
         """This API call is only to be used by Vendor-Own-Carrier (VOC) vendors. Calling this API will submit a shipment status update for the package that a vendor has shipped. It will provide the Amazon customer visibility on their order, when the package is outside of Amazon Network visibility.
@@ -610,7 +610,7 @@ class AsyncVendorDirectFulfillmentShippingV1Client:
 
         POST /vendor/directFulfillment/shipping/v1/shipmentStatusUpdates
         """
-        return await self._client.request(
+        return await self._http.request(
             "POST",
             "/vendor/directFulfillment/shipping/v1/shipmentStatusUpdates",
             operation="submitShipmentStatusUpdates",
@@ -624,9 +624,9 @@ class AsyncVendorDirectFulfillmentShippingV1Client:
 
     async def list_customer_invoices(
         self,
-        *,
         created_after: datetime.datetime,
         created_before: datetime.datetime,
+        *,
         ship_from_party_id: str | None = None,
         limit: int | None = None,
         sort_order: vendor_direct_fulfillment_shipping_v1.VendorDirectFulfillmentShippingV1SortOrder | str | None = None,
@@ -653,7 +653,7 @@ class AsyncVendorDirectFulfillmentShippingV1Client:
             "sortOrder": sort_order,
             "nextToken": next_token,
         }
-        return await self._client.request(
+        return await self._http.request(
             "GET",
             "/vendor/directFulfillment/shipping/v1/customerInvoices",
             operation="getCustomerInvoices",
@@ -667,9 +667,9 @@ class AsyncVendorDirectFulfillmentShippingV1Client:
 
     def iter_list_customer_invoices(
         self,
-        *,
         created_after: datetime.datetime,
         created_before: datetime.datetime,
+        *,
         ship_from_party_id: str | None = None,
         limit: int | None = None,
         sort_order: vendor_direct_fulfillment_shipping_v1.VendorDirectFulfillmentShippingV1SortOrder | str | None = None,
@@ -697,8 +697,8 @@ class AsyncVendorDirectFulfillmentShippingV1Client:
 
     async def get_customer_invoice(
         self,
-        *,
         purchase_order_number: str,
+        *,
         request_options: RequestOptions | None = None,
     ) -> vendor_direct_fulfillment_shipping_v1.GetCustomerInvoiceResponse:
         """Returns a customer invoice based on the purchaseOrderNumber that you specify.
@@ -713,7 +713,7 @@ class AsyncVendorDirectFulfillmentShippingV1Client:
 
         GET /vendor/directFulfillment/shipping/v1/customerInvoices/{purchaseOrderNumber}
         """
-        return await self._client.request(
+        return await self._http.request(
             "GET",
             f"/vendor/directFulfillment/shipping/v1/customerInvoices/{path_segment(purchase_order_number)}",
             operation="getCustomerInvoice",
@@ -726,9 +726,9 @@ class AsyncVendorDirectFulfillmentShippingV1Client:
 
     async def list_packing_slips(
         self,
-        *,
         created_after: datetime.datetime,
         created_before: datetime.datetime,
+        *,
         ship_from_party_id: str | None = None,
         limit: int | None = None,
         sort_order: vendor_direct_fulfillment_shipping_v1.VendorDirectFulfillmentShippingV1SortOrder | str | None = None,
@@ -755,7 +755,7 @@ class AsyncVendorDirectFulfillmentShippingV1Client:
             "sortOrder": sort_order,
             "nextToken": next_token,
         }
-        return await self._client.request(
+        return await self._http.request(
             "GET",
             "/vendor/directFulfillment/shipping/v1/packingSlips",
             operation="getPackingSlips",
@@ -769,9 +769,9 @@ class AsyncVendorDirectFulfillmentShippingV1Client:
 
     def iter_list_packing_slips(
         self,
-        *,
         created_after: datetime.datetime,
         created_before: datetime.datetime,
+        *,
         ship_from_party_id: str | None = None,
         limit: int | None = None,
         sort_order: vendor_direct_fulfillment_shipping_v1.VendorDirectFulfillmentShippingV1SortOrder | str | None = None,
@@ -799,8 +799,8 @@ class AsyncVendorDirectFulfillmentShippingV1Client:
 
     async def get_packing_slip(
         self,
-        *,
         purchase_order_number: str,
+        *,
         request_options: RequestOptions | None = None,
     ) -> vendor_direct_fulfillment_shipping_v1.GetPackingSlipResponse:
         """Returns a packing slip based on the purchaseOrderNumber that you specify.
@@ -815,7 +815,7 @@ class AsyncVendorDirectFulfillmentShippingV1Client:
 
         GET /vendor/directFulfillment/shipping/v1/packingSlips/{purchaseOrderNumber}
         """
-        return await self._client.request(
+        return await self._http.request(
             "GET",
             f"/vendor/directFulfillment/shipping/v1/packingSlips/{path_segment(purchase_order_number)}",
             operation="getPackingSlip",
@@ -827,4 +827,4 @@ class AsyncVendorDirectFulfillmentShippingV1Client:
         )
 
 
-__all__ = ["AsyncVendorDirectFulfillmentShippingV1Client", "VendorDirectFulfillmentShippingV1Client"]
+__all__ = ["AsyncVendorDirectFulfillmentShippingV1Resource", "VendorDirectFulfillmentShippingV1Resource"]

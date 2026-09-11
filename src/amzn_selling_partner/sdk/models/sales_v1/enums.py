@@ -15,10 +15,14 @@ class SalesV1BuyerType(str, Enum):
     B2_C = "B2C"
     ALL = "All"
 
+    __str__ = str.__str__
+
 
 class SalesV1FirstDayOfWeek(str, Enum):
     MONDAY = "Monday"
     SUNDAY = "Sunday"
+
+    __str__ = str.__str__
 
 
 class SalesV1Granularity(str, Enum):
@@ -28,6 +32,8 @@ class SalesV1Granularity(str, Enum):
     MONTH = "Month"
     YEAR = "Year"
     TOTAL = "Total"
+
+    __str__ = str.__str__
 
 
 __all__ = [

@@ -11,19 +11,19 @@ import datetime
 from collections.abc import AsyncIterator, Iterator, Mapping
 from typing import Any
 
-from ..http_client import AsyncHttpClient, HttpClient, RateLimit, RequestOptions, apaginate, joined, paginate
+from .._http import AsyncHttpClient, HttpClient, RateLimit, RequestOptions, apaginate, joined, paginate
 from ..models import transfers_v2024_06_01
 
 SERVICE = "transfers_v2024_06_01"
 
 
-class TransfersV20240601Client:
+class TransfersV20240601Resource:
     """Synchronous ``TransfersV20240601`` resource."""
 
-    __slots__ = ("_client",)
+    __slots__ = ("_http",)
 
-    def __init__(self, client: HttpClient) -> None:
-        self._client = client
+    def __init__(self, http: HttpClient) -> None:
+        self._http = http
 
     def list_payouts(
         self,
@@ -56,7 +56,7 @@ class TransfersV20240601Client:
             "accountType": account_type,
             "nextToken": next_token,
         }
-        return self._client.request(
+        return self._http.request(
             "GET",
             "/finances/transfers/2024-06-01/payouts",
             operation="listPayouts",
@@ -100,8 +100,8 @@ class TransfersV20240601Client:
 
     def create_payout(
         self,
-        *,
         body: transfers_v2024_06_01.InitiatePayoutRequest | Mapping[str, Any],
+        *,
         request_options: RequestOptions | None = None,
     ) -> transfers_v2024_06_01.InitiatePayoutResponse:
         """Initiates an on-demand payout to the seller's default deposit method in Seller Central for the given `marketplaceId` and `accountType`, if eligible. You can only initiate one on-demand payout for each marketplace and account type within a 24-hour period.
@@ -116,7 +116,7 @@ class TransfersV20240601Client:
 
         POST /finances/transfers/2024-06-01/payouts
         """
-        return self._client.request(
+        return self._http.request(
             "POST",
             "/finances/transfers/2024-06-01/payouts",
             operation="initiatePayout",
@@ -130,8 +130,8 @@ class TransfersV20240601Client:
 
     def list_payment_methods(
         self,
-        *,
         marketplace_id: str,
+        *,
         payment_method_types: list[transfers_v2024_06_01.TransfersV20240601PaymentMethodTypes] | None = None,
         request_options: RequestOptions | None = None,
     ) -> transfers_v2024_06_01.GetPaymentMethodsResponse:
@@ -148,7 +148,7 @@ class TransfersV20240601Client:
         GET /finances/transfers/2024-06-01/paymentMethods
         """
         params: dict[str, Any] = {"marketplaceId": marketplace_id, "paymentMethodTypes": joined(payment_method_types, ",")}
-        return self._client.request(
+        return self._http.request(
             "GET",
             "/finances/transfers/2024-06-01/paymentMethods",
             operation="getPaymentMethods",
@@ -181,7 +181,7 @@ class TransfersV20240601Client:
         GET /finances/transfers/2024-06-01/payouts/expected
         """
         params: dict[str, Any] = {"marketplaceIds": joined(marketplace_ids, ","), "accountType": account_type, "nextToken": next_token}
-        return self._client.request(
+        return self._http.request(
             "GET",
             "/finances/transfers/2024-06-01/payouts/expected",
             operation="listExpectedPayouts",
@@ -218,13 +218,13 @@ class TransfersV20240601Client:
         )
 
 
-class AsyncTransfersV20240601Client:
+class AsyncTransfersV20240601Resource:
     """Asynchronous ``TransfersV20240601`` resource."""
 
-    __slots__ = ("_client",)
+    __slots__ = ("_http",)
 
-    def __init__(self, client: AsyncHttpClient) -> None:
-        self._client = client
+    def __init__(self, http: AsyncHttpClient) -> None:
+        self._http = http
 
     async def list_payouts(
         self,
@@ -257,7 +257,7 @@ class AsyncTransfersV20240601Client:
             "accountType": account_type,
             "nextToken": next_token,
         }
-        return await self._client.request(
+        return await self._http.request(
             "GET",
             "/finances/transfers/2024-06-01/payouts",
             operation="listPayouts",
@@ -301,8 +301,8 @@ class AsyncTransfersV20240601Client:
 
     async def create_payout(
         self,
-        *,
         body: transfers_v2024_06_01.InitiatePayoutRequest | Mapping[str, Any],
+        *,
         request_options: RequestOptions | None = None,
     ) -> transfers_v2024_06_01.InitiatePayoutResponse:
         """Initiates an on-demand payout to the seller's default deposit method in Seller Central for the given `marketplaceId` and `accountType`, if eligible. You can only initiate one on-demand payout for each marketplace and account type within a 24-hour period.
@@ -317,7 +317,7 @@ class AsyncTransfersV20240601Client:
 
         POST /finances/transfers/2024-06-01/payouts
         """
-        return await self._client.request(
+        return await self._http.request(
             "POST",
             "/finances/transfers/2024-06-01/payouts",
             operation="initiatePayout",
@@ -331,8 +331,8 @@ class AsyncTransfersV20240601Client:
 
     async def list_payment_methods(
         self,
-        *,
         marketplace_id: str,
+        *,
         payment_method_types: list[transfers_v2024_06_01.TransfersV20240601PaymentMethodTypes] | None = None,
         request_options: RequestOptions | None = None,
     ) -> transfers_v2024_06_01.GetPaymentMethodsResponse:
@@ -349,7 +349,7 @@ class AsyncTransfersV20240601Client:
         GET /finances/transfers/2024-06-01/paymentMethods
         """
         params: dict[str, Any] = {"marketplaceId": marketplace_id, "paymentMethodTypes": joined(payment_method_types, ",")}
-        return await self._client.request(
+        return await self._http.request(
             "GET",
             "/finances/transfers/2024-06-01/paymentMethods",
             operation="getPaymentMethods",
@@ -382,7 +382,7 @@ class AsyncTransfersV20240601Client:
         GET /finances/transfers/2024-06-01/payouts/expected
         """
         params: dict[str, Any] = {"marketplaceIds": joined(marketplace_ids, ","), "accountType": account_type, "nextToken": next_token}
-        return await self._client.request(
+        return await self._http.request(
             "GET",
             "/finances/transfers/2024-06-01/payouts/expected",
             operation="listExpectedPayouts",
@@ -419,4 +419,4 @@ class AsyncTransfersV20240601Client:
         )
 
 
-__all__ = ["AsyncTransfersV20240601Client", "TransfersV20240601Client"]
+__all__ = ["AsyncTransfersV20240601Resource", "TransfersV20240601Resource"]

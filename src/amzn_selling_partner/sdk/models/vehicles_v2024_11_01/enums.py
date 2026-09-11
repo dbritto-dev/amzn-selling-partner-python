@@ -14,20 +14,28 @@ class EngineOutputUnit(str, Enum):
     KILOWATT = "KILOWATT"
     HORSEPOWER = "HORSEPOWER"
 
+    __str__ = str.__str__
+
 
 class VehicleStandard(str, Enum):
     KTYPE = "KTYPE"
     AMAZON_ID = "AMAZON_ID"
+
+    __str__ = str.__str__
 
 
 class VehicleStatusInCatalog(str, Enum):
     ACTIVE = "ACTIVE"
     DELETED = "DELETED"
 
+    __str__ = str.__str__
+
 
 class VehiclesV20241101VehicleType(str, Enum):
     CAR = "CAR"
     MOTORBIKE = "MOTORBIKE"
+
+    __str__ = str.__str__
 
 
 __all__ = [

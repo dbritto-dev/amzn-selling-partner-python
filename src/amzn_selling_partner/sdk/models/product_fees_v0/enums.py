@@ -14,11 +14,15 @@ class IdType(str, Enum):
     ASIN = "ASIN"
     SELLER_SKU = "SellerSKU"
 
+    __str__ = str.__str__
+
 
 class OptionalFulfillmentProgram(str, Enum):
     FBA_CORE = "FBA_CORE"
     FBA_SNL = "FBA_SNL"
     FBA_EFN = "FBA_EFN"
+
+    __str__ = str.__str__
 
 
 __all__ = [

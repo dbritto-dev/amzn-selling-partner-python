@@ -38,6 +38,8 @@ class AdditionalLocationInfo(str, Enum):
     SECURE_LOCATION = "SECURE_LOCATION"
     SIDE_DOOR = "SIDE_DOOR"
 
+    __str__ = str.__str__
+
 
 class CurrentStatus(str, Enum):
     IN_TRANSIT = "IN_TRANSIT"
@@ -59,6 +61,8 @@ class CurrentStatus(str, Enum):
     REFUND_ISSUED = "REFUND_ISSUED"
     RETURN_RECEIVED_IN_FC = "RETURN_RECEIVED_IN_FC"
 
+    __str__ = str.__str__
+
 
 class DropOffLocationType(str, Enum):
     FRONT_DOOR = "FRONT_DOOR"
@@ -69,6 +73,8 @@ class DropOffLocationType(str, Enum):
     RECEPTIONIST = "RECEPTIONIST"
     FALLBACK_NEIGHBOR_DELIVERY = "FALLBACK_NEIGHBOR_DELIVERY"
     DO_NOT_LEAVE_UNATTENDED = "DO_NOT_LEAVE_UNATTENDED"
+
+    __str__ = str.__str__
 
 
 class EventCode(str, Enum):
@@ -108,10 +114,14 @@ class EventCode(str, Enum):
     EVENT_801 = "EVENT_801"
     EVENT_804 = "EVENT_804"
 
+    __str__ = str.__str__
+
 
 class FeatureSettingsFeatureFulfillmentPolicy(str, Enum):
     REQUIRED = "Required"
     NOT_REQUIRED = "NotRequired"
+
+    __str__ = str.__str__
 
 
 class FeeName(str, Enum):
@@ -120,10 +130,14 @@ class FeeName(str, Enum):
     FBA_TRANSPORTATION_FEE = "FBATransportationFee"
     FBA_FULFILLMENT_COD_FEE = "FBAFulfillmentCODFee"
 
+    __str__ = str.__str__
+
 
 class FulfillmentAction(str, Enum):
     SHIP = "Ship"
     HOLD = "Hold"
+
+    __str__ = str.__str__
 
 
 class FulfillmentOrderStatus(str, Enum):
@@ -137,21 +151,29 @@ class FulfillmentOrderStatus(str, Enum):
     UNFULFILLABLE = "Unfulfillable"
     INVALID = "Invalid"
 
+    __str__ = str.__str__
+
 
 class FulfillmentPolicy(str, Enum):
     FILL_OR_KILL = "FillOrKill"
     FILL_ALL = "FillAll"
     FILL_ALL_AVAILABLE = "FillAllAvailable"
 
+    __str__ = str.__str__
+
 
 class FulfillmentPreviewItemShippingWeightCalculationMethod(str, Enum):
     PACKAGE = "Package"
     DIMENSIONAL = "Dimensional"
 
+    __str__ = str.__str__
+
 
 class FulfillmentReturnItemStatus(str, Enum):
     NEW = "New"
     PROCESSED = "Processed"
+
+    __str__ = str.__str__
 
 
 class FulfillmentShipmentFulfillmentShipmentStatus(str, Enum):
@@ -160,12 +182,16 @@ class FulfillmentShipmentFulfillmentShipmentStatus(str, Enum):
     CANCELLED_BY_FULFILLER = "CANCELLED_BY_FULFILLER"
     CANCELLED_BY_SELLER = "CANCELLED_BY_SELLER"
 
+    __str__ = str.__str__
+
 
 class InvalidItemReasonCode(str, Enum):
     INVALID_VALUES = "InvalidValues"
     DUPLICATE_REQUEST = "DuplicateRequest"
     NO_COMPLETED_SHIP_ITEMS = "NoCompletedShipItems"
     NO_RETURNABLE_QUANTITY = "NoReturnableQuantity"
+
+    __str__ = str.__str__
 
 
 class ReturnItemDisposition(str, Enum):
@@ -175,6 +201,8 @@ class ReturnItemDisposition(str, Enum):
     CARRIER_DAMAGED = "CarrierDamaged"
     FULFILLER_DAMAGED = "FulfillerDamaged"
 
+    __str__ = str.__str__
+
 
 class ShippingSpeedCategory(str, Enum):
     STANDARD = "Standard"
@@ -182,12 +210,16 @@ class ShippingSpeedCategory(str, Enum):
     PRIORITY = "Priority"
     SCHEDULED_DELIVERY = "ScheduledDelivery"
 
+    __str__ = str.__str__
+
 
 class WeightUnit(str, Enum):
     KG = "KG"
     KILOGRAMS = "KILOGRAMS"
     LB = "LB"
     POUNDS = "POUNDS"
+
+    __str__ = str.__str__
 
 
 __all__ = [

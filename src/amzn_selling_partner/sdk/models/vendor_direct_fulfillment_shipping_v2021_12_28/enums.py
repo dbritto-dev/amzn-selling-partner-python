@@ -13,45 +13,63 @@ from enum import Enum
 class CarrierId(str, Enum):
     SWA = "SWA"
 
+    __str__ = str.__str__
+
 
 class ContainerContainerType(str, Enum):
     CARTON = "Carton"
     PALLET = "Pallet"
+
+    __str__ = str.__str__
 
 
 class ContainerLabelFormat(str, Enum):
     PNG = "PNG"
     ZPL = "ZPL"
 
+    __str__ = str.__str__
+
 
 class DimensionsUnitOfMeasure(str, Enum):
     IN = "IN"
     CM = "CM"
+
+    __str__ = str.__str__
 
 
 class ShipmentDetailsShipmentStatus(str, Enum):
     SHIPPED = "SHIPPED"
     FLOOR_DENIAL = "FLOOR_DENIAL"
 
+    __str__ = str.__str__
+
 
 class ShippingLabelLabelFormat(str, Enum):
     PNG = "PNG"
     ZPL = "ZPL"
+
+    __str__ = str.__str__
 
 
 class TaxRegistrationDetailsTaxRegistrationType(str, Enum):
     VAT = "VAT"
     GST = "GST"
 
+    __str__ = str.__str__
+
 
 class VendorDirectFulfillmentShippingV20211228SortOrder(str, Enum):
     ASC = "ASC"
     DESC = "DESC"
 
+    __str__ = str.__str__
+
 
 class WeightUnitOfMeasure(str, Enum):
     KG = "KG"
     LB = "LB"
+
+    __str__ = str.__str__
 
 
 __all__ = [

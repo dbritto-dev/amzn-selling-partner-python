@@ -10,24 +10,24 @@ from __future__ import annotations
 from collections.abc import Mapping
 from typing import Any
 
-from ..http_client import AsyncHttpClient, HttpClient, RateLimit, RequestOptions
+from .._http import AsyncHttpClient, HttpClient, RateLimit, RequestOptions
 from ..models import tokens_v2021_03_01
 
 SERVICE = "tokens_v2021_03_01"
 
 
-class TokensV20210301Client:
+class TokensV20210301Resource:
     """Synchronous ``TokensV20210301`` resource."""
 
-    __slots__ = ("_client",)
+    __slots__ = ("_http",)
 
-    def __init__(self, client: HttpClient) -> None:
-        self._client = client
+    def __init__(self, http: HttpClient) -> None:
+        self._http = http
 
     def create_restricted_data_token(
         self,
-        *,
         body: tokens_v2021_03_01.CreateRestrictedDataTokenRequest | Mapping[str, Any],
+        *,
         request_options: RequestOptions | None = None,
     ) -> tokens_v2021_03_01.CreateRestrictedDataTokenResponse:
         """Returns a Restricted Data Token (RDT) for one or more restricted resources that you specify. A restricted resource is the HTTP method and path from a restricted operation that returns Personally Identifiable Information (PII), plus a dataElements value that indicates the type of PII requested. See the Tokens API Use Case Guide for a list of restricted operations. Use the RDT returned here as the access token in subsequent calls to the corresponding restricted operations.
@@ -42,7 +42,7 @@ class TokensV20210301Client:
 
         POST /tokens/2021-03-01/restrictedDataToken
         """
-        return self._client.request(
+        return self._http.request(
             "POST",
             "/tokens/2021-03-01/restrictedDataToken",
             operation="createRestrictedDataToken",
@@ -55,18 +55,18 @@ class TokensV20210301Client:
         )
 
 
-class AsyncTokensV20210301Client:
+class AsyncTokensV20210301Resource:
     """Asynchronous ``TokensV20210301`` resource."""
 
-    __slots__ = ("_client",)
+    __slots__ = ("_http",)
 
-    def __init__(self, client: AsyncHttpClient) -> None:
-        self._client = client
+    def __init__(self, http: AsyncHttpClient) -> None:
+        self._http = http
 
     async def create_restricted_data_token(
         self,
-        *,
         body: tokens_v2021_03_01.CreateRestrictedDataTokenRequest | Mapping[str, Any],
+        *,
         request_options: RequestOptions | None = None,
     ) -> tokens_v2021_03_01.CreateRestrictedDataTokenResponse:
         """Returns a Restricted Data Token (RDT) for one or more restricted resources that you specify. A restricted resource is the HTTP method and path from a restricted operation that returns Personally Identifiable Information (PII), plus a dataElements value that indicates the type of PII requested. See the Tokens API Use Case Guide for a list of restricted operations. Use the RDT returned here as the access token in subsequent calls to the corresponding restricted operations.
@@ -81,7 +81,7 @@ class AsyncTokensV20210301Client:
 
         POST /tokens/2021-03-01/restrictedDataToken
         """
-        return await self._client.request(
+        return await self._http.request(
             "POST",
             "/tokens/2021-03-01/restrictedDataToken",
             operation="createRestrictedDataToken",
@@ -94,4 +94,4 @@ class AsyncTokensV20210301Client:
         )
 
 
-__all__ = ["AsyncTokensV20210301Client", "TokensV20210301Client"]
+__all__ = ["AsyncTokensV20210301Resource", "TokensV20210301Resource"]

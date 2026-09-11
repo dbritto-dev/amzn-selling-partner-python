@@ -11,24 +11,24 @@ import datetime
 from collections.abc import AsyncIterator, Iterator, Mapping
 from typing import Any
 
-from ..http_client import AsyncHttpClient, HttpClient, RateLimit, RequestOptions, apaginate, paginate, path_segment
+from .._http import AsyncHttpClient, HttpClient, RateLimit, RequestOptions, apaginate, paginate, path_segment
 from ..models import fulfillment_outbound_v2026_07_04
 
 SERVICE = "fulfillment_outbound_v2026_07_04"
 
 
-class FulfillmentOutboundV20260704Client:
+class FulfillmentOutboundV20260704Resource:
     """Synchronous ``FulfillmentOutboundV20260704`` resource."""
 
-    __slots__ = ("_client",)
+    __slots__ = ("_http",)
 
-    def __init__(self, client: HttpClient) -> None:
-        self._client = client
+    def __init__(self, http: HttpClient) -> None:
+        self._http = http
 
     def create_preview(
         self,
-        *,
         body: fulfillment_outbound_v2026_07_04.GetOrderPreviewRequest | Mapping[str, Any],
+        *,
         x_amzn_fulfillment_service_id: str | None = None,
         request_options: RequestOptions | None = None,
     ) -> fulfillment_outbound_v2026_07_04.GetOrderPreviewResponse:
@@ -45,7 +45,7 @@ class FulfillmentOutboundV20260704Client:
         POST /fulfillment/outbound/2026-07-04/previews
         """
         headers: dict[str, Any] = {"x-amzn-fulfillment-service-id": x_amzn_fulfillment_service_id}
-        return self._client.request(
+        return self._http.request(
             "POST",
             "/fulfillment/outbound/2026-07-04/previews",
             operation="getOrderPreview",
@@ -60,8 +60,8 @@ class FulfillmentOutboundV20260704Client:
 
     def create_offer(
         self,
-        *,
         body: fulfillment_outbound_v2026_07_04.GetOffersRequest | Mapping[str, Any],
+        *,
         x_amzn_fulfillment_service_id: str | None = None,
         request_options: RequestOptions | None = None,
     ) -> fulfillment_outbound_v2026_07_04.GetOffersResponse:
@@ -78,7 +78,7 @@ class FulfillmentOutboundV20260704Client:
         POST /fulfillment/outbound/2026-07-04/offers
         """
         headers: dict[str, Any] = {"x-amzn-fulfillment-service-id": x_amzn_fulfillment_service_id}
-        return self._client.request(
+        return self._http.request(
             "POST",
             "/fulfillment/outbound/2026-07-04/offers",
             operation="getOffers",
@@ -93,8 +93,8 @@ class FulfillmentOutboundV20260704Client:
 
     def update_order_cancel(
         self,
-        *,
         order_id: str,
+        *,
         x_amzn_fulfillment_service_id: str | None = None,
         request_options: RequestOptions | None = None,
     ) -> dict[str, Any]:
@@ -111,7 +111,7 @@ class FulfillmentOutboundV20260704Client:
         PUT /fulfillment/outbound/2026-07-04/orders/{orderId}/cancel
         """
         headers: dict[str, Any] = {"x-amzn-fulfillment-service-id": x_amzn_fulfillment_service_id}
-        return self._client.request(
+        return self._http.request(
             "PUT",
             f"/fulfillment/outbound/2026-07-04/orders/{path_segment(order_id)}/cancel",
             operation="cancelOrder",
@@ -125,9 +125,9 @@ class FulfillmentOutboundV20260704Client:
 
     def update_order_status(
         self,
-        *,
         order_id: str,
         body: fulfillment_outbound_v2026_07_04.UpdateOrderStatusRequest | Mapping[str, Any],
+        *,
         x_amzn_fulfillment_service_id: str | None = None,
         request_options: RequestOptions | None = None,
     ) -> None:
@@ -136,7 +136,7 @@ class FulfillmentOutboundV20260704Client:
         PUT /fulfillment/outbound/2026-07-04/orders/{orderId}/status
         """
         headers: dict[str, Any] = {"x-amzn-fulfillment-service-id": x_amzn_fulfillment_service_id}
-        return self._client.request(
+        return self._http.request(
             "PUT",
             f"/fulfillment/outbound/2026-07-04/orders/{path_segment(order_id)}/status",
             operation="updateOrderStatus",
@@ -149,10 +149,10 @@ class FulfillmentOutboundV20260704Client:
 
     def update_order_package(
         self,
-        *,
         order_id: str,
         package_id: str,
         body: fulfillment_outbound_v2026_07_04.UpdatePackageRequest | Mapping[str, Any],
+        *,
         x_amzn_fulfillment_service_id: str | None = None,
         request_options: RequestOptions | None = None,
     ) -> None:
@@ -161,7 +161,7 @@ class FulfillmentOutboundV20260704Client:
         PUT /fulfillment/outbound/2026-07-04/orders/{orderId}/packages/{packageId}
         """
         headers: dict[str, Any] = {"x-amzn-fulfillment-service-id": x_amzn_fulfillment_service_id}
-        return self._client.request(
+        return self._http.request(
             "PUT",
             f"/fulfillment/outbound/2026-07-04/orders/{path_segment(order_id)}/packages/{path_segment(package_id)}",
             operation="updatePackage",
@@ -174,8 +174,8 @@ class FulfillmentOutboundV20260704Client:
 
     def get_order(
         self,
-        *,
         order_id: str,
+        *,
         shipments: fulfillment_outbound_v2026_07_04.FulfillmentOutboundV20260704Shipments | str | None = None,
         x_amzn_fulfillment_service_id: str | None = None,
         request_options: RequestOptions | None = None,
@@ -194,7 +194,7 @@ class FulfillmentOutboundV20260704Client:
         """
         params: dict[str, Any] = {"shipments": shipments}
         headers: dict[str, Any] = {"x-amzn-fulfillment-service-id": x_amzn_fulfillment_service_id}
-        return self._client.request(
+        return self._http.request(
             "GET",
             f"/fulfillment/outbound/2026-07-04/orders/{path_segment(order_id)}",
             operation="getOrder",
@@ -209,9 +209,9 @@ class FulfillmentOutboundV20260704Client:
 
     def update_order(
         self,
-        *,
         order_id: str,
         body: fulfillment_outbound_v2026_07_04.UpdateOrderRequest | Mapping[str, Any],
+        *,
         x_amzn_fulfillment_service_id: str | None = None,
         request_options: RequestOptions | None = None,
     ) -> dict[str, Any]:
@@ -228,7 +228,7 @@ class FulfillmentOutboundV20260704Client:
         PUT /fulfillment/outbound/2026-07-04/orders/{orderId}
         """
         headers: dict[str, Any] = {"x-amzn-fulfillment-service-id": x_amzn_fulfillment_service_id}
-        return self._client.request(
+        return self._http.request(
             "PUT",
             f"/fulfillment/outbound/2026-07-04/orders/{path_segment(order_id)}",
             operation="updateOrder",
@@ -264,7 +264,7 @@ class FulfillmentOutboundV20260704Client:
         """
         params: dict[str, Any] = {"updatedAfter": updated_after, "pageToken": page_token, "shipments": shipments}
         headers: dict[str, Any] = {"x-amzn-fulfillment-service-id": x_amzn_fulfillment_service_id}
-        return self._client.request(
+        return self._http.request(
             "GET",
             "/fulfillment/outbound/2026-07-04/orders",
             operation="listOrders",
@@ -305,8 +305,8 @@ class FulfillmentOutboundV20260704Client:
 
     def create_order(
         self,
-        *,
         body: fulfillment_outbound_v2026_07_04.CreateOrderRequest | Mapping[str, Any],
+        *,
         x_amzn_fulfillment_service_id: str | None = None,
         request_options: RequestOptions | None = None,
     ) -> fulfillment_outbound_v2026_07_04.CreateOrderResponse | fulfillment_outbound_v2026_07_04.CreateOrderAcceptedResponse:
@@ -323,7 +323,7 @@ class FulfillmentOutboundV20260704Client:
         POST /fulfillment/outbound/2026-07-04/orders
         """
         headers: dict[str, Any] = {"x-amzn-fulfillment-service-id": x_amzn_fulfillment_service_id}
-        return self._client.request(
+        return self._http.request(
             "POST",
             "/fulfillment/outbound/2026-07-04/orders",
             operation="createOrder",
@@ -341,18 +341,18 @@ class FulfillmentOutboundV20260704Client:
         )
 
 
-class AsyncFulfillmentOutboundV20260704Client:
+class AsyncFulfillmentOutboundV20260704Resource:
     """Asynchronous ``FulfillmentOutboundV20260704`` resource."""
 
-    __slots__ = ("_client",)
+    __slots__ = ("_http",)
 
-    def __init__(self, client: AsyncHttpClient) -> None:
-        self._client = client
+    def __init__(self, http: AsyncHttpClient) -> None:
+        self._http = http
 
     async def create_preview(
         self,
-        *,
         body: fulfillment_outbound_v2026_07_04.GetOrderPreviewRequest | Mapping[str, Any],
+        *,
         x_amzn_fulfillment_service_id: str | None = None,
         request_options: RequestOptions | None = None,
     ) -> fulfillment_outbound_v2026_07_04.GetOrderPreviewResponse:
@@ -369,7 +369,7 @@ class AsyncFulfillmentOutboundV20260704Client:
         POST /fulfillment/outbound/2026-07-04/previews
         """
         headers: dict[str, Any] = {"x-amzn-fulfillment-service-id": x_amzn_fulfillment_service_id}
-        return await self._client.request(
+        return await self._http.request(
             "POST",
             "/fulfillment/outbound/2026-07-04/previews",
             operation="getOrderPreview",
@@ -384,8 +384,8 @@ class AsyncFulfillmentOutboundV20260704Client:
 
     async def create_offer(
         self,
-        *,
         body: fulfillment_outbound_v2026_07_04.GetOffersRequest | Mapping[str, Any],
+        *,
         x_amzn_fulfillment_service_id: str | None = None,
         request_options: RequestOptions | None = None,
     ) -> fulfillment_outbound_v2026_07_04.GetOffersResponse:
@@ -402,7 +402,7 @@ class AsyncFulfillmentOutboundV20260704Client:
         POST /fulfillment/outbound/2026-07-04/offers
         """
         headers: dict[str, Any] = {"x-amzn-fulfillment-service-id": x_amzn_fulfillment_service_id}
-        return await self._client.request(
+        return await self._http.request(
             "POST",
             "/fulfillment/outbound/2026-07-04/offers",
             operation="getOffers",
@@ -417,8 +417,8 @@ class AsyncFulfillmentOutboundV20260704Client:
 
     async def update_order_cancel(
         self,
-        *,
         order_id: str,
+        *,
         x_amzn_fulfillment_service_id: str | None = None,
         request_options: RequestOptions | None = None,
     ) -> dict[str, Any]:
@@ -435,7 +435,7 @@ class AsyncFulfillmentOutboundV20260704Client:
         PUT /fulfillment/outbound/2026-07-04/orders/{orderId}/cancel
         """
         headers: dict[str, Any] = {"x-amzn-fulfillment-service-id": x_amzn_fulfillment_service_id}
-        return await self._client.request(
+        return await self._http.request(
             "PUT",
             f"/fulfillment/outbound/2026-07-04/orders/{path_segment(order_id)}/cancel",
             operation="cancelOrder",
@@ -449,9 +449,9 @@ class AsyncFulfillmentOutboundV20260704Client:
 
     async def update_order_status(
         self,
-        *,
         order_id: str,
         body: fulfillment_outbound_v2026_07_04.UpdateOrderStatusRequest | Mapping[str, Any],
+        *,
         x_amzn_fulfillment_service_id: str | None = None,
         request_options: RequestOptions | None = None,
     ) -> None:
@@ -460,7 +460,7 @@ class AsyncFulfillmentOutboundV20260704Client:
         PUT /fulfillment/outbound/2026-07-04/orders/{orderId}/status
         """
         headers: dict[str, Any] = {"x-amzn-fulfillment-service-id": x_amzn_fulfillment_service_id}
-        return await self._client.request(
+        return await self._http.request(
             "PUT",
             f"/fulfillment/outbound/2026-07-04/orders/{path_segment(order_id)}/status",
             operation="updateOrderStatus",
@@ -473,10 +473,10 @@ class AsyncFulfillmentOutboundV20260704Client:
 
     async def update_order_package(
         self,
-        *,
         order_id: str,
         package_id: str,
         body: fulfillment_outbound_v2026_07_04.UpdatePackageRequest | Mapping[str, Any],
+        *,
         x_amzn_fulfillment_service_id: str | None = None,
         request_options: RequestOptions | None = None,
     ) -> None:
@@ -485,7 +485,7 @@ class AsyncFulfillmentOutboundV20260704Client:
         PUT /fulfillment/outbound/2026-07-04/orders/{orderId}/packages/{packageId}
         """
         headers: dict[str, Any] = {"x-amzn-fulfillment-service-id": x_amzn_fulfillment_service_id}
-        return await self._client.request(
+        return await self._http.request(
             "PUT",
             f"/fulfillment/outbound/2026-07-04/orders/{path_segment(order_id)}/packages/{path_segment(package_id)}",
             operation="updatePackage",
@@ -498,8 +498,8 @@ class AsyncFulfillmentOutboundV20260704Client:
 
     async def get_order(
         self,
-        *,
         order_id: str,
+        *,
         shipments: fulfillment_outbound_v2026_07_04.FulfillmentOutboundV20260704Shipments | str | None = None,
         x_amzn_fulfillment_service_id: str | None = None,
         request_options: RequestOptions | None = None,
@@ -518,7 +518,7 @@ class AsyncFulfillmentOutboundV20260704Client:
         """
         params: dict[str, Any] = {"shipments": shipments}
         headers: dict[str, Any] = {"x-amzn-fulfillment-service-id": x_amzn_fulfillment_service_id}
-        return await self._client.request(
+        return await self._http.request(
             "GET",
             f"/fulfillment/outbound/2026-07-04/orders/{path_segment(order_id)}",
             operation="getOrder",
@@ -533,9 +533,9 @@ class AsyncFulfillmentOutboundV20260704Client:
 
     async def update_order(
         self,
-        *,
         order_id: str,
         body: fulfillment_outbound_v2026_07_04.UpdateOrderRequest | Mapping[str, Any],
+        *,
         x_amzn_fulfillment_service_id: str | None = None,
         request_options: RequestOptions | None = None,
     ) -> dict[str, Any]:
@@ -552,7 +552,7 @@ class AsyncFulfillmentOutboundV20260704Client:
         PUT /fulfillment/outbound/2026-07-04/orders/{orderId}
         """
         headers: dict[str, Any] = {"x-amzn-fulfillment-service-id": x_amzn_fulfillment_service_id}
-        return await self._client.request(
+        return await self._http.request(
             "PUT",
             f"/fulfillment/outbound/2026-07-04/orders/{path_segment(order_id)}",
             operation="updateOrder",
@@ -588,7 +588,7 @@ class AsyncFulfillmentOutboundV20260704Client:
         """
         params: dict[str, Any] = {"updatedAfter": updated_after, "pageToken": page_token, "shipments": shipments}
         headers: dict[str, Any] = {"x-amzn-fulfillment-service-id": x_amzn_fulfillment_service_id}
-        return await self._client.request(
+        return await self._http.request(
             "GET",
             "/fulfillment/outbound/2026-07-04/orders",
             operation="listOrders",
@@ -629,8 +629,8 @@ class AsyncFulfillmentOutboundV20260704Client:
 
     async def create_order(
         self,
-        *,
         body: fulfillment_outbound_v2026_07_04.CreateOrderRequest | Mapping[str, Any],
+        *,
         x_amzn_fulfillment_service_id: str | None = None,
         request_options: RequestOptions | None = None,
     ) -> fulfillment_outbound_v2026_07_04.CreateOrderResponse | fulfillment_outbound_v2026_07_04.CreateOrderAcceptedResponse:
@@ -647,7 +647,7 @@ class AsyncFulfillmentOutboundV20260704Client:
         POST /fulfillment/outbound/2026-07-04/orders
         """
         headers: dict[str, Any] = {"x-amzn-fulfillment-service-id": x_amzn_fulfillment_service_id}
-        return await self._client.request(
+        return await self._http.request(
             "POST",
             "/fulfillment/outbound/2026-07-04/orders",
             operation="createOrder",
@@ -665,4 +665,4 @@ class AsyncFulfillmentOutboundV20260704Client:
         )
 
 
-__all__ = ["AsyncFulfillmentOutboundV20260704Client", "FulfillmentOutboundV20260704Client"]
+__all__ = ["AsyncFulfillmentOutboundV20260704Resource", "FulfillmentOutboundV20260704Resource"]

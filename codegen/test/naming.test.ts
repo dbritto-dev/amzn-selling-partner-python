@@ -1,6 +1,6 @@
 import assert from 'node:assert/strict';
 import { test } from 'vitest';
-import { className, docstring, fieldName, methodName, paramName, snakeCase, Uniquer } from '../src/python/naming.js';
+import { className, docstring, fieldName, paramName, snakeCase, Uniquer } from '../src/python/naming.js';
 
 test('snake_case mirrors the runtime rules', () => {
   assert.equal(snakeCase('AmazonOrderId'), 'amazon_order_id');
@@ -15,7 +15,6 @@ test('reserved names get a trailing underscore', () => {
   assert.equal(fieldName('123abc'), 'n123abc');
   assert.equal(paramName('body'), 'body_');
   assert.equal(paramName('raw'), 'raw_');
-  assert.equal(methodName('import'), 'import_');
   assert.equal(className('list'), 'List');
   assert.equal(className('Warning'), 'Warning_');
   assert.equal(className('buyBoxPrice'), 'BuyBoxPrice');

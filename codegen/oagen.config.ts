@@ -9,11 +9,11 @@
  */
 import type { OagenConfig } from '@workos/oagen';
 import { ALIASES } from './src/amazon.js';
-import { myEmittersPlugin } from './src/plugin.js';
+import { plugin } from './src/plugin.js';
 import { mountRules, operationHints, operationIdTransform, schemaNameTransform, transformSpec } from './src/policy/index.js';
 
 const config: OagenConfig = {
-  ...myEmittersPlugin,
+  ...plugin,
   operationIdTransform,
   schemaNameTransform,
   operationHints,

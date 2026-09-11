@@ -11,24 +11,24 @@ import datetime
 from collections.abc import AsyncIterator, Iterator
 from typing import Any, Literal
 
-from ..http_client import AsyncHttpClient, HttpClient, RequestOptions, apaginate, joined, paginate, path_segment
+from .._http import AsyncHttpClient, HttpClient, RequestOptions, apaginate, joined, paginate, path_segment
 from ..models import promotions_v2025_12_01
 
 SERVICE = "promotions_v2025_12_01"
 
 
-class PromotionsV20251201Client:
+class PromotionsV20251201Resource:
     """Synchronous ``PromotionsV20251201`` resource."""
 
-    __slots__ = ("_client",)
+    __slots__ = ("_http",)
 
-    def __init__(self, client: HttpClient) -> None:
-        self._client = client
+    def __init__(self, http: HttpClient) -> None:
+        self._http = http
 
     def list_promotions(
         self,
-        *,
         marketplace_ids: list[str],
+        *,
         locale: str | None = None,
         statuses: list[promotions_v2025_12_01.PromotionsV20251201Statuses] | None = None,
         asins: list[str] | None = None,
@@ -68,7 +68,7 @@ class PromotionsV20251201Client:
             "limit": limit,
             "includedData": joined(included_data, ","),
         }
-        return self._client.request(
+        return self._http.request(
             "GET",
             "/promotions/2025-12-01/promotions",
             operation="searchPromotions",
@@ -81,8 +81,8 @@ class PromotionsV20251201Client:
 
     def iter_list_promotions(
         self,
-        *,
         marketplace_ids: list[str],
+        *,
         locale: str | None = None,
         statuses: list[promotions_v2025_12_01.PromotionsV20251201Statuses] | None = None,
         asins: list[str] | None = None,
@@ -131,8 +131,8 @@ class PromotionsV20251201Client:
 
     def get_promotion(
         self,
-        *,
         promotion_id: str,
+        *,
         included_data: list[promotions_v2025_12_01.PromotionsV20251201IncludedData] | None = None,
         locale: str | None = None,
         request_options: RequestOptions | None = None,
@@ -142,7 +142,7 @@ class PromotionsV20251201Client:
         GET /promotions/2025-12-01/promotions/{promotionId}
         """
         params: dict[str, Any] = {"includedData": joined(included_data, ","), "locale": locale}
-        return self._client.request(
+        return self._http.request(
             "GET",
             f"/promotions/2025-12-01/promotions/{path_segment(promotion_id)}",
             operation="getPromotion",
@@ -155,10 +155,10 @@ class PromotionsV20251201Client:
 
     def get_promotion_selection(
         self,
-        *,
         promotion_id: str,
         selection_id: str,
         revision_id: int,
+        *,
         locale: str | None = None,
         pagination_token: str | None = None,
         limit: int | None = None,
@@ -176,7 +176,7 @@ class PromotionsV20251201Client:
             "limit": limit,
             "includedData": joined(included_data, ","),
         }
-        return self._client.request(
+        return self._http.request(
             "GET",
             f"/promotions/2025-12-01/promotions/{path_segment(promotion_id)}/selections/{path_segment(selection_id)}",
             operation="getSelection",
@@ -189,10 +189,10 @@ class PromotionsV20251201Client:
 
     def iter_get_promotion_selection(
         self,
-        *,
         promotion_id: str,
         selection_id: str,
         revision_id: int,
+        *,
         locale: str | None = None,
         pagination_token: str | None = None,
         limit: int | None = None,
@@ -220,18 +220,18 @@ class PromotionsV20251201Client:
         )
 
 
-class AsyncPromotionsV20251201Client:
+class AsyncPromotionsV20251201Resource:
     """Asynchronous ``PromotionsV20251201`` resource."""
 
-    __slots__ = ("_client",)
+    __slots__ = ("_http",)
 
-    def __init__(self, client: AsyncHttpClient) -> None:
-        self._client = client
+    def __init__(self, http: AsyncHttpClient) -> None:
+        self._http = http
 
     async def list_promotions(
         self,
-        *,
         marketplace_ids: list[str],
+        *,
         locale: str | None = None,
         statuses: list[promotions_v2025_12_01.PromotionsV20251201Statuses] | None = None,
         asins: list[str] | None = None,
@@ -271,7 +271,7 @@ class AsyncPromotionsV20251201Client:
             "limit": limit,
             "includedData": joined(included_data, ","),
         }
-        return await self._client.request(
+        return await self._http.request(
             "GET",
             "/promotions/2025-12-01/promotions",
             operation="searchPromotions",
@@ -284,8 +284,8 @@ class AsyncPromotionsV20251201Client:
 
     def iter_list_promotions(
         self,
-        *,
         marketplace_ids: list[str],
+        *,
         locale: str | None = None,
         statuses: list[promotions_v2025_12_01.PromotionsV20251201Statuses] | None = None,
         asins: list[str] | None = None,
@@ -334,8 +334,8 @@ class AsyncPromotionsV20251201Client:
 
     async def get_promotion(
         self,
-        *,
         promotion_id: str,
+        *,
         included_data: list[promotions_v2025_12_01.PromotionsV20251201IncludedData] | None = None,
         locale: str | None = None,
         request_options: RequestOptions | None = None,
@@ -345,7 +345,7 @@ class AsyncPromotionsV20251201Client:
         GET /promotions/2025-12-01/promotions/{promotionId}
         """
         params: dict[str, Any] = {"includedData": joined(included_data, ","), "locale": locale}
-        return await self._client.request(
+        return await self._http.request(
             "GET",
             f"/promotions/2025-12-01/promotions/{path_segment(promotion_id)}",
             operation="getPromotion",
@@ -358,10 +358,10 @@ class AsyncPromotionsV20251201Client:
 
     async def get_promotion_selection(
         self,
-        *,
         promotion_id: str,
         selection_id: str,
         revision_id: int,
+        *,
         locale: str | None = None,
         pagination_token: str | None = None,
         limit: int | None = None,
@@ -379,7 +379,7 @@ class AsyncPromotionsV20251201Client:
             "limit": limit,
             "includedData": joined(included_data, ","),
         }
-        return await self._client.request(
+        return await self._http.request(
             "GET",
             f"/promotions/2025-12-01/promotions/{path_segment(promotion_id)}/selections/{path_segment(selection_id)}",
             operation="getSelection",
@@ -392,10 +392,10 @@ class AsyncPromotionsV20251201Client:
 
     def iter_get_promotion_selection(
         self,
-        *,
         promotion_id: str,
         selection_id: str,
         revision_id: int,
+        *,
         locale: str | None = None,
         pagination_token: str | None = None,
         limit: int | None = None,
@@ -423,4 +423,4 @@ class AsyncPromotionsV20251201Client:
         )
 
 
-__all__ = ["AsyncPromotionsV20251201Client", "PromotionsV20251201Client"]
+__all__ = ["AsyncPromotionsV20251201Resource", "PromotionsV20251201Resource"]

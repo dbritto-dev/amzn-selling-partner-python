@@ -16,6 +16,8 @@ class CompetitiveSummaryIncludedData(str, Enum):
     LOWEST_PRICED_OFFERS = "lowestPricedOffers"
     SIMILAR_ITEMS = "similarItems"
 
+    __str__ = str.__str__
+
 
 class Condition(str, Enum):
     NEW = "New"
@@ -24,16 +26,22 @@ class Condition(str, Enum):
     REFURBISHED = "Refurbished"
     CLUB = "Club"
 
+    __str__ = str.__str__
+
 
 class FeaturedOfferSegmentCustomerMembership(str, Enum):
     PRIME = "PRIME"
     NON_PRIME = "NON_PRIME"
     DEFAULT = "DEFAULT"
 
+    __str__ = str.__str__
+
 
 class FulfillmentType(str, Enum):
     AFN = "AFN"
     MFN = "MFN"
+
+    __str__ = str.__str__
 
 
 class HttpMethod(str, Enum):
@@ -42,6 +50,8 @@ class HttpMethod(str, Enum):
     PATCH = "PATCH"
     DELETE = "DELETE"
     POST = "POST"
+
+    __str__ = str.__str__
 
 
 class OfferSubCondition(str, Enum):
@@ -59,11 +69,15 @@ class OfferSubCondition(str, Enum):
     OPEN_BOX = "OpenBox"
     OTHER = "Other"
 
+    __str__ = str.__str__
+
 
 class PrimeDetailsEligibility(str, Enum):
     NATIONAL = "NATIONAL"
     REGIONAL = "REGIONAL"
     NONE = "NONE"
+
+    __str__ = str.__str__
 
 
 class SegmentedFeaturedOfferSubCondition(str, Enum):
@@ -80,6 +94,8 @@ class SegmentedFeaturedOfferSubCondition(str, Enum):
     REFURBISHED = "Refurbished"
     OPEN_BOX = "OpenBox"
     OTHER = "Other"
+
+    __str__ = str.__str__
 
 
 __all__ = [

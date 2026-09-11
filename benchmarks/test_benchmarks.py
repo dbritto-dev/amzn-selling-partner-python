@@ -34,8 +34,8 @@ ROOT = pathlib.Path(__file__).resolve().parents[1]
 sys.path.insert(0, str(ROOT / "src"))
 sys.path.insert(0, str(ROOT / "tests"))  # the generated petstore package (codegen/)
 
+from petstore_sdk._http import RequestOptions  # noqa: E402
 from petstore_sdk.client import AsyncClient, Client  # noqa: E402
-from petstore_sdk.http_client import RequestOptions  # noqa: E402
 from petstore_sdk.models._base import adapter_for  # noqa: E402
 from petstore_sdk.models.petstore_v3 import Pet, PetList  # noqa: E402
 

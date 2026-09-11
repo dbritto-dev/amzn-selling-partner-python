@@ -14,6 +14,8 @@ class FbaInboundV1Program(str, Enum):
     INBOUND = "INBOUND"
     COMMINGLING = "COMMINGLING"
 
+    __str__ = str.__str__
+
 
 class ItemEligibilityPreviewIneligibilityReasonList(str, Enum):
     FBA_INB_0004 = "FBA_INB_0004"
@@ -58,10 +60,14 @@ class ItemEligibilityPreviewIneligibilityReasonList(str, Enum):
     FBA_INB_0465 = "FBA_INB_0465"
     UNKNOWN_INB_ERROR_CODE = "UNKNOWN_INB_ERROR_CODE"
 
+    __str__ = str.__str__
+
 
 class ItemEligibilityPreviewProgram(str, Enum):
     INBOUND = "INBOUND"
     COMMINGLING = "COMMINGLING"
+
+    __str__ = str.__str__
 
 
 __all__ = [

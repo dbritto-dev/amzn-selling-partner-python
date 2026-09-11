@@ -14,6 +14,8 @@ class AplusContentV20201101IncludedDataSet(str, Enum):
     CONTENTS = "CONTENTS"
     METADATA = "METADATA"
 
+    __str__ = str.__str__
+
 
 class AsinBadge(str, Enum):
     BRAND_NOT_ELIGIBLE = "BRAND_NOT_ELIGIBLE"
@@ -21,10 +23,14 @@ class AsinBadge(str, Enum):
     CONTENT_NOT_PUBLISHED = "CONTENT_NOT_PUBLISHED"
     CONTENT_PUBLISHED = "CONTENT_PUBLISHED"
 
+    __str__ = str.__str__
+
 
 class ColorType(str, Enum):
     DARK = "DARK"
     LIGHT = "LIGHT"
+
+    __str__ = str.__str__
 
 
 class ContentBadge(str, Enum):
@@ -33,6 +39,8 @@ class ContentBadge(str, Enum):
     LAUNCHPAD = "LAUNCHPAD"
     PREMIUM = "PREMIUM"
     STANDARD = "STANDARD"
+
+    __str__ = str.__str__
 
 
 class ContentModuleType(str, Enum):
@@ -52,6 +60,8 @@ class ContentModuleType(str, Enum):
     STANDARD_TEXT = "STANDARD_TEXT"
     STANDARD_THREE_IMAGE_TEXT = "STANDARD_THREE_IMAGE_TEXT"
 
+    __str__ = str.__str__
+
 
 class ContentStatus(str, Enum):
     APPROVED = "APPROVED"
@@ -59,10 +69,14 @@ class ContentStatus(str, Enum):
     REJECTED = "REJECTED"
     SUBMITTED = "SUBMITTED"
 
+    __str__ = str.__str__
+
 
 class ContentType(str, Enum):
     EBC = "EBC"
     EMC = "EMC"
+
+    __str__ = str.__str__
 
 
 class DecoratorType(str, Enum):
@@ -75,10 +89,14 @@ class DecoratorType(str, Enum):
     STYLE_PARAGRAPH = "STYLE_PARAGRAPH"
     STYLE_UNDERLINE = "STYLE_UNDERLINE"
 
+    __str__ = str.__str__
+
 
 class PositionType(str, Enum):
     LEFT = "LEFT"
     RIGHT = "RIGHT"
+
+    __str__ = str.__str__
 
 
 __all__ = [

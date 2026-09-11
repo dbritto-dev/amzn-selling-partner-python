@@ -19,6 +19,8 @@ class CatalogItemsV20201201IncludedData(str, Enum):
     VARIATIONS = "variations"
     VENDOR_DETAILS = "vendorDetails"
 
+    __str__ = str.__str__
+
 
 class ItemImageVariant(str, Enum):
     MAIN = "MAIN"
@@ -32,10 +34,14 @@ class ItemImageVariant(str, Enum):
     PT08 = "PT08"
     SWCH = "SWCH"
 
+    __str__ = str.__str__
+
 
 class ItemVariationsByMarketplaceVariationType(str, Enum):
     PARENT = "PARENT"
     CHILD = "CHILD"
+
+    __str__ = str.__str__
 
 
 class ItemVendorDetailsByMarketplaceReplenishmentCategory(str, Enum):
@@ -49,6 +55,8 @@ class ItemVendorDetailsByMarketplaceReplenishmentCategory(str, Enum):
     NON_STOCKUPABLE = "NON_STOCKUPABLE"
     OBSOLETE = "OBSOLETE"
     PLANNED_REPLENISHMENT = "PLANNED_REPLENISHMENT"
+
+    __str__ = str.__str__
 
 
 __all__ = [

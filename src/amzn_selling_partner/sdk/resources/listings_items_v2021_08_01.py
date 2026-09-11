@@ -11,26 +11,26 @@ import datetime
 from collections.abc import AsyncIterator, Iterator, Mapping
 from typing import Any, Literal
 
-from ..http_client import AsyncHttpClient, HttpClient, RateLimit, RequestOptions, apaginate, joined, paginate, path_segment
+from .._http import AsyncHttpClient, HttpClient, RateLimit, RequestOptions, apaginate, joined, paginate, path_segment
 from ..models import listings_items_v2021_08_01
 
 SERVICE = "listings_items_v2021_08_01"
 
 
-class ListingsItemsV20210801Client:
+class ListingsItemsV20210801Resource:
     """Synchronous ``ListingsItemsV20210801`` resource."""
 
-    __slots__ = ("_client",)
+    __slots__ = ("_http",)
 
-    def __init__(self, client: HttpClient) -> None:
-        self._client = client
+    def __init__(self, http: HttpClient) -> None:
+        self._http = http
 
     def get_listings_item(
         self,
-        *,
         seller_id: str,
         sku: str,
         marketplace_ids: list[str],
+        *,
         issue_locale: str | None = None,
         included_data: list[listings_items_v2021_08_01.ListingsItemsV20210801IncludedData] | None = None,
         request_options: RequestOptions | None = None,
@@ -52,7 +52,7 @@ class ListingsItemsV20210801Client:
             "issueLocale": issue_locale,
             "includedData": joined(included_data, ","),
         }
-        return self._client.request(
+        return self._http.request(
             "GET",
             f"/listings/2021-08-01/items/{path_segment(seller_id)}/{path_segment(sku)}",
             operation="getListingsItem",
@@ -66,11 +66,11 @@ class ListingsItemsV20210801Client:
 
     def put_listings_item(
         self,
-        *,
         seller_id: str,
         sku: str,
-        marketplace_ids: list[str],
         body: listings_items_v2021_08_01.ListingsItemPutRequest | Mapping[str, Any],
+        marketplace_ids: list[str],
+        *,
         included_data: list[listings_items_v2021_08_01.ListingsItemsV20210801IncludedData] | None = None,
         mode: Literal["VALIDATION_PREVIEW"] | None = None,
         issue_locale: str | None = None,
@@ -94,7 +94,7 @@ class ListingsItemsV20210801Client:
             "mode": mode,
             "issueLocale": issue_locale,
         }
-        return self._client.request(
+        return self._http.request(
             "PUT",
             f"/listings/2021-08-01/items/{path_segment(seller_id)}/{path_segment(sku)}",
             operation="putListingsItem",
@@ -109,11 +109,11 @@ class ListingsItemsV20210801Client:
 
     def patch_listings_item(
         self,
-        *,
         seller_id: str,
         sku: str,
-        marketplace_ids: list[str],
         body: listings_items_v2021_08_01.ListingsItemPatchRequest | Mapping[str, Any],
+        marketplace_ids: list[str],
+        *,
         included_data: list[listings_items_v2021_08_01.ListingsItemsV20210801IncludedData] | None = None,
         mode: Literal["VALIDATION_PREVIEW"] | None = None,
         issue_locale: str | None = None,
@@ -137,7 +137,7 @@ class ListingsItemsV20210801Client:
             "mode": mode,
             "issueLocale": issue_locale,
         }
-        return self._client.request(
+        return self._http.request(
             "PATCH",
             f"/listings/2021-08-01/items/{path_segment(seller_id)}/{path_segment(sku)}",
             operation="patchListingsItem",
@@ -152,10 +152,10 @@ class ListingsItemsV20210801Client:
 
     def delete_item(
         self,
-        *,
         seller_id: str,
         sku: str,
         marketplace_ids: list[str],
+        *,
         issue_locale: str | None = None,
         request_options: RequestOptions | None = None,
     ) -> listings_items_v2021_08_01.ListingsItemSubmissionResponse:
@@ -172,7 +172,7 @@ class ListingsItemsV20210801Client:
         DELETE /listings/2021-08-01/items/{sellerId}/{sku}
         """
         params: dict[str, Any] = {"marketplaceIds": joined(marketplace_ids, ","), "issueLocale": issue_locale}
-        return self._client.request(
+        return self._http.request(
             "DELETE",
             f"/listings/2021-08-01/items/{path_segment(seller_id)}/{path_segment(sku)}",
             operation="deleteListingsItem",
@@ -186,9 +186,9 @@ class ListingsItemsV20210801Client:
 
     def search_listings_items(
         self,
-        *,
         seller_id: str,
         marketplace_ids: list[str],
+        *,
         issue_locale: str | None = None,
         included_data: list[listings_items_v2021_08_01.ListingsItemsV20210801IncludedData] | None = None,
         identifiers: list[str] | None = None,
@@ -240,7 +240,7 @@ class ListingsItemsV20210801Client:
             "pageSize": page_size,
             "pageToken": page_token,
         }
-        return self._client.request(
+        return self._http.request(
             "GET",
             f"/listings/2021-08-01/items/{path_segment(seller_id)}",
             operation="searchListingsItems",
@@ -254,9 +254,9 @@ class ListingsItemsV20210801Client:
 
     def iter_search_listings_items(
         self,
-        *,
         seller_id: str,
         marketplace_ids: list[str],
+        *,
         issue_locale: str | None = None,
         included_data: list[listings_items_v2021_08_01.ListingsItemsV20210801IncludedData] | None = None,
         identifiers: list[str] | None = None,
@@ -309,20 +309,20 @@ class ListingsItemsV20210801Client:
         )
 
 
-class AsyncListingsItemsV20210801Client:
+class AsyncListingsItemsV20210801Resource:
     """Asynchronous ``ListingsItemsV20210801`` resource."""
 
-    __slots__ = ("_client",)
+    __slots__ = ("_http",)
 
-    def __init__(self, client: AsyncHttpClient) -> None:
-        self._client = client
+    def __init__(self, http: AsyncHttpClient) -> None:
+        self._http = http
 
     async def get_listings_item(
         self,
-        *,
         seller_id: str,
         sku: str,
         marketplace_ids: list[str],
+        *,
         issue_locale: str | None = None,
         included_data: list[listings_items_v2021_08_01.ListingsItemsV20210801IncludedData] | None = None,
         request_options: RequestOptions | None = None,
@@ -344,7 +344,7 @@ class AsyncListingsItemsV20210801Client:
             "issueLocale": issue_locale,
             "includedData": joined(included_data, ","),
         }
-        return await self._client.request(
+        return await self._http.request(
             "GET",
             f"/listings/2021-08-01/items/{path_segment(seller_id)}/{path_segment(sku)}",
             operation="getListingsItem",
@@ -358,11 +358,11 @@ class AsyncListingsItemsV20210801Client:
 
     async def put_listings_item(
         self,
-        *,
         seller_id: str,
         sku: str,
-        marketplace_ids: list[str],
         body: listings_items_v2021_08_01.ListingsItemPutRequest | Mapping[str, Any],
+        marketplace_ids: list[str],
+        *,
         included_data: list[listings_items_v2021_08_01.ListingsItemsV20210801IncludedData] | None = None,
         mode: Literal["VALIDATION_PREVIEW"] | None = None,
         issue_locale: str | None = None,
@@ -386,7 +386,7 @@ class AsyncListingsItemsV20210801Client:
             "mode": mode,
             "issueLocale": issue_locale,
         }
-        return await self._client.request(
+        return await self._http.request(
             "PUT",
             f"/listings/2021-08-01/items/{path_segment(seller_id)}/{path_segment(sku)}",
             operation="putListingsItem",
@@ -401,11 +401,11 @@ class AsyncListingsItemsV20210801Client:
 
     async def patch_listings_item(
         self,
-        *,
         seller_id: str,
         sku: str,
-        marketplace_ids: list[str],
         body: listings_items_v2021_08_01.ListingsItemPatchRequest | Mapping[str, Any],
+        marketplace_ids: list[str],
+        *,
         included_data: list[listings_items_v2021_08_01.ListingsItemsV20210801IncludedData] | None = None,
         mode: Literal["VALIDATION_PREVIEW"] | None = None,
         issue_locale: str | None = None,
@@ -429,7 +429,7 @@ class AsyncListingsItemsV20210801Client:
             "mode": mode,
             "issueLocale": issue_locale,
         }
-        return await self._client.request(
+        return await self._http.request(
             "PATCH",
             f"/listings/2021-08-01/items/{path_segment(seller_id)}/{path_segment(sku)}",
             operation="patchListingsItem",
@@ -444,10 +444,10 @@ class AsyncListingsItemsV20210801Client:
 
     async def delete_item(
         self,
-        *,
         seller_id: str,
         sku: str,
         marketplace_ids: list[str],
+        *,
         issue_locale: str | None = None,
         request_options: RequestOptions | None = None,
     ) -> listings_items_v2021_08_01.ListingsItemSubmissionResponse:
@@ -464,7 +464,7 @@ class AsyncListingsItemsV20210801Client:
         DELETE /listings/2021-08-01/items/{sellerId}/{sku}
         """
         params: dict[str, Any] = {"marketplaceIds": joined(marketplace_ids, ","), "issueLocale": issue_locale}
-        return await self._client.request(
+        return await self._http.request(
             "DELETE",
             f"/listings/2021-08-01/items/{path_segment(seller_id)}/{path_segment(sku)}",
             operation="deleteListingsItem",
@@ -478,9 +478,9 @@ class AsyncListingsItemsV20210801Client:
 
     async def search_listings_items(
         self,
-        *,
         seller_id: str,
         marketplace_ids: list[str],
+        *,
         issue_locale: str | None = None,
         included_data: list[listings_items_v2021_08_01.ListingsItemsV20210801IncludedData] | None = None,
         identifiers: list[str] | None = None,
@@ -532,7 +532,7 @@ class AsyncListingsItemsV20210801Client:
             "pageSize": page_size,
             "pageToken": page_token,
         }
-        return await self._client.request(
+        return await self._http.request(
             "GET",
             f"/listings/2021-08-01/items/{path_segment(seller_id)}",
             operation="searchListingsItems",
@@ -546,9 +546,9 @@ class AsyncListingsItemsV20210801Client:
 
     def iter_search_listings_items(
         self,
-        *,
         seller_id: str,
         marketplace_ids: list[str],
+        *,
         issue_locale: str | None = None,
         included_data: list[listings_items_v2021_08_01.ListingsItemsV20210801IncludedData] | None = None,
         identifiers: list[str] | None = None,
@@ -601,4 +601,4 @@ class AsyncListingsItemsV20210801Client:
         )
 
 
-__all__ = ["AsyncListingsItemsV20210801Client", "ListingsItemsV20210801Client"]
+__all__ = ["AsyncListingsItemsV20210801Resource", "ListingsItemsV20210801Resource"]

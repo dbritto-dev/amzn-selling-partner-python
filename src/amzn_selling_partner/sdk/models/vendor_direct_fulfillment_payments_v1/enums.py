@@ -14,6 +14,8 @@ class AdditionalDetailsType(str, Enum):
     SUR = "SUR"
     OCR = "OCR"
 
+    __str__ = str.__str__
+
 
 class ChargeDetailsType(str, Enum):
     GIFTWRAP = "GIFTWRAP"
@@ -23,6 +25,8 @@ class ChargeDetailsType(str, Enum):
     LOADING = "LOADING"
     FREIGHTOUT = "FREIGHTOUT"
     TAX_COLLECTED_AT_SOURCE = "TAX_COLLECTED_AT_SOURCE"
+
+    __str__ = str.__str__
 
 
 class TaxDetailTaxType(str, Enum):
@@ -41,10 +45,14 @@ class TaxDetailTaxType(str, Enum):
     MUTUALLY_DEFINED = "MutuallyDefined"
     DOMESTIC_VAT = "DomesticVAT"
 
+    __str__ = str.__str__
+
 
 class TaxRegistrationDetailTaxRegistrationType(str, Enum):
     VAT = "VAT"
     GST = "GST"
+
+    __str__ = str.__str__
 
 
 __all__ = [

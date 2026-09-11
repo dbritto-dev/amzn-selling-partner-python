@@ -15,6 +15,8 @@ class CancellationCancellationType(str, Enum):
     MARKETPLACE_CANCELLED = "MARKETPLACE_CANCELLED"
     SYSTEM_CANCELLED = "SYSTEM_CANCELLED"
 
+    __str__ = str.__str__
+
 
 class ChargeChargeType(str, Enum):
     PRODUCT = "PRODUCT"
@@ -22,6 +24,8 @@ class ChargeChargeType(str, Enum):
     GIFT_WRAP = "GIFT_WRAP"
     TOTAL = "TOTAL"
     OTHER = "OTHER"
+
+    __str__ = str.__str__
 
 
 class CustomAttributeType(str, Enum):
@@ -31,16 +35,22 @@ class CustomAttributeType(str, Enum):
     DOUBLE = "DOUBLE"
     JSON_STRING = "JSON_STRING"
 
+    __str__ = str.__str__
+
 
 class DimensionDimensionUnit(str, Enum):
     CM = "CM"
     M = "M"
     IN = "IN"
 
+    __str__ = str.__str__
+
 
 class DistanceDistanceUnit(str, Enum):
     MI = "MI"
     KM = "KM"
+
+    __str__ = str.__str__
 
 
 class DocumentFormat(str, Enum):
@@ -49,10 +59,14 @@ class DocumentFormat(str, Enum):
     PNG = "PNG"
     PLAIN_TEXT = "PLAIN_TEXT"
 
+    __str__ = str.__str__
+
 
 class ExternalFulfillmentShipmentsV20240911Operation(str, Enum):
     CONFIRM = "CONFIRM"
     REJECT = "REJECT"
+
+    __str__ = str.__str__
 
 
 class ExternalFulfillmentShipmentsV20240911Status(str, Enum):
@@ -67,10 +81,14 @@ class ExternalFulfillmentShipmentsV20240911Status(str, Enum):
     SHIPPED = "SHIPPED"
     DELIVERED = "DELIVERED"
 
+    __str__ = str.__str__
+
 
 class InvoiceRequirementRequirement(str, Enum):
     REQUIRED = "REQUIRED"
     NOT_REQUIRED = "NOT_REQUIRED"
+
+    __str__ = str.__str__
 
 
 class InvoiceRequirementStatus(str, Enum):
@@ -78,20 +96,28 @@ class InvoiceRequirementStatus(str, Enum):
     AVAILABLE = "AVAILABLE"
     NOT_AVAILABLE = "NOT_AVAILABLE"
 
+    __str__ = str.__str__
+
 
 class LineItemWithReasonReason(str, Enum):
     OUT_OF_STOCK = "OUT_OF_STOCK"
     CUSTOMER_REQUESTED = "CUSTOMER_REQUESTED"
+
+    __str__ = str.__str__
 
 
 class MarketplaceAttributesCustomAttributes(str, Enum):
     PRIME = "PRIME"
     FASTTRACK = "FASTTRACK"
 
+    __str__ = str.__str__
+
 
 class PackagePackageHandlingRequirements(str, Enum):
     NORMAL = "NORMAL"
     FRAGILE = "FRAGILE"
+
+    __str__ = str.__str__
 
 
 class PackageStatus(str, Enum):
@@ -102,6 +128,8 @@ class PackageStatus(str, Enum):
     SHIPPED = "SHIPPED"
     DELIVERED = "DELIVERED"
 
+    __str__ = str.__str__
+
 
 class PackageSubStatus(str, Enum):
     OUT_FOR_DELIVERY = "OUT_FOR_DELIVERY"
@@ -109,15 +137,21 @@ class PackageSubStatus(str, Enum):
     NOT_DELIVERED = "NOT_DELIVERED"
     UNDELIVERABLE = "UNDELIVERABLE"
 
+    __str__ = str.__str__
+
 
 class PackingSlipRequirementRequirement(str, Enum):
     REQUIRED = "REQUIRED"
     NOT_REQUIRED = "NOT_REQUIRED"
 
+    __str__ = str.__str__
+
 
 class PackingSlipRequirementStatus(str, Enum):
     GENERATED = "GENERATED"
     NOT_GENERATED = "NOT_GENERATED"
+
+    __str__ = str.__str__
 
 
 class PartyIdentificationInfoPartyType(str, Enum):
@@ -126,41 +160,57 @@ class PartyIdentificationInfoPartyType(str, Enum):
     SHIP_FROM_PARTY = "SHIP_FROM_PARTY"
     SELLING_PARTY = "SELLING_PARTY"
 
+    __str__ = str.__str__
+
 
 class PieceType(str, Enum):
     SINGLE = "SINGLE"
     MULTIPLE = "MULTIPLE"
+
+    __str__ = str.__str__
 
 
 class PresenceStatus(str, Enum):
     ABSENT = "ABSENT"
     PRESENT = "PRESENT"
 
+    __str__ = str.__str__
+
 
 class Priority(str, Enum):
     HIGH = "HIGH"
     LOW = "LOW"
+
+    __str__ = str.__str__
 
 
 class RequirementLevel(str, Enum):
     REQUIRED = "REQUIRED"
     DISALLOWED = "DISALLOWED"
 
+    __str__ = str.__str__
+
 
 class ShipmentInfoPaymentMethod(str, Enum):
     CASH_ON_DELIVERY = "CASH_ON_DELIVERY"
     PREPAID = "PREPAID"
+
+    __str__ = str.__str__
 
 
 class ShipmentInfoProcessingSource(str, Enum):
     EXTERNAL_PLATFORM = "EXTERNAL_PLATFORM"
     INTERNAL_PLATFORM = "INTERNAL_PLATFORM"
 
+    __str__ = str.__str__
+
 
 class ShipmentInfoShipmentType(str, Enum):
     NEW = "NEW"
     EXCHANGE = "EXCHANGE"
     REPLACEMENT = "REPLACEMENT"
+
+    __str__ = str.__str__
 
 
 class ShipmentStatus(str, Enum):
@@ -174,6 +224,8 @@ class ShipmentStatus(str, Enum):
     CANCELLED = "CANCELLED"
     SHIPPED = "SHIPPED"
     DELIVERED = "DELIVERED"
+
+    __str__ = str.__str__
 
 
 class ShipmentSubStatus(str, Enum):
@@ -192,10 +244,14 @@ class ShipmentSubStatus(str, Enum):
     OUT_FOR_DELIVERY = "OUT_FOR_DELIVERY"
     DAMAGED = "DAMAGED"
 
+    __str__ = str.__str__
+
 
 class ShippingInfoShippingType(str, Enum):
     MARKETPLACE = "MARKETPLACE"
     SELF = "SELF"
+
+    __str__ = str.__str__
 
 
 class ShippingOptionsShipBy(str, Enum):
@@ -204,15 +260,21 @@ class ShippingOptionsShipBy(str, Enum):
     THIRD_PARTY_CARRIER = "THIRD_PARTY_CARRIER"
     OTHER = "OTHER"
 
+    __str__ = str.__str__
+
 
 class Status(str, Enum):
     SUCCESS = "SUCCESS"
     FAILURE = "FAILURE"
 
+    __str__ = str.__str__
+
 
 class TaxRegistrationInfoType(str, Enum):
     VAT = "VAT"
     GST = "GST"
+
+    __str__ = str.__str__
 
 
 class TaxType(str, Enum):
@@ -226,10 +288,14 @@ class TaxType(str, Enum):
     OTHER = "OTHER"
     TOTAL = "TOTAL"
 
+    __str__ = str.__str__
+
 
 class TimeWindowHandoverMethod(str, Enum):
     PICKUP = "PICKUP"
     DROPOFF = "DROPOFF"
+
+    __str__ = str.__str__
 
 
 class WeightWeightUnit(str, Enum):
@@ -237,6 +303,8 @@ class WeightWeightUnit(str, Enum):
     KG = "KG"
     LB = "LB"
     OZ = "OZ"
+
+    __str__ = str.__str__
 
 
 __all__ = [

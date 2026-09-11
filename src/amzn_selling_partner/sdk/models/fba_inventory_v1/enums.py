@@ -15,6 +15,8 @@ class ResearchingQuantityEntryName(str, Enum):
     RESEARCHING_QUANTITY_IN_MID_TERM = "researchingQuantityInMidTerm"
     RESEARCHING_QUANTITY_IN_LONG_TERM = "researchingQuantityInLongTerm"
 
+    __str__ = str.__str__
+
 
 __all__ = [
     "ResearchingQuantityEntryName",

@@ -8,8 +8,8 @@ from typing import Any
 
 import httpx2
 import pytest
+from petstore_sdk._http import AsyncTokenBucket, RateLimit, RequestOptions, TokenBucket, apaginate, paginate
 from petstore_sdk.client import AsyncClient, Client
-from petstore_sdk.http_client import AsyncTokenBucket, RateLimit, RequestOptions, TokenBucket, apaginate, paginate
 from petstore_sdk.resources import OPERATIONS
 
 from .conftest import requires_amazon
@@ -33,12 +33,12 @@ def test_detection_matches_expected_list() -> None:
 @requires_amazon
 def test_detection_amazon() -> None:
     from amzn_selling_partner.sdk.resources import OPERATIONS as AMAZON
-    from amzn_selling_partner.sdk.resources.orders_v0 import OrdersV0Client
+    from amzn_selling_partner.sdk.resources.orders_v0 import OrdersV0Resource
 
     for key, expected in EXPECTED_AMAZON.items():
         assert AMAZON[key][3] is expected, key
     assert sum(1 for v in AMAZON.values() if v[3]) == 69
-    assert hasattr(OrdersV0Client, "iter_list_orders") and not hasattr(OrdersV0Client, "iter_get_order")
+    assert hasattr(OrdersV0Resource, "iter_list_orders") and not hasattr(OrdersV0Resource, "iter_get_order")
 
 
 def _handler(seen: list[httpx2.Request]) -> Any:

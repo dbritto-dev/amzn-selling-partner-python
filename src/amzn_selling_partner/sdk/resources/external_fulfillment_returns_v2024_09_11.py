@@ -11,19 +11,19 @@ import datetime
 from collections.abc import AsyncIterator, Iterator
 from typing import Any
 
-from ..http_client import AsyncHttpClient, HttpClient, RequestOptions, apaginate, paginate, path_segment
+from .._http import AsyncHttpClient, HttpClient, RequestOptions, apaginate, paginate, path_segment
 from ..models import external_fulfillment_returns_v2024_09_11
 
 SERVICE = "external_fulfillment_returns_v2024_09_11"
 
 
-class ExternalFulfillmentReturnsV20240911Client:
+class ExternalFulfillmentReturnsV20240911Resource:
     """Synchronous ``ExternalFulfillmentReturnsV20240911`` resource."""
 
-    __slots__ = ("_client",)
+    __slots__ = ("_http",)
 
-    def __init__(self, client: HttpClient) -> None:
-        self._client = client
+    def __init__(self, http: HttpClient) -> None:
+        self._http = http
 
     def list_returns(
         self,
@@ -60,7 +60,7 @@ class ExternalFulfillmentReturnsV20240911Client:
             "maxResults": max_results,
             "nextToken": next_token,
         }
-        return self._client.request(
+        return self._http.request(
             "GET",
             "/externalFulfillment/2024-09-11/returns",
             operation="listReturns",
@@ -115,15 +115,15 @@ class ExternalFulfillmentReturnsV20240911Client:
 
     def get_return(
         self,
-        *,
         return_id: str,
+        *,
         request_options: RequestOptions | None = None,
     ) -> external_fulfillment_returns_v2024_09_11.Return:
         """Retrieve the return item with the specified ID.
 
         GET /externalFulfillment/2024-09-11/returns/{returnId}
         """
-        return self._client.request(
+        return self._http.request(
             "GET",
             f"/externalFulfillment/2024-09-11/returns/{path_segment(return_id)}",
             operation="getReturn",
@@ -134,13 +134,13 @@ class ExternalFulfillmentReturnsV20240911Client:
         )
 
 
-class AsyncExternalFulfillmentReturnsV20240911Client:
+class AsyncExternalFulfillmentReturnsV20240911Resource:
     """Asynchronous ``ExternalFulfillmentReturnsV20240911`` resource."""
 
-    __slots__ = ("_client",)
+    __slots__ = ("_http",)
 
-    def __init__(self, client: AsyncHttpClient) -> None:
-        self._client = client
+    def __init__(self, http: AsyncHttpClient) -> None:
+        self._http = http
 
     async def list_returns(
         self,
@@ -177,7 +177,7 @@ class AsyncExternalFulfillmentReturnsV20240911Client:
             "maxResults": max_results,
             "nextToken": next_token,
         }
-        return await self._client.request(
+        return await self._http.request(
             "GET",
             "/externalFulfillment/2024-09-11/returns",
             operation="listReturns",
@@ -232,15 +232,15 @@ class AsyncExternalFulfillmentReturnsV20240911Client:
 
     async def get_return(
         self,
-        *,
         return_id: str,
+        *,
         request_options: RequestOptions | None = None,
     ) -> external_fulfillment_returns_v2024_09_11.Return:
         """Retrieve the return item with the specified ID.
 
         GET /externalFulfillment/2024-09-11/returns/{returnId}
         """
-        return await self._client.request(
+        return await self._http.request(
             "GET",
             f"/externalFulfillment/2024-09-11/returns/{path_segment(return_id)}",
             operation="getReturn",
@@ -251,4 +251,4 @@ class AsyncExternalFulfillmentReturnsV20240911Client:
         )
 
 
-__all__ = ["AsyncExternalFulfillmentReturnsV20240911Client", "ExternalFulfillmentReturnsV20240911Client"]
+__all__ = ["AsyncExternalFulfillmentReturnsV20240911Resource", "ExternalFulfillmentReturnsV20240911Resource"]

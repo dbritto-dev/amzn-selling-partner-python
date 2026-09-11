@@ -11,19 +11,19 @@ import datetime
 from collections.abc import AsyncIterator, Iterator
 from typing import Any
 
-from ..http_client import AsyncHttpClient, HttpClient, RateLimit, RequestOptions, apaginate, paginate, path_segment
+from .._http import AsyncHttpClient, HttpClient, RateLimit, RequestOptions, apaginate, paginate, path_segment
 from ..models import finances_v0
 
 SERVICE = "finances_v0"
 
 
-class FinancesV0Client:
+class FinancesV0Resource:
     """Synchronous ``FinancesV0`` resource."""
 
-    __slots__ = ("_client",)
+    __slots__ = ("_http",)
 
-    def __init__(self, client: HttpClient) -> None:
-        self._client = client
+    def __init__(self, http: HttpClient) -> None:
+        self._http = http
 
     def list_financial_event_groups(
         self,
@@ -52,7 +52,7 @@ class FinancesV0Client:
             "FinancialEventGroupStartedAfter": financial_event_group_started_after,
             "NextToken": next_token,
         }
-        return self._client.request(
+        return self._http.request(
             "GET",
             "/finances/v0/financialEventGroups",
             operation="listFinancialEventGroups",
@@ -93,8 +93,8 @@ class FinancesV0Client:
 
     def list_financial_event_group_financial_events(
         self,
-        *,
         event_group_id: str,
+        *,
         max_results_per_page: int | None = None,
         posted_after: datetime.datetime | None = None,
         posted_before: datetime.datetime | None = None,
@@ -123,7 +123,7 @@ class FinancesV0Client:
             "PostedBefore": posted_before,
             "NextToken": next_token,
         }
-        return self._client.request(
+        return self._http.request(
             "GET",
             f"/finances/v0/financialEventGroups/{path_segment(event_group_id)}/financialEvents",
             operation="listFinancialEventsByGroupId",
@@ -137,8 +137,8 @@ class FinancesV0Client:
 
     def iter_list_financial_event_group_financial_events(
         self,
-        *,
         event_group_id: str,
+        *,
         max_results_per_page: int | None = None,
         posted_after: datetime.datetime | None = None,
         posted_before: datetime.datetime | None = None,
@@ -167,8 +167,8 @@ class FinancesV0Client:
 
     def list_order_financial_events(
         self,
-        *,
         order_id: str,
+        *,
         max_results_per_page: int | None = None,
         next_token: str | None = None,
         request_options: RequestOptions | None = None,
@@ -188,7 +188,7 @@ class FinancesV0Client:
         GET /finances/v0/orders/{orderId}/financialEvents
         """
         params: dict[str, Any] = {"MaxResultsPerPage": max_results_per_page, "NextToken": next_token}
-        return self._client.request(
+        return self._http.request(
             "GET",
             f"/finances/v0/orders/{path_segment(order_id)}/financialEvents",
             operation="listFinancialEventsByOrderId",
@@ -202,8 +202,8 @@ class FinancesV0Client:
 
     def iter_list_order_financial_events(
         self,
-        *,
         order_id: str,
+        *,
         max_results_per_page: int | None = None,
         next_token: str | None = None,
         request_options: RequestOptions | None = None,
@@ -255,7 +255,7 @@ class FinancesV0Client:
             "PostedBefore": posted_before,
             "NextToken": next_token,
         }
-        return self._client.request(
+        return self._http.request(
             "GET",
             "/finances/v0/financialEvents",
             operation="listFinancialEvents",
@@ -296,13 +296,13 @@ class FinancesV0Client:
         )
 
 
-class AsyncFinancesV0Client:
+class AsyncFinancesV0Resource:
     """Asynchronous ``FinancesV0`` resource."""
 
-    __slots__ = ("_client",)
+    __slots__ = ("_http",)
 
-    def __init__(self, client: AsyncHttpClient) -> None:
-        self._client = client
+    def __init__(self, http: AsyncHttpClient) -> None:
+        self._http = http
 
     async def list_financial_event_groups(
         self,
@@ -331,7 +331,7 @@ class AsyncFinancesV0Client:
             "FinancialEventGroupStartedAfter": financial_event_group_started_after,
             "NextToken": next_token,
         }
-        return await self._client.request(
+        return await self._http.request(
             "GET",
             "/finances/v0/financialEventGroups",
             operation="listFinancialEventGroups",
@@ -372,8 +372,8 @@ class AsyncFinancesV0Client:
 
     async def list_financial_event_group_financial_events(
         self,
-        *,
         event_group_id: str,
+        *,
         max_results_per_page: int | None = None,
         posted_after: datetime.datetime | None = None,
         posted_before: datetime.datetime | None = None,
@@ -402,7 +402,7 @@ class AsyncFinancesV0Client:
             "PostedBefore": posted_before,
             "NextToken": next_token,
         }
-        return await self._client.request(
+        return await self._http.request(
             "GET",
             f"/finances/v0/financialEventGroups/{path_segment(event_group_id)}/financialEvents",
             operation="listFinancialEventsByGroupId",
@@ -416,8 +416,8 @@ class AsyncFinancesV0Client:
 
     def iter_list_financial_event_group_financial_events(
         self,
-        *,
         event_group_id: str,
+        *,
         max_results_per_page: int | None = None,
         posted_after: datetime.datetime | None = None,
         posted_before: datetime.datetime | None = None,
@@ -446,8 +446,8 @@ class AsyncFinancesV0Client:
 
     async def list_order_financial_events(
         self,
-        *,
         order_id: str,
+        *,
         max_results_per_page: int | None = None,
         next_token: str | None = None,
         request_options: RequestOptions | None = None,
@@ -467,7 +467,7 @@ class AsyncFinancesV0Client:
         GET /finances/v0/orders/{orderId}/financialEvents
         """
         params: dict[str, Any] = {"MaxResultsPerPage": max_results_per_page, "NextToken": next_token}
-        return await self._client.request(
+        return await self._http.request(
             "GET",
             f"/finances/v0/orders/{path_segment(order_id)}/financialEvents",
             operation="listFinancialEventsByOrderId",
@@ -481,8 +481,8 @@ class AsyncFinancesV0Client:
 
     def iter_list_order_financial_events(
         self,
-        *,
         order_id: str,
+        *,
         max_results_per_page: int | None = None,
         next_token: str | None = None,
         request_options: RequestOptions | None = None,
@@ -534,7 +534,7 @@ class AsyncFinancesV0Client:
             "PostedBefore": posted_before,
             "NextToken": next_token,
         }
-        return await self._client.request(
+        return await self._http.request(
             "GET",
             "/finances/v0/financialEvents",
             operation="listFinancialEvents",
@@ -575,4 +575,4 @@ class AsyncFinancesV0Client:
         )
 
 
-__all__ = ["AsyncFinancesV0Client", "FinancesV0Client"]
+__all__ = ["AsyncFinancesV0Resource", "FinancesV0Resource"]

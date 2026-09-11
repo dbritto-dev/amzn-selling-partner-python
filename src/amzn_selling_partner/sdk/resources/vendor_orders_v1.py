@@ -11,19 +11,19 @@ import datetime
 from collections.abc import AsyncIterator, Iterator, Mapping
 from typing import Any, Literal
 
-from ..http_client import AsyncHttpClient, HttpClient, RateLimit, RequestOptions, apaginate, paginate, path_segment
+from .._http import AsyncHttpClient, HttpClient, RateLimit, RequestOptions, apaginate, paginate, path_segment
 from ..models import vendor_orders_v1
 
 SERVICE = "vendor_orders_v1"
 
 
-class VendorOrdersV1Client:
+class VendorOrdersV1Resource:
     """Synchronous ``VendorOrdersV1`` resource."""
 
-    __slots__ = ("_client",)
+    __slots__ = ("_http",)
 
-    def __init__(self, client: HttpClient) -> None:
-        self._client = client
+    def __init__(self, http: HttpClient) -> None:
+        self._http = http
 
     def list_purchase_orders(
         self,
@@ -68,7 +68,7 @@ class VendorOrdersV1Client:
             "purchaseOrderState": purchase_order_state,
             "orderingVendorCode": ordering_vendor_code,
         }
-        return self._client.request(
+        return self._http.request(
             "GET",
             "/vendor/orders/v1/purchaseOrders",
             operation="getPurchaseOrders",
@@ -124,8 +124,8 @@ class VendorOrdersV1Client:
 
     def get_purchase_order(
         self,
-        *,
         purchase_order_number: str,
+        *,
         request_options: RequestOptions | None = None,
     ) -> vendor_orders_v1.GetPurchaseOrderResponse:
         """Returns a purchase order based on the `purchaseOrderNumber` value that you specify.
@@ -140,7 +140,7 @@ class VendorOrdersV1Client:
 
         GET /vendor/orders/v1/purchaseOrders/{purchaseOrderNumber}
         """
-        return self._client.request(
+        return self._http.request(
             "GET",
             f"/vendor/orders/v1/purchaseOrders/{path_segment(purchase_order_number)}",
             operation="getPurchaseOrder",
@@ -153,8 +153,8 @@ class VendorOrdersV1Client:
 
     def create_acknowledgement(
         self,
-        *,
         body: vendor_orders_v1.SubmitAcknowledgementRequest | Mapping[str, Any],
+        *,
         request_options: RequestOptions | None = None,
     ) -> vendor_orders_v1.SubmitAcknowledgementResponse:
         """Submits acknowledgements for one or more purchase orders.
@@ -169,7 +169,7 @@ class VendorOrdersV1Client:
 
         POST /vendor/orders/v1/acknowledgements
         """
-        return self._client.request(
+        return self._http.request(
             "POST",
             "/vendor/orders/v1/acknowledgements",
             operation="submitAcknowledgement",
@@ -226,7 +226,7 @@ class VendorOrdersV1Client:
             "orderingVendorCode": ordering_vendor_code,
             "shipToPartyId": ship_to_party_id,
         }
-        return self._client.request(
+        return self._http.request(
             "GET",
             "/vendor/orders/v1/purchaseOrdersStatus",
             operation="getPurchaseOrdersStatus",
@@ -283,13 +283,13 @@ class VendorOrdersV1Client:
         )
 
 
-class AsyncVendorOrdersV1Client:
+class AsyncVendorOrdersV1Resource:
     """Asynchronous ``VendorOrdersV1`` resource."""
 
-    __slots__ = ("_client",)
+    __slots__ = ("_http",)
 
-    def __init__(self, client: AsyncHttpClient) -> None:
-        self._client = client
+    def __init__(self, http: AsyncHttpClient) -> None:
+        self._http = http
 
     async def list_purchase_orders(
         self,
@@ -334,7 +334,7 @@ class AsyncVendorOrdersV1Client:
             "purchaseOrderState": purchase_order_state,
             "orderingVendorCode": ordering_vendor_code,
         }
-        return await self._client.request(
+        return await self._http.request(
             "GET",
             "/vendor/orders/v1/purchaseOrders",
             operation="getPurchaseOrders",
@@ -390,8 +390,8 @@ class AsyncVendorOrdersV1Client:
 
     async def get_purchase_order(
         self,
-        *,
         purchase_order_number: str,
+        *,
         request_options: RequestOptions | None = None,
     ) -> vendor_orders_v1.GetPurchaseOrderResponse:
         """Returns a purchase order based on the `purchaseOrderNumber` value that you specify.
@@ -406,7 +406,7 @@ class AsyncVendorOrdersV1Client:
 
         GET /vendor/orders/v1/purchaseOrders/{purchaseOrderNumber}
         """
-        return await self._client.request(
+        return await self._http.request(
             "GET",
             f"/vendor/orders/v1/purchaseOrders/{path_segment(purchase_order_number)}",
             operation="getPurchaseOrder",
@@ -419,8 +419,8 @@ class AsyncVendorOrdersV1Client:
 
     async def create_acknowledgement(
         self,
-        *,
         body: vendor_orders_v1.SubmitAcknowledgementRequest | Mapping[str, Any],
+        *,
         request_options: RequestOptions | None = None,
     ) -> vendor_orders_v1.SubmitAcknowledgementResponse:
         """Submits acknowledgements for one or more purchase orders.
@@ -435,7 +435,7 @@ class AsyncVendorOrdersV1Client:
 
         POST /vendor/orders/v1/acknowledgements
         """
-        return await self._client.request(
+        return await self._http.request(
             "POST",
             "/vendor/orders/v1/acknowledgements",
             operation="submitAcknowledgement",
@@ -492,7 +492,7 @@ class AsyncVendorOrdersV1Client:
             "orderingVendorCode": ordering_vendor_code,
             "shipToPartyId": ship_to_party_id,
         }
-        return await self._client.request(
+        return await self._http.request(
             "GET",
             "/vendor/orders/v1/purchaseOrdersStatus",
             operation="getPurchaseOrdersStatus",
@@ -549,4 +549,4 @@ class AsyncVendorOrdersV1Client:
         )
 
 
-__all__ = ["AsyncVendorOrdersV1Client", "VendorOrdersV1Client"]
+__all__ = ["AsyncVendorOrdersV1Resource", "VendorOrdersV1Resource"]

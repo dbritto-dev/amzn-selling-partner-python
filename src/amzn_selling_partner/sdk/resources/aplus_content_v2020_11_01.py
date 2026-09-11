@@ -10,24 +10,24 @@ from __future__ import annotations
 from collections.abc import AsyncIterator, Iterator, Mapping
 from typing import Any, Literal
 
-from ..http_client import AsyncHttpClient, HttpClient, RateLimit, RequestOptions, apaginate, joined, paginate, path_segment
+from .._http import AsyncHttpClient, HttpClient, RateLimit, RequestOptions, apaginate, joined, paginate, path_segment
 from ..models import aplus_content_v2020_11_01
 
 SERVICE = "aplus_content_v2020_11_01"
 
 
-class AplusContentV20201101Client:
+class AplusContentV20201101Resource:
     """Synchronous ``AplusContentV20201101`` resource."""
 
-    __slots__ = ("_client",)
+    __slots__ = ("_http",)
 
-    def __init__(self, client: HttpClient) -> None:
-        self._client = client
+    def __init__(self, http: HttpClient) -> None:
+        self._http = http
 
     def list_content_documents(
         self,
-        *,
         marketplace_id: str,
+        *,
         page_token: str | None = None,
         request_options: RequestOptions | None = None,
     ) -> aplus_content_v2020_11_01.SearchContentDocumentsResponse:
@@ -44,7 +44,7 @@ class AplusContentV20201101Client:
         GET /aplus/2020-11-01/contentDocuments
         """
         params: dict[str, Any] = {"marketplaceId": marketplace_id, "pageToken": page_token}
-        return self._client.request(
+        return self._http.request(
             "GET",
             "/aplus/2020-11-01/contentDocuments",
             operation="searchContentDocuments",
@@ -58,8 +58,8 @@ class AplusContentV20201101Client:
 
     def iter_list_content_documents(
         self,
-        *,
         marketplace_id: str,
+        *,
         page_token: str | None = None,
         request_options: RequestOptions | None = None,
     ) -> Iterator[aplus_content_v2020_11_01.ContentMetadataRecord]:
@@ -76,9 +76,9 @@ class AplusContentV20201101Client:
 
     def create_content_document(
         self,
-        *,
-        marketplace_id: str,
         body: aplus_content_v2020_11_01.PostContentDocumentRequest | Mapping[str, Any],
+        marketplace_id: str,
+        *,
         request_options: RequestOptions | None = None,
     ) -> aplus_content_v2020_11_01.PostContentDocumentResponse:
         """Creates a new A+ Content document.
@@ -94,7 +94,7 @@ class AplusContentV20201101Client:
         POST /aplus/2020-11-01/contentDocuments
         """
         params: dict[str, Any] = {"marketplaceId": marketplace_id}
-        return self._client.request(
+        return self._http.request(
             "POST",
             "/aplus/2020-11-01/contentDocuments",
             operation="createContentDocument",
@@ -109,10 +109,10 @@ class AplusContentV20201101Client:
 
     def get_content_document(
         self,
-        *,
         content_reference_key: str,
         marketplace_id: str,
         included_data_set: list[aplus_content_v2020_11_01.AplusContentV20201101IncludedDataSet],
+        *,
         request_options: RequestOptions | None = None,
     ) -> aplus_content_v2020_11_01.GetContentDocumentResponse:
         """Returns an A+ Content document, if available.
@@ -128,7 +128,7 @@ class AplusContentV20201101Client:
         GET /aplus/2020-11-01/contentDocuments/{contentReferenceKey}
         """
         params: dict[str, Any] = {"marketplaceId": marketplace_id, "includedDataSet": joined(included_data_set, ",")}
-        return self._client.request(
+        return self._http.request(
             "GET",
             f"/aplus/2020-11-01/contentDocuments/{path_segment(content_reference_key)}",
             operation="getContentDocument",
@@ -142,10 +142,10 @@ class AplusContentV20201101Client:
 
     def update_content_document(
         self,
-        *,
         content_reference_key: str,
-        marketplace_id: str,
         body: aplus_content_v2020_11_01.PostContentDocumentRequest | Mapping[str, Any],
+        marketplace_id: str,
+        *,
         request_options: RequestOptions | None = None,
     ) -> aplus_content_v2020_11_01.PostContentDocumentResponse:
         """Updates an existing A+ Content document.
@@ -161,7 +161,7 @@ class AplusContentV20201101Client:
         POST /aplus/2020-11-01/contentDocuments/{contentReferenceKey}
         """
         params: dict[str, Any] = {"marketplaceId": marketplace_id}
-        return self._client.request(
+        return self._http.request(
             "POST",
             f"/aplus/2020-11-01/contentDocuments/{path_segment(content_reference_key)}",
             operation="updateContentDocument",
@@ -176,9 +176,9 @@ class AplusContentV20201101Client:
 
     def list_content_document_asins(
         self,
-        *,
         content_reference_key: str,
         marketplace_id: str,
+        *,
         included_data_set: list[Literal["METADATA"]] | None = None,
         asin_set: list[str] | None = None,
         page_token: str | None = None,
@@ -202,7 +202,7 @@ class AplusContentV20201101Client:
             "asinSet": joined(asin_set, ","),
             "pageToken": page_token,
         }
-        return self._client.request(
+        return self._http.request(
             "GET",
             f"/aplus/2020-11-01/contentDocuments/{path_segment(content_reference_key)}/asins",
             operation="listContentDocumentAsinRelations",
@@ -216,9 +216,9 @@ class AplusContentV20201101Client:
 
     def iter_list_content_document_asins(
         self,
-        *,
         content_reference_key: str,
         marketplace_id: str,
+        *,
         included_data_set: list[Literal["METADATA"]] | None = None,
         asin_set: list[str] | None = None,
         page_token: str | None = None,
@@ -244,10 +244,10 @@ class AplusContentV20201101Client:
 
     def create_content_document_asin(
         self,
-        *,
         content_reference_key: str,
-        marketplace_id: str,
         body: aplus_content_v2020_11_01.PostContentDocumentAsinRelationsRequest | Mapping[str, Any],
+        marketplace_id: str,
+        *,
         request_options: RequestOptions | None = None,
     ) -> aplus_content_v2020_11_01.PostContentDocumentAsinRelationsResponse:
         """Replaces all ASINs related to the specified A+ Content document, if available. This operation can add or remove ASINs, depending on the current set of related ASINs. Removing an ASIN will suspend the content document from that ASIN.
@@ -263,7 +263,7 @@ class AplusContentV20201101Client:
         POST /aplus/2020-11-01/contentDocuments/{contentReferenceKey}/asins
         """
         params: dict[str, Any] = {"marketplaceId": marketplace_id}
-        return self._client.request(
+        return self._http.request(
             "POST",
             f"/aplus/2020-11-01/contentDocuments/{path_segment(content_reference_key)}/asins",
             operation="postContentDocumentAsinRelations",
@@ -278,9 +278,9 @@ class AplusContentV20201101Client:
 
     def create_content_asin_validation(
         self,
-        *,
-        marketplace_id: str,
         body: aplus_content_v2020_11_01.PostContentDocumentRequest | Mapping[str, Any],
+        marketplace_id: str,
+        *,
         asin_set: list[str] | None = None,
         request_options: RequestOptions | None = None,
     ) -> aplus_content_v2020_11_01.ValidateContentDocumentAsinRelationsResponse:
@@ -297,7 +297,7 @@ class AplusContentV20201101Client:
         POST /aplus/2020-11-01/contentAsinValidations
         """
         params: dict[str, Any] = {"marketplaceId": marketplace_id, "asinSet": joined(asin_set, ",")}
-        return self._client.request(
+        return self._http.request(
             "POST",
             "/aplus/2020-11-01/contentAsinValidations",
             operation="validateContentDocumentAsinRelations",
@@ -312,9 +312,9 @@ class AplusContentV20201101Client:
 
     def list_content_publish_records(
         self,
-        *,
         marketplace_id: str,
         asin: str,
+        *,
         page_token: str | None = None,
         request_options: RequestOptions | None = None,
     ) -> aplus_content_v2020_11_01.SearchContentPublishRecordsResponse:
@@ -331,7 +331,7 @@ class AplusContentV20201101Client:
         GET /aplus/2020-11-01/contentPublishRecords
         """
         params: dict[str, Any] = {"marketplaceId": marketplace_id, "asin": asin, "pageToken": page_token}
-        return self._client.request(
+        return self._http.request(
             "GET",
             "/aplus/2020-11-01/contentPublishRecords",
             operation="searchContentPublishRecords",
@@ -345,9 +345,9 @@ class AplusContentV20201101Client:
 
     def iter_list_content_publish_records(
         self,
-        *,
         marketplace_id: str,
         asin: str,
+        *,
         page_token: str | None = None,
         request_options: RequestOptions | None = None,
     ) -> Iterator[aplus_content_v2020_11_01.PublishRecord]:
@@ -364,9 +364,9 @@ class AplusContentV20201101Client:
 
     def create_content_document_approval_submission(
         self,
-        *,
         content_reference_key: str,
         marketplace_id: str,
+        *,
         request_options: RequestOptions | None = None,
     ) -> aplus_content_v2020_11_01.PostContentDocumentApprovalSubmissionResponse:
         """Submits an A+ Content document for review, approval, and publishing.
@@ -382,7 +382,7 @@ class AplusContentV20201101Client:
         POST /aplus/2020-11-01/contentDocuments/{contentReferenceKey}/approvalSubmissions
         """
         params: dict[str, Any] = {"marketplaceId": marketplace_id}
-        return self._client.request(
+        return self._http.request(
             "POST",
             f"/aplus/2020-11-01/contentDocuments/{path_segment(content_reference_key)}/approvalSubmissions",
             operation="postContentDocumentApprovalSubmission",
@@ -396,9 +396,9 @@ class AplusContentV20201101Client:
 
     def create_content_document_suspend_submission(
         self,
-        *,
         content_reference_key: str,
         marketplace_id: str,
+        *,
         request_options: RequestOptions | None = None,
     ) -> aplus_content_v2020_11_01.PostContentDocumentSuspendSubmissionResponse:
         """Submits a request to suspend visible A+ Content. This doesn't delete the content document or the ASIN relations.
@@ -414,7 +414,7 @@ class AplusContentV20201101Client:
         POST /aplus/2020-11-01/contentDocuments/{contentReferenceKey}/suspendSubmissions
         """
         params: dict[str, Any] = {"marketplaceId": marketplace_id}
-        return self._client.request(
+        return self._http.request(
             "POST",
             f"/aplus/2020-11-01/contentDocuments/{path_segment(content_reference_key)}/suspendSubmissions",
             operation="postContentDocumentSuspendSubmission",
@@ -427,18 +427,18 @@ class AplusContentV20201101Client:
         )
 
 
-class AsyncAplusContentV20201101Client:
+class AsyncAplusContentV20201101Resource:
     """Asynchronous ``AplusContentV20201101`` resource."""
 
-    __slots__ = ("_client",)
+    __slots__ = ("_http",)
 
-    def __init__(self, client: AsyncHttpClient) -> None:
-        self._client = client
+    def __init__(self, http: AsyncHttpClient) -> None:
+        self._http = http
 
     async def list_content_documents(
         self,
-        *,
         marketplace_id: str,
+        *,
         page_token: str | None = None,
         request_options: RequestOptions | None = None,
     ) -> aplus_content_v2020_11_01.SearchContentDocumentsResponse:
@@ -455,7 +455,7 @@ class AsyncAplusContentV20201101Client:
         GET /aplus/2020-11-01/contentDocuments
         """
         params: dict[str, Any] = {"marketplaceId": marketplace_id, "pageToken": page_token}
-        return await self._client.request(
+        return await self._http.request(
             "GET",
             "/aplus/2020-11-01/contentDocuments",
             operation="searchContentDocuments",
@@ -469,8 +469,8 @@ class AsyncAplusContentV20201101Client:
 
     def iter_list_content_documents(
         self,
-        *,
         marketplace_id: str,
+        *,
         page_token: str | None = None,
         request_options: RequestOptions | None = None,
     ) -> AsyncIterator[aplus_content_v2020_11_01.ContentMetadataRecord]:
@@ -487,9 +487,9 @@ class AsyncAplusContentV20201101Client:
 
     async def create_content_document(
         self,
-        *,
-        marketplace_id: str,
         body: aplus_content_v2020_11_01.PostContentDocumentRequest | Mapping[str, Any],
+        marketplace_id: str,
+        *,
         request_options: RequestOptions | None = None,
     ) -> aplus_content_v2020_11_01.PostContentDocumentResponse:
         """Creates a new A+ Content document.
@@ -505,7 +505,7 @@ class AsyncAplusContentV20201101Client:
         POST /aplus/2020-11-01/contentDocuments
         """
         params: dict[str, Any] = {"marketplaceId": marketplace_id}
-        return await self._client.request(
+        return await self._http.request(
             "POST",
             "/aplus/2020-11-01/contentDocuments",
             operation="createContentDocument",
@@ -520,10 +520,10 @@ class AsyncAplusContentV20201101Client:
 
     async def get_content_document(
         self,
-        *,
         content_reference_key: str,
         marketplace_id: str,
         included_data_set: list[aplus_content_v2020_11_01.AplusContentV20201101IncludedDataSet],
+        *,
         request_options: RequestOptions | None = None,
     ) -> aplus_content_v2020_11_01.GetContentDocumentResponse:
         """Returns an A+ Content document, if available.
@@ -539,7 +539,7 @@ class AsyncAplusContentV20201101Client:
         GET /aplus/2020-11-01/contentDocuments/{contentReferenceKey}
         """
         params: dict[str, Any] = {"marketplaceId": marketplace_id, "includedDataSet": joined(included_data_set, ",")}
-        return await self._client.request(
+        return await self._http.request(
             "GET",
             f"/aplus/2020-11-01/contentDocuments/{path_segment(content_reference_key)}",
             operation="getContentDocument",
@@ -553,10 +553,10 @@ class AsyncAplusContentV20201101Client:
 
     async def update_content_document(
         self,
-        *,
         content_reference_key: str,
-        marketplace_id: str,
         body: aplus_content_v2020_11_01.PostContentDocumentRequest | Mapping[str, Any],
+        marketplace_id: str,
+        *,
         request_options: RequestOptions | None = None,
     ) -> aplus_content_v2020_11_01.PostContentDocumentResponse:
         """Updates an existing A+ Content document.
@@ -572,7 +572,7 @@ class AsyncAplusContentV20201101Client:
         POST /aplus/2020-11-01/contentDocuments/{contentReferenceKey}
         """
         params: dict[str, Any] = {"marketplaceId": marketplace_id}
-        return await self._client.request(
+        return await self._http.request(
             "POST",
             f"/aplus/2020-11-01/contentDocuments/{path_segment(content_reference_key)}",
             operation="updateContentDocument",
@@ -587,9 +587,9 @@ class AsyncAplusContentV20201101Client:
 
     async def list_content_document_asins(
         self,
-        *,
         content_reference_key: str,
         marketplace_id: str,
+        *,
         included_data_set: list[Literal["METADATA"]] | None = None,
         asin_set: list[str] | None = None,
         page_token: str | None = None,
@@ -613,7 +613,7 @@ class AsyncAplusContentV20201101Client:
             "asinSet": joined(asin_set, ","),
             "pageToken": page_token,
         }
-        return await self._client.request(
+        return await self._http.request(
             "GET",
             f"/aplus/2020-11-01/contentDocuments/{path_segment(content_reference_key)}/asins",
             operation="listContentDocumentAsinRelations",
@@ -627,9 +627,9 @@ class AsyncAplusContentV20201101Client:
 
     def iter_list_content_document_asins(
         self,
-        *,
         content_reference_key: str,
         marketplace_id: str,
+        *,
         included_data_set: list[Literal["METADATA"]] | None = None,
         asin_set: list[str] | None = None,
         page_token: str | None = None,
@@ -655,10 +655,10 @@ class AsyncAplusContentV20201101Client:
 
     async def create_content_document_asin(
         self,
-        *,
         content_reference_key: str,
-        marketplace_id: str,
         body: aplus_content_v2020_11_01.PostContentDocumentAsinRelationsRequest | Mapping[str, Any],
+        marketplace_id: str,
+        *,
         request_options: RequestOptions | None = None,
     ) -> aplus_content_v2020_11_01.PostContentDocumentAsinRelationsResponse:
         """Replaces all ASINs related to the specified A+ Content document, if available. This operation can add or remove ASINs, depending on the current set of related ASINs. Removing an ASIN will suspend the content document from that ASIN.
@@ -674,7 +674,7 @@ class AsyncAplusContentV20201101Client:
         POST /aplus/2020-11-01/contentDocuments/{contentReferenceKey}/asins
         """
         params: dict[str, Any] = {"marketplaceId": marketplace_id}
-        return await self._client.request(
+        return await self._http.request(
             "POST",
             f"/aplus/2020-11-01/contentDocuments/{path_segment(content_reference_key)}/asins",
             operation="postContentDocumentAsinRelations",
@@ -689,9 +689,9 @@ class AsyncAplusContentV20201101Client:
 
     async def create_content_asin_validation(
         self,
-        *,
-        marketplace_id: str,
         body: aplus_content_v2020_11_01.PostContentDocumentRequest | Mapping[str, Any],
+        marketplace_id: str,
+        *,
         asin_set: list[str] | None = None,
         request_options: RequestOptions | None = None,
     ) -> aplus_content_v2020_11_01.ValidateContentDocumentAsinRelationsResponse:
@@ -708,7 +708,7 @@ class AsyncAplusContentV20201101Client:
         POST /aplus/2020-11-01/contentAsinValidations
         """
         params: dict[str, Any] = {"marketplaceId": marketplace_id, "asinSet": joined(asin_set, ",")}
-        return await self._client.request(
+        return await self._http.request(
             "POST",
             "/aplus/2020-11-01/contentAsinValidations",
             operation="validateContentDocumentAsinRelations",
@@ -723,9 +723,9 @@ class AsyncAplusContentV20201101Client:
 
     async def list_content_publish_records(
         self,
-        *,
         marketplace_id: str,
         asin: str,
+        *,
         page_token: str | None = None,
         request_options: RequestOptions | None = None,
     ) -> aplus_content_v2020_11_01.SearchContentPublishRecordsResponse:
@@ -742,7 +742,7 @@ class AsyncAplusContentV20201101Client:
         GET /aplus/2020-11-01/contentPublishRecords
         """
         params: dict[str, Any] = {"marketplaceId": marketplace_id, "asin": asin, "pageToken": page_token}
-        return await self._client.request(
+        return await self._http.request(
             "GET",
             "/aplus/2020-11-01/contentPublishRecords",
             operation="searchContentPublishRecords",
@@ -756,9 +756,9 @@ class AsyncAplusContentV20201101Client:
 
     def iter_list_content_publish_records(
         self,
-        *,
         marketplace_id: str,
         asin: str,
+        *,
         page_token: str | None = None,
         request_options: RequestOptions | None = None,
     ) -> AsyncIterator[aplus_content_v2020_11_01.PublishRecord]:
@@ -775,9 +775,9 @@ class AsyncAplusContentV20201101Client:
 
     async def create_content_document_approval_submission(
         self,
-        *,
         content_reference_key: str,
         marketplace_id: str,
+        *,
         request_options: RequestOptions | None = None,
     ) -> aplus_content_v2020_11_01.PostContentDocumentApprovalSubmissionResponse:
         """Submits an A+ Content document for review, approval, and publishing.
@@ -793,7 +793,7 @@ class AsyncAplusContentV20201101Client:
         POST /aplus/2020-11-01/contentDocuments/{contentReferenceKey}/approvalSubmissions
         """
         params: dict[str, Any] = {"marketplaceId": marketplace_id}
-        return await self._client.request(
+        return await self._http.request(
             "POST",
             f"/aplus/2020-11-01/contentDocuments/{path_segment(content_reference_key)}/approvalSubmissions",
             operation="postContentDocumentApprovalSubmission",
@@ -807,9 +807,9 @@ class AsyncAplusContentV20201101Client:
 
     async def create_content_document_suspend_submission(
         self,
-        *,
         content_reference_key: str,
         marketplace_id: str,
+        *,
         request_options: RequestOptions | None = None,
     ) -> aplus_content_v2020_11_01.PostContentDocumentSuspendSubmissionResponse:
         """Submits a request to suspend visible A+ Content. This doesn't delete the content document or the ASIN relations.
@@ -825,7 +825,7 @@ class AsyncAplusContentV20201101Client:
         POST /aplus/2020-11-01/contentDocuments/{contentReferenceKey}/suspendSubmissions
         """
         params: dict[str, Any] = {"marketplaceId": marketplace_id}
-        return await self._client.request(
+        return await self._http.request(
             "POST",
             f"/aplus/2020-11-01/contentDocuments/{path_segment(content_reference_key)}/suspendSubmissions",
             operation="postContentDocumentSuspendSubmission",
@@ -838,4 +838,4 @@ class AsyncAplusContentV20201101Client:
         )
 
 
-__all__ = ["AsyncAplusContentV20201101Client", "AplusContentV20201101Client"]
+__all__ = ["AsyncAplusContentV20201101Resource", "AplusContentV20201101Resource"]

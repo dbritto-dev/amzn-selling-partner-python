@@ -33,7 +33,7 @@ from .rdt import GRANTLESS, RestrictedOperation, restricted_for
 from .regions import LWA_TOKEN_URL
 
 if TYPE_CHECKING:
-    from ...sdk.http_client import RequestContext
+    from ...sdk._http import RequestContext
 
 log = logging.getLogger("amzn_selling_partner.plugins.amazon.auth")
 

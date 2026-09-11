@@ -14,15 +14,21 @@ class ParkingCostType(str, Enum):
     FREE = "Free"
     OTHER = "Other"
 
+    __str__ = str.__str__
+
 
 class ParkingSpotIdentificationType(str, Enum):
     NUMBERED = "Numbered"
     OTHER = "Other"
 
+    __str__ = str.__str__
+
 
 class SupplySourceStatus(str, Enum):
     ACTIVE = "Active"
     INACTIVE = "Inactive"
+
+    __str__ = str.__str__
 
 
 class SupplySourceStatusReadOnly(str, Enum):
@@ -30,15 +36,21 @@ class SupplySourceStatusReadOnly(str, Enum):
     INACTIVE = "Inactive"
     ARCHIVED = "Archived"
 
+    __str__ = str.__str__
+
 
 class ThroughputUnit(str, Enum):
     ORDER = "Order"
+
+    __str__ = str.__str__
 
 
 class TimeUnit(str, Enum):
     HOURS = "Hours"
     MINUTES = "Minutes"
     DAYS = "Days"
+
+    __str__ = str.__str__
 
 
 __all__ = [

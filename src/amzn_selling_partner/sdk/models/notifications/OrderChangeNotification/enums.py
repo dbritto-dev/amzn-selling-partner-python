@@ -14,11 +14,15 @@ class OrderChangeNotificationPayloadOrderChangeNotificationNotificationLevel(str
     ORDER_ITEM_LEVEL = "OrderItemLevel"
     ORDER_LEVEL = "OrderLevel"
 
+    __str__ = str.__str__
+
 
 class OrderChangeNotificationPayloadOrderChangeNotificationOrderChangeType(str, Enum):
     BUYER_REQUESTED_CHANGE = "BuyerRequestedChange"
     DELIVERY_TIP_CHANGE = "DeliveryTipChange"
     ORDER_STATUS_CHANGE = "OrderStatusChange"
+
+    __str__ = str.__str__
 
 
 class OrderChangeNotificationPayloadOrderChangeNotificationSummaryEasyShipShipmentStatus(str, Enum):
@@ -39,6 +43,8 @@ class OrderChangeNotificationPayloadOrderChangeNotificationSummaryEasyShipShipme
     OUT_FOR_DELIVERY = "OutForDelivery"
     DAMAGED = "Damaged"
 
+    __str__ = str.__str__
+
 
 class OrderChangeNotificationPayloadOrderChangeNotificationSummaryElectronicInvoiceStatus(str, Enum):
     NOT_REQUIRED = "NotRequired"
@@ -47,15 +53,21 @@ class OrderChangeNotificationPayloadOrderChangeNotificationSummaryElectronicInvo
     ERRORED = "Errored"
     ACCEPTED = "Accepted"
 
+    __str__ = str.__str__
+
 
 class OrderChangeNotificationPayloadOrderChangeNotificationSummaryFulfillmentType(str, Enum):
     AFN = "AFN"
     MFN = "MFN"
 
+    __str__ = str.__str__
+
 
 class OrderChangeNotificationPayloadOrderChangeNotificationSummaryOrderItemsItemOrderItemStatus(str, Enum):
     UNSHIPPED = "Unshipped"
     SHIPPED = "Shipped"
+
+    __str__ = str.__str__
 
 
 class OrderChangeNotificationPayloadOrderChangeNotificationSummaryOrderPrograms(str, Enum):
@@ -64,6 +76,8 @@ class OrderChangeNotificationPayloadOrderChangeNotificationSummaryOrderPrograms(
     PREMIUM = "Premium"
     IBA = "IBA"
     REPLACEMENT = "Replacement"
+
+    __str__ = str.__str__
 
 
 class OrderChangeNotificationPayloadOrderChangeNotificationSummaryOrderStatus(str, Enum):
@@ -76,6 +90,8 @@ class OrderChangeNotificationPayloadOrderChangeNotificationSummaryOrderStatus(st
     INVOICE_UNCONFIRMED = "InvoiceUnconfirmed"
     PENDING_AVAILABILITY = "PendingAvailability"
 
+    __str__ = str.__str__
+
 
 class OrderChangeNotificationPayloadOrderChangeNotificationSummaryOrderType(str, Enum):
     STANDARD_ORDER = "StandardOrder"
@@ -83,6 +99,8 @@ class OrderChangeNotificationPayloadOrderChangeNotificationSummaryOrderType(str,
     PREORDER = "Preorder"
     BACK_ORDER = "BackOrder"
     SOURCING_ON_DEMAND_ORDER = "SourcingOnDemandOrder"
+
+    __str__ = str.__str__
 
 
 class OrderChangeNotificationPayloadOrderChangeNotificationSummaryShippingPrograms(str, Enum):
@@ -92,6 +110,8 @@ class OrderChangeNotificationPayloadOrderChangeNotificationSummaryShippingProgra
     ACCESS_POINT = "AccessPoint"
     TFM = "TFM"
     EASY_SHIP = "EasyShip"
+
+    __str__ = str.__str__
 
 
 __all__ = [

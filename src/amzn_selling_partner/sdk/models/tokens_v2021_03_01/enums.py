@@ -16,6 +16,8 @@ class RestrictedResourceMethod(str, Enum):
     POST = "POST"
     DELETE = "DELETE"
 
+    __str__ = str.__str__
+
 
 __all__ = [
     "RestrictedResourceMethod",

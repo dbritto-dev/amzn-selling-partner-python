@@ -15,11 +15,15 @@ class CarrierWillPickUpOption(str, Enum):
     SHIPPER_WILL_DROP_OFF = "ShipperWillDropOff"
     NO_PREFERENCE = "NoPreference"
 
+    __str__ = str.__str__
+
 
 class DangerousGoodsDetailsPackingGroup(str, Enum):
     I_ = "I"
     II = "II"
     III = "III"
+
+    __str__ = str.__str__
 
 
 class DangerousGoodsDetailsPackingInstruction(str, Enum):
@@ -37,6 +41,8 @@ class DangerousGoodsDetailsPackingInstruction(str, Enum):
     PI970_SECTION_I = "PI970_SECTION_I"
     PI970_SECTION_II = "PI970_SECTION_II"
 
+    __str__ = str.__str__
+
 
 class DeliveryExperienceOption(str, Enum):
     DELIVERY_CONFIRMATION_WITH_ADULT_SIGNATURE = "DeliveryConfirmationWithAdultSignature"
@@ -45,6 +51,8 @@ class DeliveryExperienceOption(str, Enum):
     NO_TRACKING = "NoTracking"
     NO_PREFERENCE = "NoPreference"
 
+    __str__ = str.__str__
+
 
 class DeliveryExperienceType(str, Enum):
     DELIVERY_CONFIRMATION_WITH_ADULT_SIGNATURE = "DeliveryConfirmationWithAdultSignature"
@@ -52,21 +60,29 @@ class DeliveryExperienceType(str, Enum):
     DELIVERY_CONFIRMATION_WITHOUT_SIGNATURE = "DeliveryConfirmationWithoutSignature"
     NO_TRACKING = "NoTracking"
 
+    __str__ = str.__str__
+
 
 class FileType(str, Enum):
     APPLICATION_PDF = "application/pdf"
     APPLICATION_ZPL = "application/zpl"
     IMAGE_PNG = "image/png"
 
+    __str__ = str.__str__
+
 
 class HazmatType(str, Enum):
     NONE = "None"
     LQ_HAZMAT = "LQHazmat"
 
+    __str__ = str.__str__
+
 
 class InputTargetType(str, Enum):
     SHIPMENT_LEVEL = "SHIPMENT_LEVEL"
     ITEM_LEVEL = "ITEM_LEVEL"
+
+    __str__ = str.__str__
 
 
 class LabelFormat(str, Enum):
@@ -75,6 +91,8 @@ class LabelFormat(str, Enum):
     ZPL203 = "ZPL203"
     ZPL300 = "ZPL300"
     SHIPPING_SERVICE_DEFAULT = "ShippingServiceDefault"
+
+    __str__ = str.__str__
 
 
 class LiquidVolumeUnit(str, Enum):
@@ -85,6 +103,8 @@ class LiquidVolumeUnit(str, Enum):
     PT = "PT"
     QT = "QT"
     C = "C"
+
+    __str__ = str.__str__
 
 
 class PredefinedPackageDimensions(str, Enum):
@@ -139,13 +159,19 @@ class PredefinedPackageDimensions(str, Enum):
     USPS_SMALL_FLAT_RATE_BOX = "USPS_SmallFlatRateBox"
     USPS_SMALL_FLAT_RATE_ENVELOPE = "USPS_SmallFlatRateEnvelope"
 
+    __str__ = str.__str__
+
 
 class RateItemID(str, Enum):
     FBM_SHIP_PLUS_CREDIT = "FBM_SHIP_PLUS_CREDIT"
 
+    __str__ = str.__str__
+
 
 class RateItemType(str, Enum):
     INCLUDED = "INCLUDED"
+
+    __str__ = str.__str__
 
 
 class ShipmentStatus(str, Enum):
@@ -154,19 +180,27 @@ class ShipmentStatus(str, Enum):
     REFUND_REJECTED = "RefundRejected"
     REFUND_APPLIED = "RefundApplied"
 
+    __str__ = str.__str__
+
 
 class StandardIdForLabel(str, Enum):
     AMAZON_ORDER_ID = "AmazonOrderId"
+
+    __str__ = str.__str__
 
 
 class UnitOfLength(str, Enum):
     INCHES = "inches"
     CENTIMETERS = "centimeters"
 
+    __str__ = str.__str__
+
 
 class UnitOfWeight(str, Enum):
     OZ = "oz"
     G = "g"
+
+    __str__ = str.__str__
 
 
 __all__ = [

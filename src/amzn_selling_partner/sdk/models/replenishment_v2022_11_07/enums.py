@@ -17,10 +17,14 @@ class AggregationFrequency(str, Enum):
     QUARTER = "QUARTER"
     YEAR = "YEAR"
 
+    __str__ = str.__str__
+
 
 class AutoEnrollmentPreference(str, Enum):
     OPTED_IN = "OPTED_IN"
     OPTED_OUT = "OPTED_OUT"
+
+    __str__ = str.__str__
 
 
 class DeliveriesConditionCondition(str, Enum):
@@ -30,6 +34,8 @@ class DeliveriesConditionCondition(str, Enum):
     NEXT_30_DAYS_DELIVERIES_AT_LOW_INVENTORY_RISK = "NEXT_30_DAYS_DELIVERIES_AT_LOW_INVENTORY_RISK"
     NO_ISSUES_FOR_NEXT_30_DAYS_DELIVERIES = "NO_ISSUES_FOR_NEXT_30_DAYS_DELIVERIES"
 
+    __str__ = str.__str__
+
 
 class EligibilityStatus(str, Enum):
     ELIGIBLE = "ELIGIBLE"
@@ -37,15 +43,21 @@ class EligibilityStatus(str, Enum):
     SUSPENDED = "SUSPENDED"
     REPLENISHMENT_ONLY_ORDERING = "REPLENISHMENT_ONLY_ORDERING"
 
+    __str__ = str.__str__
+
 
 class EnrollmentMethod(str, Enum):
     MANUAL = "MANUAL"
     AUTOMATIC = "AUTOMATIC"
 
+    __str__ = str.__str__
+
 
 class FulfillmentChannelType(str, Enum):
     AMAZON = "AMAZON"
     MERCHANT = "MERCHANT"
+
+    __str__ = str.__str__
 
 
 class ListOfferMetricsSortKey(str, Enum):
@@ -59,6 +71,8 @@ class ListOfferMetricsSortKey(str, Enum):
     NEXT_60_DAYS_TOTAL_SUBSCRIPTIONS_REVENUE = "NEXT_60DAYS_TOTAL_SUBSCRIPTIONS_REVENUE"
     NEXT_30_DAYS_TOTAL_SUBSCRIPTIONS_REVENUE = "NEXT_30DAYS_TOTAL_SUBSCRIPTIONS_REVENUE"
 
+    __str__ = str.__str__
+
 
 class ListOffersRequestFiltersDeliveriesConditions(str, Enum):
     NEXT_30_DAYS_DELIVERIES_PAUSED_PRICING = "NEXT_30_DAYS_DELIVERIES_PAUSED_PRICING"
@@ -66,6 +80,8 @@ class ListOffersRequestFiltersDeliveriesConditions(str, Enum):
     NEXT_30_DAYS_DELIVERIES_AT_LOW_INVENTORY_RISK_ONLY = "NEXT_30_DAYS_DELIVERIES_AT_LOW_INVENTORY_RISK_ONLY"
     NEXT_30_DAYS_DELIVERIES_AT_LOW_INVENTORY_RISK = "NEXT_30_DAYS_DELIVERIES_AT_LOW_INVENTORY_RISK"
     NO_ISSUES_FOR_NEXT_30_DAYS_DELIVERIES = "NO_ISSUES_FOR_NEXT_30_DAYS_DELIVERIES"
+
+    __str__ = str.__str__
 
 
 class ListOffersSortKey(str, Enum):
@@ -78,6 +94,8 @@ class ListOffersSortKey(str, Enum):
     PRICE = "PRICE"
     SUBSCRIPTION_COUNT = "SUBSCRIPTION_COUNT"
     FULFILLMENT_NETWORK_ID_TYPE = "FULFILLMENT_NETWORK_ID_TYPE"
+
+    __str__ = str.__str__
 
 
 class Metric(str, Enum):
@@ -97,19 +115,27 @@ class Metric(str, Enum):
     SIGNUP_CONVERSION_BY_SELLER_FUNDING = "SIGNUP_CONVERSION_BY_SELLER_FUNDING"
     REVENUE_PENETRATION = "REVENUE_PENETRATION"
 
+    __str__ = str.__str__
+
 
 class ProgramType(str, Enum):
     SUBSCRIBE_AND_SAVE = "SUBSCRIBE_AND_SAVE"
+
+    __str__ = str.__str__
 
 
 class SortOrder(str, Enum):
     ASC = "ASC"
     DESC = "DESC"
 
+    __str__ = str.__str__
+
 
 class TimePeriodType(str, Enum):
     PERFORMANCE = "PERFORMANCE"
     FORECAST = "FORECAST"
+
+    __str__ = str.__str__
 
 
 __all__ = [

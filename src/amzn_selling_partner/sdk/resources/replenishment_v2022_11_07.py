@@ -10,24 +10,24 @@ from __future__ import annotations
 from collections.abc import Mapping
 from typing import Any
 
-from ..http_client import AsyncHttpClient, HttpClient, RateLimit, RequestOptions
+from .._http import AsyncHttpClient, HttpClient, RateLimit, RequestOptions
 from ..models import replenishment_v2022_11_07
 
 SERVICE = "replenishment_v2022_11_07"
 
 
-class ReplenishmentV20221107Client:
+class ReplenishmentV20221107Resource:
     """Synchronous ``ReplenishmentV20221107`` resource."""
 
-    __slots__ = ("_client",)
+    __slots__ = ("_http",)
 
-    def __init__(self, client: HttpClient) -> None:
-        self._client = client
+    def __init__(self, http: HttpClient) -> None:
+        self._http = http
 
     def get_selling_partner_metrics(
         self,
-        *,
         body: replenishment_v2022_11_07.GetSellingPartnerMetricsRequest | Mapping[str, Any],
+        *,
         request_options: RequestOptions | None = None,
     ) -> replenishment_v2022_11_07.GetSellingPartnerMetricsResponse:
         """Returns aggregated replenishment program metrics for a selling partner.
@@ -42,7 +42,7 @@ class ReplenishmentV20221107Client:
 
         POST /replenishment/2022-11-07/sellingPartners/metrics/search
         """
-        return self._client.request(
+        return self._http.request(
             "POST",
             "/replenishment/2022-11-07/sellingPartners/metrics/search",
             operation="getSellingPartnerMetrics",
@@ -56,8 +56,8 @@ class ReplenishmentV20221107Client:
 
     def list_offer_metrics(
         self,
-        *,
         body: replenishment_v2022_11_07.ListOfferMetricsRequest | Mapping[str, Any],
+        *,
         request_options: RequestOptions | None = None,
     ) -> replenishment_v2022_11_07.ListOfferMetricsResponse:
         """Returns aggregated replenishment program metrics for a selling partner's offers.
@@ -72,7 +72,7 @@ class ReplenishmentV20221107Client:
 
         POST /replenishment/2022-11-07/offers/metrics/search
         """
-        return self._client.request(
+        return self._http.request(
             "POST",
             "/replenishment/2022-11-07/offers/metrics/search",
             operation="listOfferMetrics",
@@ -86,8 +86,8 @@ class ReplenishmentV20221107Client:
 
     def list_offers(
         self,
-        *,
         body: replenishment_v2022_11_07.ListOffersRequest | Mapping[str, Any],
+        *,
         request_options: RequestOptions | None = None,
     ) -> replenishment_v2022_11_07.ListOffersResponse:
         """Returns the details of a selling partner's replenishment program offers.
@@ -102,7 +102,7 @@ class ReplenishmentV20221107Client:
 
         POST /replenishment/2022-11-07/offers/search
         """
-        return self._client.request(
+        return self._http.request(
             "POST",
             "/replenishment/2022-11-07/offers/search",
             operation="listOffers",
@@ -115,18 +115,18 @@ class ReplenishmentV20221107Client:
         )
 
 
-class AsyncReplenishmentV20221107Client:
+class AsyncReplenishmentV20221107Resource:
     """Asynchronous ``ReplenishmentV20221107`` resource."""
 
-    __slots__ = ("_client",)
+    __slots__ = ("_http",)
 
-    def __init__(self, client: AsyncHttpClient) -> None:
-        self._client = client
+    def __init__(self, http: AsyncHttpClient) -> None:
+        self._http = http
 
     async def get_selling_partner_metrics(
         self,
-        *,
         body: replenishment_v2022_11_07.GetSellingPartnerMetricsRequest | Mapping[str, Any],
+        *,
         request_options: RequestOptions | None = None,
     ) -> replenishment_v2022_11_07.GetSellingPartnerMetricsResponse:
         """Returns aggregated replenishment program metrics for a selling partner.
@@ -141,7 +141,7 @@ class AsyncReplenishmentV20221107Client:
 
         POST /replenishment/2022-11-07/sellingPartners/metrics/search
         """
-        return await self._client.request(
+        return await self._http.request(
             "POST",
             "/replenishment/2022-11-07/sellingPartners/metrics/search",
             operation="getSellingPartnerMetrics",
@@ -155,8 +155,8 @@ class AsyncReplenishmentV20221107Client:
 
     async def list_offer_metrics(
         self,
-        *,
         body: replenishment_v2022_11_07.ListOfferMetricsRequest | Mapping[str, Any],
+        *,
         request_options: RequestOptions | None = None,
     ) -> replenishment_v2022_11_07.ListOfferMetricsResponse:
         """Returns aggregated replenishment program metrics for a selling partner's offers.
@@ -171,7 +171,7 @@ class AsyncReplenishmentV20221107Client:
 
         POST /replenishment/2022-11-07/offers/metrics/search
         """
-        return await self._client.request(
+        return await self._http.request(
             "POST",
             "/replenishment/2022-11-07/offers/metrics/search",
             operation="listOfferMetrics",
@@ -185,8 +185,8 @@ class AsyncReplenishmentV20221107Client:
 
     async def list_offers(
         self,
-        *,
         body: replenishment_v2022_11_07.ListOffersRequest | Mapping[str, Any],
+        *,
         request_options: RequestOptions | None = None,
     ) -> replenishment_v2022_11_07.ListOffersResponse:
         """Returns the details of a selling partner's replenishment program offers.
@@ -201,7 +201,7 @@ class AsyncReplenishmentV20221107Client:
 
         POST /replenishment/2022-11-07/offers/search
         """
-        return await self._client.request(
+        return await self._http.request(
             "POST",
             "/replenishment/2022-11-07/offers/search",
             operation="listOffers",
@@ -214,4 +214,4 @@ class AsyncReplenishmentV20221107Client:
         )
 
 
-__all__ = ["AsyncReplenishmentV20221107Client", "ReplenishmentV20221107Client"]
+__all__ = ["AsyncReplenishmentV20221107Resource", "ReplenishmentV20221107Resource"]

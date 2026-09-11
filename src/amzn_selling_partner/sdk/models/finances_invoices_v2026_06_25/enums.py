@@ -18,10 +18,14 @@ class InvoiceHeaderInvoiceStatus(str, Enum):
     PAID = "PAID"
     DEDUCTED = "DEDUCTED"
 
+    __str__ = str.__str__
+
 
 class InvoiceHeaderInvoiceType(str, Enum):
     AP_INVENTORY = "AP_INVENTORY"
     OTHER = "OTHER"
+
+    __str__ = str.__str__
 
 
 class ItemIdentifierItemIdentifierName(str, Enum):
@@ -32,11 +36,15 @@ class ItemIdentifierItemIdentifierName(str, Enum):
     EAN = "EAN"
     ISBN = "ISBN"
 
+    __str__ = str.__str__
+
 
 class LineItemContextLineItemType(str, Enum):
     GOODS = "GOODS"
     SERVICES = "SERVICES"
     OTHERS = "OTHERS"
+
+    __str__ = str.__str__
 
 
 class LineItemContextServiceChargeType(str, Enum):
@@ -45,11 +53,15 @@ class LineItemContextServiceChargeType(str, Enum):
     FBA_INVENTORY_STORAGE_FEE = "FBA_INVENTORY_STORAGE_FEE"
     OTHER = "OTHER"
 
+    __str__ = str.__str__
+
 
 class PartnerMetadataPartnerType(str, Enum):
     SELLER = "SELLER"
     VENDOR = "VENDOR"
     AMAZON = "AMAZON"
+
+    __str__ = str.__str__
 
 
 class RelatedIdentifierRelatedIdentifierName(str, Enum):
@@ -64,11 +76,15 @@ class RelatedIdentifierRelatedIdentifierName(str, Enum):
     UNIQUE_PAYMENT_IDS = "UNIQUE_PAYMENT_IDS"
     WAREHOUSE_ID = "WAREHOUSE_ID"
 
+    __str__ = str.__str__
+
 
 class VarianceReasonVarianceType(str, Enum):
     PQV = "PQV"
     PPV = "PPV"
     OTHER = "OTHER"
+
+    __str__ = str.__str__
 
 
 __all__ = [

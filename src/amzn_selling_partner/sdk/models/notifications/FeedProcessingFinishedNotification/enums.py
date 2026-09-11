@@ -15,6 +15,8 @@ class FeedProcessingFinishedNotificationPayloadFeedProcessingFinishedNotificatio
     DONE = "DONE"
     FATAL = "FATAL"
 
+    __str__ = str.__str__
+
 
 __all__ = [
     "FeedProcessingFinishedNotificationPayloadFeedProcessingFinishedNotificationProcessingStatus",

@@ -14,6 +14,8 @@ class FulfillmentType(str, Enum):
     AFN = "AFN"
     MFN = "MFN"
 
+    __str__ = str.__str__
+
 
 __all__ = [
     "FulfillmentType",

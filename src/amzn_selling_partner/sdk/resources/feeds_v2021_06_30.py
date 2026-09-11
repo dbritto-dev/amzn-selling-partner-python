@@ -11,19 +11,19 @@ import datetime
 from collections.abc import AsyncIterator, Iterator, Mapping
 from typing import Any
 
-from ..http_client import AsyncHttpClient, HttpClient, RateLimit, RequestOptions, apaginate, joined, paginate, path_segment
+from .._http import AsyncHttpClient, HttpClient, RateLimit, RequestOptions, apaginate, joined, paginate, path_segment
 from ..models import feeds_v2021_06_30
 
 SERVICE = "feeds_v2021_06_30"
 
 
-class FeedsV20210630Client:
+class FeedsV20210630Resource:
     """Synchronous ``FeedsV20210630`` resource."""
 
-    __slots__ = ("_client",)
+    __slots__ = ("_http",)
 
-    def __init__(self, client: HttpClient) -> None:
-        self._client = client
+    def __init__(self, http: HttpClient) -> None:
+        self._http = http
 
     def list_feeds(
         self,
@@ -58,7 +58,7 @@ class FeedsV20210630Client:
             "createdUntil": created_until,
             "nextToken": next_token,
         }
-        return self._client.request(
+        return self._http.request(
             "GET",
             "/feeds/2021-06-30/feeds",
             operation="getFeeds",
@@ -105,8 +105,8 @@ class FeedsV20210630Client:
 
     def create_feed(
         self,
-        *,
         body: feeds_v2021_06_30.CreateFeedSpecification | Mapping[str, Any],
+        *,
         request_options: RequestOptions | None = None,
     ) -> feeds_v2021_06_30.CreateFeedResponse:
         """Creates a feed. Upload the contents of the feed document before calling this operation.
@@ -123,7 +123,7 @@ class FeedsV20210630Client:
 
         POST /feeds/2021-06-30/feeds
         """
-        return self._client.request(
+        return self._http.request(
             "POST",
             "/feeds/2021-06-30/feeds",
             operation="createFeed",
@@ -137,8 +137,8 @@ class FeedsV20210630Client:
 
     def get_feed(
         self,
-        *,
         feed_id: str,
+        *,
         request_options: RequestOptions | None = None,
     ) -> feeds_v2021_06_30.Feed:
         """Returns feed details (including the `resultDocumentId`, if available) for the feed that you specify.
@@ -153,7 +153,7 @@ class FeedsV20210630Client:
 
         GET /feeds/2021-06-30/feeds/{feedId}
         """
-        return self._client.request(
+        return self._http.request(
             "GET",
             f"/feeds/2021-06-30/feeds/{path_segment(feed_id)}",
             operation="getFeed",
@@ -166,8 +166,8 @@ class FeedsV20210630Client:
 
     def delete_feed(
         self,
-        *,
         feed_id: str,
+        *,
         request_options: RequestOptions | None = None,
     ) -> None:
         """Cancels the feed that you specify. Only feeds with `processingStatus=IN_QUEUE` can be cancelled. Cancelled feeds are returned in subsequent calls to the [`getFeed`](https://developer-docs.amazon.com/sp-api/reference/getfeed) and [`getFeeds`](https://developer-docs.amazon.com/sp-api/reference/getfeeds) operations.
@@ -182,7 +182,7 @@ class FeedsV20210630Client:
 
         DELETE /feeds/2021-06-30/feeds/{feedId}
         """
-        return self._client.request(
+        return self._http.request(
             "DELETE",
             f"/feeds/2021-06-30/feeds/{path_segment(feed_id)}",
             operation="cancelFeed",
@@ -194,8 +194,8 @@ class FeedsV20210630Client:
 
     def create_document(
         self,
-        *,
         body: feeds_v2021_06_30.CreateFeedDocumentSpecification | Mapping[str, Any],
+        *,
         request_options: RequestOptions | None = None,
     ) -> feeds_v2021_06_30.CreateFeedDocumentResponse:
         """Creates a feed document for the feed type that you specify. This operation returns a presigned URL for uploading the feed document contents. It also returns a `feedDocumentId` value that you can pass in with a subsequent call to the [`createFeed`](https://developer-docs.amazon.com/sp-api/reference/createfeed) operation.
@@ -210,7 +210,7 @@ class FeedsV20210630Client:
 
         POST /feeds/2021-06-30/documents
         """
-        return self._client.request(
+        return self._http.request(
             "POST",
             "/feeds/2021-06-30/documents",
             operation="createFeedDocument",
@@ -224,8 +224,8 @@ class FeedsV20210630Client:
 
     def get_document(
         self,
-        *,
         feed_document_id: str,
+        *,
         enable_content_encoding_url_header: bool | None = None,
         request_options: RequestOptions | None = None,
     ) -> feeds_v2021_06_30.FeedDocument:
@@ -242,7 +242,7 @@ class FeedsV20210630Client:
         GET /feeds/2021-06-30/documents/{feedDocumentId}
         """
         params: dict[str, Any] = {"enableContentEncodingUrlHeader": enable_content_encoding_url_header}
-        return self._client.request(
+        return self._http.request(
             "GET",
             f"/feeds/2021-06-30/documents/{path_segment(feed_document_id)}",
             operation="getFeedDocument",
@@ -255,13 +255,13 @@ class FeedsV20210630Client:
         )
 
 
-class AsyncFeedsV20210630Client:
+class AsyncFeedsV20210630Resource:
     """Asynchronous ``FeedsV20210630`` resource."""
 
-    __slots__ = ("_client",)
+    __slots__ = ("_http",)
 
-    def __init__(self, client: AsyncHttpClient) -> None:
-        self._client = client
+    def __init__(self, http: AsyncHttpClient) -> None:
+        self._http = http
 
     async def list_feeds(
         self,
@@ -296,7 +296,7 @@ class AsyncFeedsV20210630Client:
             "createdUntil": created_until,
             "nextToken": next_token,
         }
-        return await self._client.request(
+        return await self._http.request(
             "GET",
             "/feeds/2021-06-30/feeds",
             operation="getFeeds",
@@ -343,8 +343,8 @@ class AsyncFeedsV20210630Client:
 
     async def create_feed(
         self,
-        *,
         body: feeds_v2021_06_30.CreateFeedSpecification | Mapping[str, Any],
+        *,
         request_options: RequestOptions | None = None,
     ) -> feeds_v2021_06_30.CreateFeedResponse:
         """Creates a feed. Upload the contents of the feed document before calling this operation.
@@ -361,7 +361,7 @@ class AsyncFeedsV20210630Client:
 
         POST /feeds/2021-06-30/feeds
         """
-        return await self._client.request(
+        return await self._http.request(
             "POST",
             "/feeds/2021-06-30/feeds",
             operation="createFeed",
@@ -375,8 +375,8 @@ class AsyncFeedsV20210630Client:
 
     async def get_feed(
         self,
-        *,
         feed_id: str,
+        *,
         request_options: RequestOptions | None = None,
     ) -> feeds_v2021_06_30.Feed:
         """Returns feed details (including the `resultDocumentId`, if available) for the feed that you specify.
@@ -391,7 +391,7 @@ class AsyncFeedsV20210630Client:
 
         GET /feeds/2021-06-30/feeds/{feedId}
         """
-        return await self._client.request(
+        return await self._http.request(
             "GET",
             f"/feeds/2021-06-30/feeds/{path_segment(feed_id)}",
             operation="getFeed",
@@ -404,8 +404,8 @@ class AsyncFeedsV20210630Client:
 
     async def delete_feed(
         self,
-        *,
         feed_id: str,
+        *,
         request_options: RequestOptions | None = None,
     ) -> None:
         """Cancels the feed that you specify. Only feeds with `processingStatus=IN_QUEUE` can be cancelled. Cancelled feeds are returned in subsequent calls to the [`getFeed`](https://developer-docs.amazon.com/sp-api/reference/getfeed) and [`getFeeds`](https://developer-docs.amazon.com/sp-api/reference/getfeeds) operations.
@@ -420,7 +420,7 @@ class AsyncFeedsV20210630Client:
 
         DELETE /feeds/2021-06-30/feeds/{feedId}
         """
-        return await self._client.request(
+        return await self._http.request(
             "DELETE",
             f"/feeds/2021-06-30/feeds/{path_segment(feed_id)}",
             operation="cancelFeed",
@@ -432,8 +432,8 @@ class AsyncFeedsV20210630Client:
 
     async def create_document(
         self,
-        *,
         body: feeds_v2021_06_30.CreateFeedDocumentSpecification | Mapping[str, Any],
+        *,
         request_options: RequestOptions | None = None,
     ) -> feeds_v2021_06_30.CreateFeedDocumentResponse:
         """Creates a feed document for the feed type that you specify. This operation returns a presigned URL for uploading the feed document contents. It also returns a `feedDocumentId` value that you can pass in with a subsequent call to the [`createFeed`](https://developer-docs.amazon.com/sp-api/reference/createfeed) operation.
@@ -448,7 +448,7 @@ class AsyncFeedsV20210630Client:
 
         POST /feeds/2021-06-30/documents
         """
-        return await self._client.request(
+        return await self._http.request(
             "POST",
             "/feeds/2021-06-30/documents",
             operation="createFeedDocument",
@@ -462,8 +462,8 @@ class AsyncFeedsV20210630Client:
 
     async def get_document(
         self,
-        *,
         feed_document_id: str,
+        *,
         enable_content_encoding_url_header: bool | None = None,
         request_options: RequestOptions | None = None,
     ) -> feeds_v2021_06_30.FeedDocument:
@@ -480,7 +480,7 @@ class AsyncFeedsV20210630Client:
         GET /feeds/2021-06-30/documents/{feedDocumentId}
         """
         params: dict[str, Any] = {"enableContentEncodingUrlHeader": enable_content_encoding_url_header}
-        return await self._client.request(
+        return await self._http.request(
             "GET",
             f"/feeds/2021-06-30/documents/{path_segment(feed_document_id)}",
             operation="getFeedDocument",
@@ -493,4 +493,4 @@ class AsyncFeedsV20210630Client:
         )
 
 
-__all__ = ["AsyncFeedsV20210630Client", "FeedsV20210630Client"]
+__all__ = ["AsyncFeedsV20210630Resource", "FeedsV20210630Resource"]

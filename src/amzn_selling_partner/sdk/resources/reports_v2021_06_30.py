@@ -11,19 +11,19 @@ import datetime
 from collections.abc import AsyncIterator, Iterator, Mapping
 from typing import Any
 
-from ..http_client import AsyncHttpClient, HttpClient, RateLimit, RequestOptions, apaginate, joined, paginate, path_segment
+from .._http import AsyncHttpClient, HttpClient, RateLimit, RequestOptions, apaginate, joined, paginate, path_segment
 from ..models import reports_v2021_06_30
 
 SERVICE = "reports_v2021_06_30"
 
 
-class ReportsV20210630Client:
+class ReportsV20210630Resource:
     """Synchronous ``ReportsV20210630`` resource."""
 
-    __slots__ = ("_client",)
+    __slots__ = ("_http",)
 
-    def __init__(self, client: HttpClient) -> None:
-        self._client = client
+    def __init__(self, http: HttpClient) -> None:
+        self._http = http
 
     def list_reports(
         self,
@@ -58,7 +58,7 @@ class ReportsV20210630Client:
             "createdUntil": created_until,
             "nextToken": next_token,
         }
-        return self._client.request(
+        return self._http.request(
             "GET",
             "/reports/2021-06-30/reports",
             operation="getReports",
@@ -105,8 +105,8 @@ class ReportsV20210630Client:
 
     def create_report(
         self,
-        *,
         body: reports_v2021_06_30.CreateReportSpecification | Mapping[str, Any],
+        *,
         request_options: RequestOptions | None = None,
     ) -> reports_v2021_06_30.CreateReportResponse:
         """Creates a report.
@@ -121,7 +121,7 @@ class ReportsV20210630Client:
 
         POST /reports/2021-06-30/reports
         """
-        return self._client.request(
+        return self._http.request(
             "POST",
             "/reports/2021-06-30/reports",
             operation="createReport",
@@ -135,8 +135,8 @@ class ReportsV20210630Client:
 
     def get_report(
         self,
-        *,
         report_id: str,
+        *,
         request_options: RequestOptions | None = None,
     ) -> reports_v2021_06_30.Report:
         """Returns report details (including the `reportDocumentId`, if available) for the report that you specify.
@@ -151,7 +151,7 @@ class ReportsV20210630Client:
 
         GET /reports/2021-06-30/reports/{reportId}
         """
-        return self._client.request(
+        return self._http.request(
             "GET",
             f"/reports/2021-06-30/reports/{path_segment(report_id)}",
             operation="getReport",
@@ -164,8 +164,8 @@ class ReportsV20210630Client:
 
     def delete_report(
         self,
-        *,
         report_id: str,
+        *,
         request_options: RequestOptions | None = None,
     ) -> None:
         """Cancels the report that you specify. Only reports with `processingStatus=IN_QUEUE` can be cancelled. Cancelled reports are returned in subsequent calls to the `getReport` and `getReports` operations.
@@ -180,7 +180,7 @@ class ReportsV20210630Client:
 
         DELETE /reports/2021-06-30/reports/{reportId}
         """
-        return self._client.request(
+        return self._http.request(
             "DELETE",
             f"/reports/2021-06-30/reports/{path_segment(report_id)}",
             operation="cancelReport",
@@ -192,8 +192,8 @@ class ReportsV20210630Client:
 
     def list_schedules(
         self,
-        *,
         report_types: list[str],
+        *,
         request_options: RequestOptions | None = None,
     ) -> reports_v2021_06_30.ReportScheduleList:
         """Returns report schedule details that match the filters that you specify.
@@ -209,7 +209,7 @@ class ReportsV20210630Client:
         GET /reports/2021-06-30/schedules
         """
         params: dict[str, Any] = {"reportTypes": joined(report_types, ",")}
-        return self._client.request(
+        return self._http.request(
             "GET",
             "/reports/2021-06-30/schedules",
             operation="getReportSchedules",
@@ -223,8 +223,8 @@ class ReportsV20210630Client:
 
     def create_schedule(
         self,
-        *,
         body: reports_v2021_06_30.CreateReportScheduleSpecification | Mapping[str, Any],
+        *,
         request_options: RequestOptions | None = None,
     ) -> reports_v2021_06_30.CreateReportScheduleResponse:
         """Creates a report schedule. If a report schedule with the same report type and marketplace IDs already exists, it will be cancelled and replaced with this one.
@@ -239,7 +239,7 @@ class ReportsV20210630Client:
 
         POST /reports/2021-06-30/schedules
         """
-        return self._client.request(
+        return self._http.request(
             "POST",
             "/reports/2021-06-30/schedules",
             operation="createReportSchedule",
@@ -253,8 +253,8 @@ class ReportsV20210630Client:
 
     def get_schedule(
         self,
-        *,
         report_schedule_id: str,
+        *,
         request_options: RequestOptions | None = None,
     ) -> reports_v2021_06_30.ReportSchedule:
         """Returns report schedule details for the report schedule that you specify.
@@ -269,7 +269,7 @@ class ReportsV20210630Client:
 
         GET /reports/2021-06-30/schedules/{reportScheduleId}
         """
-        return self._client.request(
+        return self._http.request(
             "GET",
             f"/reports/2021-06-30/schedules/{path_segment(report_schedule_id)}",
             operation="getReportSchedule",
@@ -282,8 +282,8 @@ class ReportsV20210630Client:
 
     def delete_schedule(
         self,
-        *,
         report_schedule_id: str,
+        *,
         request_options: RequestOptions | None = None,
     ) -> None:
         """Cancels the report schedule that you specify.
@@ -298,7 +298,7 @@ class ReportsV20210630Client:
 
         DELETE /reports/2021-06-30/schedules/{reportScheduleId}
         """
-        return self._client.request(
+        return self._http.request(
             "DELETE",
             f"/reports/2021-06-30/schedules/{path_segment(report_schedule_id)}",
             operation="cancelReportSchedule",
@@ -310,8 +310,8 @@ class ReportsV20210630Client:
 
     def get_document(
         self,
-        *,
         report_document_id: str,
+        *,
         enable_content_encoding_url_header: bool | None = None,
         request_options: RequestOptions | None = None,
     ) -> reports_v2021_06_30.ReportDocument:
@@ -328,7 +328,7 @@ class ReportsV20210630Client:
         GET /reports/2021-06-30/documents/{reportDocumentId}
         """
         params: dict[str, Any] = {"enableContentEncodingUrlHeader": enable_content_encoding_url_header}
-        return self._client.request(
+        return self._http.request(
             "GET",
             f"/reports/2021-06-30/documents/{path_segment(report_document_id)}",
             operation="getReportDocument",
@@ -341,13 +341,13 @@ class ReportsV20210630Client:
         )
 
 
-class AsyncReportsV20210630Client:
+class AsyncReportsV20210630Resource:
     """Asynchronous ``ReportsV20210630`` resource."""
 
-    __slots__ = ("_client",)
+    __slots__ = ("_http",)
 
-    def __init__(self, client: AsyncHttpClient) -> None:
-        self._client = client
+    def __init__(self, http: AsyncHttpClient) -> None:
+        self._http = http
 
     async def list_reports(
         self,
@@ -382,7 +382,7 @@ class AsyncReportsV20210630Client:
             "createdUntil": created_until,
             "nextToken": next_token,
         }
-        return await self._client.request(
+        return await self._http.request(
             "GET",
             "/reports/2021-06-30/reports",
             operation="getReports",
@@ -429,8 +429,8 @@ class AsyncReportsV20210630Client:
 
     async def create_report(
         self,
-        *,
         body: reports_v2021_06_30.CreateReportSpecification | Mapping[str, Any],
+        *,
         request_options: RequestOptions | None = None,
     ) -> reports_v2021_06_30.CreateReportResponse:
         """Creates a report.
@@ -445,7 +445,7 @@ class AsyncReportsV20210630Client:
 
         POST /reports/2021-06-30/reports
         """
-        return await self._client.request(
+        return await self._http.request(
             "POST",
             "/reports/2021-06-30/reports",
             operation="createReport",
@@ -459,8 +459,8 @@ class AsyncReportsV20210630Client:
 
     async def get_report(
         self,
-        *,
         report_id: str,
+        *,
         request_options: RequestOptions | None = None,
     ) -> reports_v2021_06_30.Report:
         """Returns report details (including the `reportDocumentId`, if available) for the report that you specify.
@@ -475,7 +475,7 @@ class AsyncReportsV20210630Client:
 
         GET /reports/2021-06-30/reports/{reportId}
         """
-        return await self._client.request(
+        return await self._http.request(
             "GET",
             f"/reports/2021-06-30/reports/{path_segment(report_id)}",
             operation="getReport",
@@ -488,8 +488,8 @@ class AsyncReportsV20210630Client:
 
     async def delete_report(
         self,
-        *,
         report_id: str,
+        *,
         request_options: RequestOptions | None = None,
     ) -> None:
         """Cancels the report that you specify. Only reports with `processingStatus=IN_QUEUE` can be cancelled. Cancelled reports are returned in subsequent calls to the `getReport` and `getReports` operations.
@@ -504,7 +504,7 @@ class AsyncReportsV20210630Client:
 
         DELETE /reports/2021-06-30/reports/{reportId}
         """
-        return await self._client.request(
+        return await self._http.request(
             "DELETE",
             f"/reports/2021-06-30/reports/{path_segment(report_id)}",
             operation="cancelReport",
@@ -516,8 +516,8 @@ class AsyncReportsV20210630Client:
 
     async def list_schedules(
         self,
-        *,
         report_types: list[str],
+        *,
         request_options: RequestOptions | None = None,
     ) -> reports_v2021_06_30.ReportScheduleList:
         """Returns report schedule details that match the filters that you specify.
@@ -533,7 +533,7 @@ class AsyncReportsV20210630Client:
         GET /reports/2021-06-30/schedules
         """
         params: dict[str, Any] = {"reportTypes": joined(report_types, ",")}
-        return await self._client.request(
+        return await self._http.request(
             "GET",
             "/reports/2021-06-30/schedules",
             operation="getReportSchedules",
@@ -547,8 +547,8 @@ class AsyncReportsV20210630Client:
 
     async def create_schedule(
         self,
-        *,
         body: reports_v2021_06_30.CreateReportScheduleSpecification | Mapping[str, Any],
+        *,
         request_options: RequestOptions | None = None,
     ) -> reports_v2021_06_30.CreateReportScheduleResponse:
         """Creates a report schedule. If a report schedule with the same report type and marketplace IDs already exists, it will be cancelled and replaced with this one.
@@ -563,7 +563,7 @@ class AsyncReportsV20210630Client:
 
         POST /reports/2021-06-30/schedules
         """
-        return await self._client.request(
+        return await self._http.request(
             "POST",
             "/reports/2021-06-30/schedules",
             operation="createReportSchedule",
@@ -577,8 +577,8 @@ class AsyncReportsV20210630Client:
 
     async def get_schedule(
         self,
-        *,
         report_schedule_id: str,
+        *,
         request_options: RequestOptions | None = None,
     ) -> reports_v2021_06_30.ReportSchedule:
         """Returns report schedule details for the report schedule that you specify.
@@ -593,7 +593,7 @@ class AsyncReportsV20210630Client:
 
         GET /reports/2021-06-30/schedules/{reportScheduleId}
         """
-        return await self._client.request(
+        return await self._http.request(
             "GET",
             f"/reports/2021-06-30/schedules/{path_segment(report_schedule_id)}",
             operation="getReportSchedule",
@@ -606,8 +606,8 @@ class AsyncReportsV20210630Client:
 
     async def delete_schedule(
         self,
-        *,
         report_schedule_id: str,
+        *,
         request_options: RequestOptions | None = None,
     ) -> None:
         """Cancels the report schedule that you specify.
@@ -622,7 +622,7 @@ class AsyncReportsV20210630Client:
 
         DELETE /reports/2021-06-30/schedules/{reportScheduleId}
         """
-        return await self._client.request(
+        return await self._http.request(
             "DELETE",
             f"/reports/2021-06-30/schedules/{path_segment(report_schedule_id)}",
             operation="cancelReportSchedule",
@@ -634,8 +634,8 @@ class AsyncReportsV20210630Client:
 
     async def get_document(
         self,
-        *,
         report_document_id: str,
+        *,
         enable_content_encoding_url_header: bool | None = None,
         request_options: RequestOptions | None = None,
     ) -> reports_v2021_06_30.ReportDocument:
@@ -652,7 +652,7 @@ class AsyncReportsV20210630Client:
         GET /reports/2021-06-30/documents/{reportDocumentId}
         """
         params: dict[str, Any] = {"enableContentEncodingUrlHeader": enable_content_encoding_url_header}
-        return await self._client.request(
+        return await self._http.request(
             "GET",
             f"/reports/2021-06-30/documents/{path_segment(report_document_id)}",
             operation="getReportDocument",
@@ -665,4 +665,4 @@ class AsyncReportsV20210630Client:
         )
 
 
-__all__ = ["AsyncReportsV20210630Client", "ReportsV20210630Client"]
+__all__ = ["AsyncReportsV20210630Resource", "ReportsV20210630Resource"]

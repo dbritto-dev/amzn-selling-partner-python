@@ -20,6 +20,8 @@ class CatalogItemsV20220401IdentifiersType(str, Enum):
     SKU = "SKU"
     UPC = "UPC"
 
+    __str__ = str.__str__
+
 
 class CatalogItemsV20220401IncludedData(str, Enum):
     ATTRIBUTES = "attributes"
@@ -32,6 +34,8 @@ class CatalogItemsV20220401IncludedData(str, Enum):
     SALES_RANKS = "salesRanks"
     SUMMARIES = "summaries"
     VENDOR_DETAILS = "vendorDetails"
+
+    __str__ = str.__str__
 
 
 class ItemImageVariant(str, Enum):
@@ -46,10 +50,14 @@ class ItemImageVariant(str, Enum):
     PT08 = "PT08"
     SWCH = "SWCH"
 
+    __str__ = str.__str__
+
 
 class ItemRelationshipType(str, Enum):
     VARIATION = "VARIATION"
     PACKAGE_HIERARCHY = "PACKAGE_HIERARCHY"
+
+    __str__ = str.__str__
 
 
 class ItemSummaryByMarketplaceItemClassification(str, Enum):
@@ -57,6 +65,8 @@ class ItemSummaryByMarketplaceItemClassification(str, Enum):
     OTHER = "OTHER"
     PRODUCT_BUNDLE = "PRODUCT_BUNDLE"
     VARIATION_PARENT = "VARIATION_PARENT"
+
+    __str__ = str.__str__
 
 
 class ItemVendorDetailsByMarketplaceReplenishmentCategory(str, Enum):
@@ -70,6 +80,8 @@ class ItemVendorDetailsByMarketplaceReplenishmentCategory(str, Enum):
     NON_STOCKUPABLE = "NON_STOCKUPABLE"
     OBSOLETE = "OBSOLETE"
     PLANNED_REPLENISHMENT = "PLANNED_REPLENISHMENT"
+
+    __str__ = str.__str__
 
 
 __all__ = [

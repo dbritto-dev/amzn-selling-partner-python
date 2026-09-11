@@ -10,27 +10,27 @@ from __future__ import annotations
 from collections.abc import Mapping
 from typing import Any
 
-from ..http_client import AsyncHttpClient, HttpClient, RateLimit, RequestOptions, joined, path_segment
+from .._http import AsyncHttpClient, HttpClient, RateLimit, RequestOptions, joined, path_segment
 from ..models import listings_items_v2020_09_01
 
 SERVICE = "listings_items_v2020_09_01"
 
 
-class ListingsItemsV20200901Client:
+class ListingsItemsV20200901Resource:
     """Synchronous ``ListingsItemsV20200901`` resource."""
 
-    __slots__ = ("_client",)
+    __slots__ = ("_http",)
 
-    def __init__(self, client: HttpClient) -> None:
-        self._client = client
+    def __init__(self, http: HttpClient) -> None:
+        self._http = http
 
     def put_listings_item(
         self,
-        *,
         seller_id: str,
         sku: str,
-        marketplace_ids: list[str],
         body: listings_items_v2020_09_01.ListingsItemPutRequest | Mapping[str, Any],
+        marketplace_ids: list[str],
+        *,
         issue_locale: str | None = None,
         request_options: RequestOptions | None = None,
     ) -> listings_items_v2020_09_01.ListingsItemSubmissionResponse:
@@ -49,7 +49,7 @@ class ListingsItemsV20200901Client:
         PUT /listings/2020-09-01/items/{sellerId}/{sku}
         """
         params: dict[str, Any] = {"marketplaceIds": joined(marketplace_ids, ","), "issueLocale": issue_locale}
-        return self._client.request(
+        return self._http.request(
             "PUT",
             f"/listings/2020-09-01/items/{path_segment(seller_id)}/{path_segment(sku)}",
             operation="putListingsItem",
@@ -64,11 +64,11 @@ class ListingsItemsV20200901Client:
 
     def patch_listings_item(
         self,
-        *,
         seller_id: str,
         sku: str,
-        marketplace_ids: list[str],
         body: listings_items_v2020_09_01.ListingsItemPatchRequest | Mapping[str, Any],
+        marketplace_ids: list[str],
+        *,
         issue_locale: str | None = None,
         request_options: RequestOptions | None = None,
     ) -> listings_items_v2020_09_01.ListingsItemSubmissionResponse:
@@ -87,7 +87,7 @@ class ListingsItemsV20200901Client:
         PATCH /listings/2020-09-01/items/{sellerId}/{sku}
         """
         params: dict[str, Any] = {"marketplaceIds": joined(marketplace_ids, ","), "issueLocale": issue_locale}
-        return self._client.request(
+        return self._http.request(
             "PATCH",
             f"/listings/2020-09-01/items/{path_segment(seller_id)}/{path_segment(sku)}",
             operation="patchListingsItem",
@@ -102,10 +102,10 @@ class ListingsItemsV20200901Client:
 
     def delete_item(
         self,
-        *,
         seller_id: str,
         sku: str,
         marketplace_ids: list[str],
+        *,
         issue_locale: str | None = None,
         request_options: RequestOptions | None = None,
     ) -> listings_items_v2020_09_01.ListingsItemSubmissionResponse:
@@ -124,7 +124,7 @@ class ListingsItemsV20200901Client:
         DELETE /listings/2020-09-01/items/{sellerId}/{sku}
         """
         params: dict[str, Any] = {"marketplaceIds": joined(marketplace_ids, ","), "issueLocale": issue_locale}
-        return self._client.request(
+        return self._http.request(
             "DELETE",
             f"/listings/2020-09-01/items/{path_segment(seller_id)}/{path_segment(sku)}",
             operation="deleteListingsItem",
@@ -137,21 +137,21 @@ class ListingsItemsV20200901Client:
         )
 
 
-class AsyncListingsItemsV20200901Client:
+class AsyncListingsItemsV20200901Resource:
     """Asynchronous ``ListingsItemsV20200901`` resource."""
 
-    __slots__ = ("_client",)
+    __slots__ = ("_http",)
 
-    def __init__(self, client: AsyncHttpClient) -> None:
-        self._client = client
+    def __init__(self, http: AsyncHttpClient) -> None:
+        self._http = http
 
     async def put_listings_item(
         self,
-        *,
         seller_id: str,
         sku: str,
-        marketplace_ids: list[str],
         body: listings_items_v2020_09_01.ListingsItemPutRequest | Mapping[str, Any],
+        marketplace_ids: list[str],
+        *,
         issue_locale: str | None = None,
         request_options: RequestOptions | None = None,
     ) -> listings_items_v2020_09_01.ListingsItemSubmissionResponse:
@@ -170,7 +170,7 @@ class AsyncListingsItemsV20200901Client:
         PUT /listings/2020-09-01/items/{sellerId}/{sku}
         """
         params: dict[str, Any] = {"marketplaceIds": joined(marketplace_ids, ","), "issueLocale": issue_locale}
-        return await self._client.request(
+        return await self._http.request(
             "PUT",
             f"/listings/2020-09-01/items/{path_segment(seller_id)}/{path_segment(sku)}",
             operation="putListingsItem",
@@ -185,11 +185,11 @@ class AsyncListingsItemsV20200901Client:
 
     async def patch_listings_item(
         self,
-        *,
         seller_id: str,
         sku: str,
-        marketplace_ids: list[str],
         body: listings_items_v2020_09_01.ListingsItemPatchRequest | Mapping[str, Any],
+        marketplace_ids: list[str],
+        *,
         issue_locale: str | None = None,
         request_options: RequestOptions | None = None,
     ) -> listings_items_v2020_09_01.ListingsItemSubmissionResponse:
@@ -208,7 +208,7 @@ class AsyncListingsItemsV20200901Client:
         PATCH /listings/2020-09-01/items/{sellerId}/{sku}
         """
         params: dict[str, Any] = {"marketplaceIds": joined(marketplace_ids, ","), "issueLocale": issue_locale}
-        return await self._client.request(
+        return await self._http.request(
             "PATCH",
             f"/listings/2020-09-01/items/{path_segment(seller_id)}/{path_segment(sku)}",
             operation="patchListingsItem",
@@ -223,10 +223,10 @@ class AsyncListingsItemsV20200901Client:
 
     async def delete_item(
         self,
-        *,
         seller_id: str,
         sku: str,
         marketplace_ids: list[str],
+        *,
         issue_locale: str | None = None,
         request_options: RequestOptions | None = None,
     ) -> listings_items_v2020_09_01.ListingsItemSubmissionResponse:
@@ -245,7 +245,7 @@ class AsyncListingsItemsV20200901Client:
         DELETE /listings/2020-09-01/items/{sellerId}/{sku}
         """
         params: dict[str, Any] = {"marketplaceIds": joined(marketplace_ids, ","), "issueLocale": issue_locale}
-        return await self._client.request(
+        return await self._http.request(
             "DELETE",
             f"/listings/2020-09-01/items/{path_segment(seller_id)}/{path_segment(sku)}",
             operation="deleteListingsItem",
@@ -258,4 +258,4 @@ class AsyncListingsItemsV20200901Client:
         )
 
 
-__all__ = ["AsyncListingsItemsV20200901Client", "ListingsItemsV20200901Client"]
+__all__ = ["AsyncListingsItemsV20200901Resource", "ListingsItemsV20200901Resource"]

@@ -13,6 +13,8 @@ from enum import Enum
 class AssignmentType(str, Enum):
     DEFAULT_DEPOSIT_METHOD = "DEFAULT_DEPOSIT_METHOD"
 
+    __str__ = str.__str__
+
 
 class ExpectedPayoutStatusName(str, Enum):
     SCHEDULED = "SCHEDULED"
@@ -20,16 +22,22 @@ class ExpectedPayoutStatusName(str, Enum):
     AT_RISK = "AT_RISK"
     NO_PAYOUT_EXPECTED = "NO_PAYOUT_EXPECTED"
 
+    __str__ = str.__str__
+
 
 class PaymentMethodName(str, Enum):
     BANK_ACCOUNT = "BANK_ACCOUNT"
     DEBIT_CARD = "DEBIT_CARD"
+
+    __str__ = str.__str__
 
 
 class PaymentMethodType(str, Enum):
     BANK_ACCOUNT = "BANK_ACCOUNT"
     CARD = "CARD"
     SELLER_WALLET = "SELLER_WALLET"
+
+    __str__ = str.__str__
 
 
 class PayoutStatusName(str, Enum):
@@ -40,20 +48,28 @@ class PayoutStatusName(str, Enum):
     CANCELLED = "CANCELLED"
     NO_PAYOUT = "NO_PAYOUT"
 
+    __str__ = str.__str__
+
 
 class PayoutTypeName(str, Enum):
     SCHEDULED = "SCHEDULED"
     ON_DEMAND = "ON_DEMAND"
 
+    __str__ = str.__str__
+
 
 class RelatedIdentifierName(str, Enum):
     SETTLEMENT_ID = "SETTLEMENT_ID"
+
+    __str__ = str.__str__
 
 
 class TransfersV20240601PaymentMethodTypes(str, Enum):
     BANK_ACCOUNT = "BANK_ACCOUNT"
     CARD = "CARD"
     SELLER_WALLET = "SELLER_WALLET"
+
+    __str__ = str.__str__
 
 
 __all__ = [

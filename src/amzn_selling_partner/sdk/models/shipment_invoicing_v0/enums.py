@@ -14,6 +14,8 @@ class AddressTypeEnum(str, Enum):
     RESIDENTIAL = "Residential"
     COMMERCIAL = "Commercial"
 
+    __str__ = str.__str__
+
 
 class PaymentMethodEnum(str, Enum):
     CREDIT_CARD = "CreditCard"
@@ -23,12 +25,16 @@ class PaymentMethodEnum(str, Enum):
     GIFT_CARD = "GiftCard"
     OTHER = "Other"
 
+    __str__ = str.__str__
+
 
 class ShipmentInvoiceStatus(str, Enum):
     PROCESSING = "Processing"
     ACCEPTED = "Accepted"
     ERRORED = "Errored"
     NOT_FOUND = "NotFound"
+
+    __str__ = str.__str__
 
 
 __all__ = [

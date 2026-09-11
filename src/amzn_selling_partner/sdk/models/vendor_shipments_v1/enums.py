@@ -17,10 +17,14 @@ class ContainerIdentificationContainerIdentificationType(str, Enum):
     BPS = "BPS"
     CID = "CID"
 
+    __str__ = str.__str__
+
 
 class ContainersContainerType(str, Enum):
     CARTON = "carton"
     PALLET = "pallet"
+
+    __str__ = str.__str__
 
 
 class DimensionsUnitOfMeasure(str, Enum):
@@ -29,10 +33,14 @@ class DimensionsUnitOfMeasure(str, Enum):
     METER = "Meter"
     YARD = "Yard"
 
+    __str__ = str.__str__
+
 
 class DurationDurationUnit(str, Enum):
     DAYS = "Days"
     MONTHS = "Months"
+
+    __str__ = str.__str__
 
 
 class ImportDetailsHandlingInstructions(str, Enum):
@@ -40,6 +48,8 @@ class ImportDetailsHandlingInstructions(str, Enum):
     FRAGILE = "Fragile"
     FOOD = "Food"
     HANDLE_WITH_CARE = "HandleWithCare"
+
+    __str__ = str.__str__
 
 
 class ImportDetailsMethodOfPayment(str, Enum):
@@ -50,12 +60,16 @@ class ImportDetailsMethodOfPayment(str, Enum):
     PREPAID_BY_SELLER = "PrepaidBySeller"
     PAID_BY_SELLER = "PaidBySeller"
 
+    __str__ = str.__str__
+
 
 class ItemDetailsHandlingCode(str, Enum):
     OVERSIZED = "Oversized"
     FRAGILE = "Fragile"
     FOOD = "Food"
     HANDLE_WITH_CARE = "HandleWithCare"
+
+    __str__ = str.__str__
 
 
 class ItemDetailsLotNumberSourceType(str, Enum):
@@ -64,15 +78,21 @@ class ItemDetailsLotNumberSourceType(str, Enum):
     USDA_E = "USDA_E"
     URL = "URL"
 
+    __str__ = str.__str__
+
 
 class ItemQuantityUnitOfMeasure(str, Enum):
     CASES = "Cases"
     EACHES = "Eaches"
 
+    __str__ = str.__str__
+
 
 class ShipmentConfirmationShipmentConfirmationType(str, Enum):
     ORIGINAL = "Original"
     REPLACE = "Replace"
+
+    __str__ = str.__str__
 
 
 class ShipmentConfirmationShipmentStructure(str, Enum):
@@ -84,11 +104,15 @@ class ShipmentConfirmationShipmentStructure(str, Enum):
     MASTER_PALLET = "MasterPallet"
     MASTER_CASE = "MasterCase"
 
+    __str__ = str.__str__
+
 
 class ShipmentConfirmationShipmentType(str, Enum):
     TRUCK_LOAD = "TruckLoad"
     LESS_THAN_TRUCK_LOAD = "LessThanTruckLoad"
     SMALL_PARCEL = "SmallParcel"
+
+    __str__ = str.__str__
 
 
 class ShipmentCurrentShipmentStatus(str, Enum):
@@ -97,15 +121,21 @@ class ShipmentCurrentShipmentStatus(str, Enum):
     CARRIER_ASSIGNED = "CarrierAssigned"
     SHIPPED = "Shipped"
 
+    __str__ = str.__str__
+
 
 class ShipmentInformationShipMode(str, Enum):
     SMALL_PARCEL = "SmallParcel"
     LTL = "LTL"
 
+    __str__ = str.__str__
+
 
 class ShipmentShipmentFreightTerm(str, Enum):
     COLLECT = "Collect"
     PREPAID = "Prepaid"
+
+    __str__ = str.__str__
 
 
 class ShipmentStatusDetailsShipmentStatus(str, Enum):
@@ -114,10 +144,14 @@ class ShipmentStatusDetailsShipmentStatus(str, Enum):
     CARRIER_ASSIGNED = "CarrierAssigned"
     SHIPPED = "Shipped"
 
+    __str__ = str.__str__
+
 
 class ShipmentTransactionType(str, Enum):
     NEW = "New"
     CANCEL = "Cancel"
+
+    __str__ = str.__str__
 
 
 class StopFunctionCode(str, Enum):
@@ -125,10 +159,14 @@ class StopFunctionCode(str, Enum):
     FREIGHT_PAYABLE_AT = "FreightPayableAt"
     PORT_OF_LOADING = "PortOfLoading"
 
+    __str__ = str.__str__
+
 
 class TaxRegistrationDetailsTaxRegistrationType(str, Enum):
     VAT = "VAT"
     GST = "GST"
+
+    __str__ = str.__str__
 
 
 class TotalWeightUnitOfMeasure(str, Enum):
@@ -137,11 +175,15 @@ class TotalWeightUnitOfMeasure(str, Enum):
     GRAMS = "GRAMS"
     KILOGRAMS = "KILOGRAMS"
 
+    __str__ = str.__str__
+
 
 class TransportationDetailsForShipmentConfirmationTransportationMode(str, Enum):
     ROAD = "Road"
     AIR = "Air"
     OCEAN = "Ocean"
+
+    __str__ = str.__str__
 
 
 class TransportationDetailsShipMode(str, Enum):
@@ -149,16 +191,22 @@ class TransportationDetailsShipMode(str, Enum):
     LESS_THAN_TRUCK_LOAD = "LessThanTruckLoad"
     SMALL_PARCEL = "SmallParcel"
 
+    __str__ = str.__str__
+
 
 class TransportationDetailsTransportationMode(str, Enum):
     ROAD = "Road"
     AIR = "Air"
     OCEAN = "Ocean"
 
+    __str__ = str.__str__
+
 
 class VendorShipmentsV1SortOrder(str, Enum):
     ASC = "ASC"
     DESC = "DESC"
+
+    __str__ = str.__str__
 
 
 class VolumeUnitOfMeasure(str, Enum):
@@ -167,12 +215,16 @@ class VolumeUnitOfMeasure(str, Enum):
     CU_M = "CuM"
     CU_Y = "CuY"
 
+    __str__ = str.__str__
+
 
 class WeightUnitOfMeasure(str, Enum):
     G = "G"
     KG = "Kg"
     OZ = "Oz"
     LB = "Lb"
+
+    __str__ = str.__str__
 
 
 __all__ = [

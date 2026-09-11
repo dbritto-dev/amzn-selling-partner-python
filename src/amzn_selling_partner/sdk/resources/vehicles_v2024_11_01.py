@@ -10,25 +10,25 @@ from __future__ import annotations
 from collections.abc import AsyncIterator, Iterator
 from typing import Any
 
-from ..http_client import AsyncHttpClient, HttpClient, RequestOptions, apaginate, paginate
+from .._http import AsyncHttpClient, HttpClient, RequestOptions, apaginate, paginate
 from ..models import vehicles_v2024_11_01
 
 SERVICE = "vehicles_v2024_11_01"
 
 
-class VehiclesV20241101Client:
+class VehiclesV20241101Resource:
     """Synchronous ``VehiclesV20241101`` resource."""
 
-    __slots__ = ("_client",)
+    __slots__ = ("_http",)
 
-    def __init__(self, client: HttpClient) -> None:
-        self._client = client
+    def __init__(self, http: HttpClient) -> None:
+        self._http = http
 
     def list_vehicles(
         self,
-        *,
         marketplace_id: str,
         vehicle_type: vehicles_v2024_11_01.VehiclesV20241101VehicleType | str,
+        *,
         page_token: str | None = None,
         updated_after: str | None = None,
         request_options: RequestOptions | None = None,
@@ -43,7 +43,7 @@ class VehiclesV20241101Client:
             "vehicleType": vehicle_type,
             "updatedAfter": updated_after,
         }
-        return self._client.request(
+        return self._http.request(
             "GET",
             "/catalog/2024-11-01/automotive/vehicles",
             operation="getVehicles",
@@ -56,9 +56,9 @@ class VehiclesV20241101Client:
 
     def iter_list_vehicles(
         self,
-        *,
         marketplace_id: str,
         vehicle_type: vehicles_v2024_11_01.VehiclesV20241101VehicleType | str,
+        *,
         page_token: str | None = None,
         updated_after: str | None = None,
         request_options: RequestOptions | None = None,
@@ -81,19 +81,19 @@ class VehiclesV20241101Client:
         )
 
 
-class AsyncVehiclesV20241101Client:
+class AsyncVehiclesV20241101Resource:
     """Asynchronous ``VehiclesV20241101`` resource."""
 
-    __slots__ = ("_client",)
+    __slots__ = ("_http",)
 
-    def __init__(self, client: AsyncHttpClient) -> None:
-        self._client = client
+    def __init__(self, http: AsyncHttpClient) -> None:
+        self._http = http
 
     async def list_vehicles(
         self,
-        *,
         marketplace_id: str,
         vehicle_type: vehicles_v2024_11_01.VehiclesV20241101VehicleType | str,
+        *,
         page_token: str | None = None,
         updated_after: str | None = None,
         request_options: RequestOptions | None = None,
@@ -108,7 +108,7 @@ class AsyncVehiclesV20241101Client:
             "vehicleType": vehicle_type,
             "updatedAfter": updated_after,
         }
-        return await self._client.request(
+        return await self._http.request(
             "GET",
             "/catalog/2024-11-01/automotive/vehicles",
             operation="getVehicles",
@@ -121,9 +121,9 @@ class AsyncVehiclesV20241101Client:
 
     def iter_list_vehicles(
         self,
-        *,
         marketplace_id: str,
         vehicle_type: vehicles_v2024_11_01.VehiclesV20241101VehicleType | str,
+        *,
         page_token: str | None = None,
         updated_after: str | None = None,
         request_options: RequestOptions | None = None,
@@ -146,4 +146,4 @@ class AsyncVehiclesV20241101Client:
         )
 
 
-__all__ = ["AsyncVehiclesV20241101Client", "VehiclesV20241101Client"]
+__all__ = ["AsyncVehiclesV20241101Resource", "VehiclesV20241101Resource"]

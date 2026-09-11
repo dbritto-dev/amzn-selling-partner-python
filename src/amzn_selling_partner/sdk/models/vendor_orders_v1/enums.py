@@ -23,6 +23,8 @@ class ImportDetailsInternationalCommercialTerms(str, Enum):
     DELIVERED_AT_PLACE = "DeliveredAtPlace"
     DELIVER_DUTY_PAID = "DeliverDutyPaid"
 
+    __str__ = str.__str__
+
 
 class ImportDetailsMethodOfPayment(str, Enum):
     PAID_BY_BUYER = "PaidByBuyer"
@@ -32,10 +34,14 @@ class ImportDetailsMethodOfPayment(str, Enum):
     PREPAID_BY_SELLER = "PrepaidBySeller"
     PAID_BY_SELLER = "PaidBySeller"
 
+    __str__ = str.__str__
+
 
 class ItemQuantityUnitOfMeasure(str, Enum):
     CASES = "Cases"
     EACHES = "Eaches"
+
+    __str__ = str.__str__
 
 
 class MoneyUnitOfMeasure(str, Enum):
@@ -44,12 +50,16 @@ class MoneyUnitOfMeasure(str, Enum):
     GRAMS = "GRAMS"
     KILOGRAMS = "KILOGRAMS"
 
+    __str__ = str.__str__
+
 
 class OrderDetailsPaymentMethod(str, Enum):
     INVOICE = "Invoice"
     CONSIGNMENT = "Consignment"
     CREDIT_CARD = "CreditCard"
     PREPAID = "Prepaid"
+
+    __str__ = str.__str__
 
 
 class OrderDetailsPurchaseOrderType(str, Enum):
@@ -58,17 +68,23 @@ class OrderDetailsPurchaseOrderType(str, Enum):
     NEW_PRODUCT_INTRODUCTION = "NewProductIntroduction"
     RUSH_ORDER = "RushOrder"
 
+    __str__ = str.__str__
+
 
 class OrderItemAcknowledgementAcknowledgementCode(str, Enum):
     ACCEPTED = "Accepted"
     BACKORDERED = "Backordered"
     REJECTED = "Rejected"
 
+    __str__ = str.__str__
+
 
 class OrderItemAcknowledgementRejectionReason(str, Enum):
     TEMPORARILY_UNAVAILABLE = "TemporarilyUnavailable"
     INVALID_PRODUCT_IDENTIFIER = "InvalidProductIdentifier"
     OBSOLETE_PRODUCT = "ObsoleteProduct"
+
+    __str__ = str.__str__
 
 
 class OrderItemStatusAcknowledgementStatusConfirmationStatus(str, Enum):
@@ -77,11 +93,15 @@ class OrderItemStatusAcknowledgementStatusConfirmationStatus(str, Enum):
     REJECTED = "REJECTED"
     UNCONFIRMED = "UNCONFIRMED"
 
+    __str__ = str.__str__
+
 
 class OrderItemStatusReceivingStatusReceiveStatus(str, Enum):
     NOT_RECEIVED = "NOT_RECEIVED"
     PARTIALLY_RECEIVED = "PARTIALLY_RECEIVED"
     RECEIVED = "RECEIVED"
+
+    __str__ = str.__str__
 
 
 class OrderPurchaseOrderState(str, Enum):
@@ -89,15 +109,21 @@ class OrderPurchaseOrderState(str, Enum):
     ACKNOWLEDGED = "Acknowledged"
     CLOSED = "Closed"
 
+    __str__ = str.__str__
+
 
 class OrderStatusPurchaseOrderStatus(str, Enum):
     OPEN = "OPEN"
     CLOSED = "CLOSED"
 
+    __str__ = str.__str__
+
 
 class TaxRegistrationDetailsTaxRegistrationType(str, Enum):
     VAT = "VAT"
     GST = "GST"
+
+    __str__ = str.__str__
 
 
 class VendorOrdersV1ItemConfirmationStatus(str, Enum):
@@ -106,11 +132,15 @@ class VendorOrdersV1ItemConfirmationStatus(str, Enum):
     REJECTED = "REJECTED"
     UNCONFIRMED = "UNCONFIRMED"
 
+    __str__ = str.__str__
+
 
 class VendorOrdersV1ItemReceiveStatus(str, Enum):
     NOT_RECEIVED = "NOT_RECEIVED"
     PARTIALLY_RECEIVED = "PARTIALLY_RECEIVED"
     RECEIVED = "RECEIVED"
+
+    __str__ = str.__str__
 
 
 class VendorOrdersV1PurchaseOrderState(str, Enum):
@@ -118,15 +148,21 @@ class VendorOrdersV1PurchaseOrderState(str, Enum):
     ACKNOWLEDGED = "Acknowledged"
     CLOSED = "Closed"
 
+    __str__ = str.__str__
+
 
 class VendorOrdersV1PurchaseOrderStatus(str, Enum):
     OPEN = "OPEN"
     CLOSED = "CLOSED"
 
+    __str__ = str.__str__
+
 
 class VendorOrdersV1SortOrder(str, Enum):
     ASC = "ASC"
     DESC = "DESC"
+
+    __str__ = str.__str__
 
 
 __all__ = [

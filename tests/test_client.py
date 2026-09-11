@@ -9,7 +9,8 @@ from typing import Any
 
 import httpx2
 import pytest
-from petstore_sdk import errors, http_client
+from petstore_sdk import _http as http_client
+from petstore_sdk import errors
 from petstore_sdk.client import AsyncClient, Client
 from petstore_sdk.models import petstore_v3 as m
 from petstore_sdk.resources import OPERATIONS, SERVICES
@@ -61,7 +62,7 @@ def test_default_headers_and_base_url() -> None:
             return httpx2.Response(200, json={"items": []})
         return httpx2.Response(200, json={"id": 1, "name": "n"})
 
-    api = _petstore(handler, headers={"X-Custom": "1"})
+    api = _petstore(handler, default_headers={"X-Custom": "1"})
     api.get_pet(pet_id=3)
     r = seen[0]
     assert str(r.url) == "https://api.example.com/v3/pets/3"
@@ -313,10 +314,32 @@ def test_client_layout() -> None:
     client = Client(base_url=BASE)
     assert set(SERVICES) == {"petstore_v2", "petstore_v3"}
     assert client.petstore is client.petstore_v3  # latest version alias
-    assert type(client.petstore_v2).__name__ == "PetstoreV2Client" and type(client.petstore_v3).__name__ == "PetstoreV3Client"
+    assert type(client.petstore_v2).__name__ == "PetstoreV2Resource" and type(client.petstore_v3).__name__ == "PetstoreV3Resource"
     assert client.petstore_v3 is client.petstore_v3  # cached
     assert client.petstore_v3.list_pets.__doc__ and "GET /v3/pets" in client.petstore_v3.list_pets.__doc__
     assert client.base_url == BASE and client.http.max_retries == http_client.MAX_RETRIES
     aclient = AsyncClient(base_url=BASE)
-    assert type(aclient.petstore).__name__ == "AsyncPetstoreV3Client"
+    assert type(aclient.petstore).__name__ == "AsyncPetstoreV3Resource"
     assert Client.__module__ == "petstore_sdk.client" and Client().base_url == "https://petstore.example.com"  # the spec's server
+
+
+def test_with_options_shares_the_pool_and_drops_cached_resources() -> None:
+    calls: list[str] = []
+
+    def handler(request: httpx2.Request) -> httpx2.Response:
+        calls.append(request.headers.get("X-Tenant", "-"))
+        return httpx2.Response(200, json={"id": 1, "name": "n"})
+
+    client = _client(handler)
+    before = client.petstore_v3
+    derived = client.with_options(default_headers={"X-Tenant": "b"}, max_retries=0)
+    assert derived.http_client is client.http_client  # same connection pool
+    assert derived.http.max_retries == 0 and client.http.max_retries == 2
+    assert derived.petstore_v3 is not before and client.petstore_v3 is before
+    derived.petstore_v3.get_pet(pet_id=1)
+    client.petstore_v3.get_pet(pet_id=1)
+    assert calls == ["b", "-"]
+    with pytest.raises(TypeError, match="unknown option"):
+        client.with_options(bogus=1)
+    derived.close()  # does not close the shared pool
+    assert not client.http.is_closed

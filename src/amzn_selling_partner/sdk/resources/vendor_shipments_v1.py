@@ -11,24 +11,24 @@ import datetime
 from collections.abc import AsyncIterator, Iterator, Mapping
 from typing import Any
 
-from ..http_client import AsyncHttpClient, HttpClient, RateLimit, RequestOptions, apaginate, paginate
+from .._http import AsyncHttpClient, HttpClient, RateLimit, RequestOptions, apaginate, paginate
 from ..models import vendor_shipments_v1
 
 SERVICE = "vendor_shipments_v1"
 
 
-class VendorShipmentsV1Client:
+class VendorShipmentsV1Resource:
     """Synchronous ``VendorShipmentsV1`` resource."""
 
-    __slots__ = ("_client",)
+    __slots__ = ("_http",)
 
-    def __init__(self, client: HttpClient) -> None:
-        self._client = client
+    def __init__(self, http: HttpClient) -> None:
+        self._http = http
 
     def create_shipment_confirmation(
         self,
-        *,
         body: vendor_shipments_v1.SubmitShipmentConfirmationsRequest | Mapping[str, Any],
+        *,
         request_options: RequestOptions | None = None,
     ) -> vendor_shipments_v1.SubmitShipmentConfirmationsResponse:
         """SubmitShipmentConfirmations
@@ -45,7 +45,7 @@ class VendorShipmentsV1Client:
 
         POST /vendor/shipping/v1/shipmentConfirmations
         """
-        return self._client.request(
+        return self._http.request(
             "POST",
             "/vendor/shipping/v1/shipmentConfirmations",
             operation="SubmitShipmentConfirmations",
@@ -126,7 +126,7 @@ class VendorShipmentsV1Client:
             "buyerWarehouseCode": buyer_warehouse_code,
             "sellerWarehouseCode": seller_warehouse_code,
         }
-        return self._client.request(
+        return self._http.request(
             "GET",
             "/vendor/shipping/v1/shipments",
             operation="GetShipmentDetails",
@@ -206,8 +206,8 @@ class VendorShipmentsV1Client:
 
     def create_shipment(
         self,
-        *,
         body: vendor_shipments_v1.SubmitShipments | Mapping[str, Any],
+        *,
         request_options: RequestOptions | None = None,
     ) -> vendor_shipments_v1.SubmitShipmentConfirmationsResponse:
         """SubmitShipments
@@ -224,7 +224,7 @@ class VendorShipmentsV1Client:
 
         POST /vendor/shipping/v1/shipments
         """
-        return self._client.request(
+        return self._http.request(
             "POST",
             "/vendor/shipping/v1/shipments",
             operation="SubmitShipments",
@@ -271,7 +271,7 @@ class VendorShipmentsV1Client:
             "vendorShipmentIdentifier": vendor_shipment_identifier,
             "sellerWarehouseCode": seller_warehouse_code,
         }
-        return self._client.request(
+        return self._http.request(
             "GET",
             "/vendor/shipping/v1/transportLabels",
             operation="GetShipmentLabels",
@@ -318,18 +318,18 @@ class VendorShipmentsV1Client:
         )
 
 
-class AsyncVendorShipmentsV1Client:
+class AsyncVendorShipmentsV1Resource:
     """Asynchronous ``VendorShipmentsV1`` resource."""
 
-    __slots__ = ("_client",)
+    __slots__ = ("_http",)
 
-    def __init__(self, client: AsyncHttpClient) -> None:
-        self._client = client
+    def __init__(self, http: AsyncHttpClient) -> None:
+        self._http = http
 
     async def create_shipment_confirmation(
         self,
-        *,
         body: vendor_shipments_v1.SubmitShipmentConfirmationsRequest | Mapping[str, Any],
+        *,
         request_options: RequestOptions | None = None,
     ) -> vendor_shipments_v1.SubmitShipmentConfirmationsResponse:
         """SubmitShipmentConfirmations
@@ -346,7 +346,7 @@ class AsyncVendorShipmentsV1Client:
 
         POST /vendor/shipping/v1/shipmentConfirmations
         """
-        return await self._client.request(
+        return await self._http.request(
             "POST",
             "/vendor/shipping/v1/shipmentConfirmations",
             operation="SubmitShipmentConfirmations",
@@ -427,7 +427,7 @@ class AsyncVendorShipmentsV1Client:
             "buyerWarehouseCode": buyer_warehouse_code,
             "sellerWarehouseCode": seller_warehouse_code,
         }
-        return await self._client.request(
+        return await self._http.request(
             "GET",
             "/vendor/shipping/v1/shipments",
             operation="GetShipmentDetails",
@@ -507,8 +507,8 @@ class AsyncVendorShipmentsV1Client:
 
     async def create_shipment(
         self,
-        *,
         body: vendor_shipments_v1.SubmitShipments | Mapping[str, Any],
+        *,
         request_options: RequestOptions | None = None,
     ) -> vendor_shipments_v1.SubmitShipmentConfirmationsResponse:
         """SubmitShipments
@@ -525,7 +525,7 @@ class AsyncVendorShipmentsV1Client:
 
         POST /vendor/shipping/v1/shipments
         """
-        return await self._client.request(
+        return await self._http.request(
             "POST",
             "/vendor/shipping/v1/shipments",
             operation="SubmitShipments",
@@ -572,7 +572,7 @@ class AsyncVendorShipmentsV1Client:
             "vendorShipmentIdentifier": vendor_shipment_identifier,
             "sellerWarehouseCode": seller_warehouse_code,
         }
-        return await self._client.request(
+        return await self._http.request(
             "GET",
             "/vendor/shipping/v1/transportLabels",
             operation="GetShipmentLabels",
@@ -619,4 +619,4 @@ class AsyncVendorShipmentsV1Client:
         )
 
 
-__all__ = ["AsyncVendorShipmentsV1Client", "VendorShipmentsV1Client"]
+__all__ = ["AsyncVendorShipmentsV1Resource", "VendorShipmentsV1Resource"]

@@ -10,31 +10,31 @@ from __future__ import annotations
 from collections.abc import Mapping
 from typing import Any
 
-from ..http_client import AsyncHttpClient, HttpClient, RequestOptions, path_segment
+from .._http import AsyncHttpClient, HttpClient, RequestOptions, path_segment
 from ..models import vendor_direct_fulfillment_sandbox_data_v2021_10_28
 
 SERVICE = "vendor_direct_fulfillment_sandbox_data_v2021_10_28"
 
 
-class VendorDirectFulfillmentSandboxDataV20211028Client:
+class VendorDirectFulfillmentSandboxDataV20211028Resource:
     """Synchronous ``VendorDirectFulfillmentSandboxDataV20211028`` resource."""
 
-    __slots__ = ("_client",)
+    __slots__ = ("_http",)
 
-    def __init__(self, client: HttpClient) -> None:
-        self._client = client
+    def __init__(self, http: HttpClient) -> None:
+        self._http = http
 
     def create_order(
         self,
-        *,
         body: vendor_direct_fulfillment_sandbox_data_v2021_10_28.GenerateOrderScenarioRequest | Mapping[str, Any],
+        *,
         request_options: RequestOptions | None = None,
     ) -> vendor_direct_fulfillment_sandbox_data_v2021_10_28.TransactionReference:
         """Submits a request to generate test order data for Vendor Direct Fulfillment API entities.
 
         POST /vendor/directFulfillment/sandbox/2021-10-28/orders
         """
-        return self._client.request(
+        return self._http.request(
             "POST",
             "/vendor/directFulfillment/sandbox/2021-10-28/orders",
             operation="generateOrderScenarios",
@@ -47,15 +47,15 @@ class VendorDirectFulfillmentSandboxDataV20211028Client:
 
     def get_transaction(
         self,
-        *,
         transaction_id: str,
+        *,
         request_options: RequestOptions | None = None,
     ) -> vendor_direct_fulfillment_sandbox_data_v2021_10_28.TransactionStatus:
         """Returns the status of the transaction indicated by the specified transactionId. If the transaction was successful, also returns the requested test order data.
 
         GET /vendor/directFulfillment/sandbox/2021-10-28/transactions/{transactionId}
         """
-        return self._client.request(
+        return self._http.request(
             "GET",
             f"/vendor/directFulfillment/sandbox/2021-10-28/transactions/{path_segment(transaction_id)}",
             operation="getOrderScenarios",
@@ -66,25 +66,25 @@ class VendorDirectFulfillmentSandboxDataV20211028Client:
         )
 
 
-class AsyncVendorDirectFulfillmentSandboxDataV20211028Client:
+class AsyncVendorDirectFulfillmentSandboxDataV20211028Resource:
     """Asynchronous ``VendorDirectFulfillmentSandboxDataV20211028`` resource."""
 
-    __slots__ = ("_client",)
+    __slots__ = ("_http",)
 
-    def __init__(self, client: AsyncHttpClient) -> None:
-        self._client = client
+    def __init__(self, http: AsyncHttpClient) -> None:
+        self._http = http
 
     async def create_order(
         self,
-        *,
         body: vendor_direct_fulfillment_sandbox_data_v2021_10_28.GenerateOrderScenarioRequest | Mapping[str, Any],
+        *,
         request_options: RequestOptions | None = None,
     ) -> vendor_direct_fulfillment_sandbox_data_v2021_10_28.TransactionReference:
         """Submits a request to generate test order data for Vendor Direct Fulfillment API entities.
 
         POST /vendor/directFulfillment/sandbox/2021-10-28/orders
         """
-        return await self._client.request(
+        return await self._http.request(
             "POST",
             "/vendor/directFulfillment/sandbox/2021-10-28/orders",
             operation="generateOrderScenarios",
@@ -97,15 +97,15 @@ class AsyncVendorDirectFulfillmentSandboxDataV20211028Client:
 
     async def get_transaction(
         self,
-        *,
         transaction_id: str,
+        *,
         request_options: RequestOptions | None = None,
     ) -> vendor_direct_fulfillment_sandbox_data_v2021_10_28.TransactionStatus:
         """Returns the status of the transaction indicated by the specified transactionId. If the transaction was successful, also returns the requested test order data.
 
         GET /vendor/directFulfillment/sandbox/2021-10-28/transactions/{transactionId}
         """
-        return await self._client.request(
+        return await self._http.request(
             "GET",
             f"/vendor/directFulfillment/sandbox/2021-10-28/transactions/{path_segment(transaction_id)}",
             operation="getOrderScenarios",
@@ -116,4 +116,4 @@ class AsyncVendorDirectFulfillmentSandboxDataV20211028Client:
         )
 
 
-__all__ = ["AsyncVendorDirectFulfillmentSandboxDataV20211028Client", "VendorDirectFulfillmentSandboxDataV20211028Client"]
+__all__ = ["AsyncVendorDirectFulfillmentSandboxDataV20211028Resource", "VendorDirectFulfillmentSandboxDataV20211028Resource"]

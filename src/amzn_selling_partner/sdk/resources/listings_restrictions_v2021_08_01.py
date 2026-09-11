@@ -9,26 +9,26 @@ from __future__ import annotations
 
 from typing import Any
 
-from ..http_client import AsyncHttpClient, HttpClient, RateLimit, RequestOptions, joined
+from .._http import AsyncHttpClient, HttpClient, RateLimit, RequestOptions, joined
 from ..models import listings_restrictions_v2021_08_01
 
 SERVICE = "listings_restrictions_v2021_08_01"
 
 
-class ListingsRestrictionsV20210801Client:
+class ListingsRestrictionsV20210801Resource:
     """Synchronous ``ListingsRestrictionsV20210801`` resource."""
 
-    __slots__ = ("_client",)
+    __slots__ = ("_http",)
 
-    def __init__(self, client: HttpClient) -> None:
-        self._client = client
+    def __init__(self, http: HttpClient) -> None:
+        self._http = http
 
     def list_restrictions(
         self,
-        *,
         asin: str,
         seller_id: str,
         marketplace_ids: list[str],
+        *,
         condition_type: listings_restrictions_v2021_08_01.ListingsRestrictionsV20210801ConditionType | str | None = None,
         reason_locale: str | None = None,
         product_type: str | None = None,
@@ -54,7 +54,7 @@ class ListingsRestrictionsV20210801Client:
             "reasonLocale": reason_locale,
             "productType": product_type,
         }
-        return self._client.request(
+        return self._http.request(
             "GET",
             "/listings/2021-08-01/restrictions",
             operation="getListingsRestrictions",
@@ -67,20 +67,20 @@ class ListingsRestrictionsV20210801Client:
         )
 
 
-class AsyncListingsRestrictionsV20210801Client:
+class AsyncListingsRestrictionsV20210801Resource:
     """Asynchronous ``ListingsRestrictionsV20210801`` resource."""
 
-    __slots__ = ("_client",)
+    __slots__ = ("_http",)
 
-    def __init__(self, client: AsyncHttpClient) -> None:
-        self._client = client
+    def __init__(self, http: AsyncHttpClient) -> None:
+        self._http = http
 
     async def list_restrictions(
         self,
-        *,
         asin: str,
         seller_id: str,
         marketplace_ids: list[str],
+        *,
         condition_type: listings_restrictions_v2021_08_01.ListingsRestrictionsV20210801ConditionType | str | None = None,
         reason_locale: str | None = None,
         product_type: str | None = None,
@@ -106,7 +106,7 @@ class AsyncListingsRestrictionsV20210801Client:
             "reasonLocale": reason_locale,
             "productType": product_type,
         }
-        return await self._client.request(
+        return await self._http.request(
             "GET",
             "/listings/2021-08-01/restrictions",
             operation="getListingsRestrictions",
@@ -119,4 +119,4 @@ class AsyncListingsRestrictionsV20210801Client:
         )
 
 
-__all__ = ["AsyncListingsRestrictionsV20210801Client", "ListingsRestrictionsV20210801Client"]
+__all__ = ["AsyncListingsRestrictionsV20210801Resource", "ListingsRestrictionsV20210801Resource"]

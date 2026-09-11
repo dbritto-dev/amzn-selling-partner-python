@@ -16,6 +16,8 @@ class BalanceType(str, Enum):
     LOCKED_OUT = "LOCKED_OUT"
     TOTAL = "TOTAL"
 
+    __str__ = str.__str__
+
 
 class BankAccountHolderStatus(str, Enum):
     ACTIVE = "ACTIVE"
@@ -23,20 +25,28 @@ class BankAccountHolderStatus(str, Enum):
     UNDER_REVIEW = "UNDER_REVIEW"
     VERIFICATION_FAILED = "VERIFICATION_FAILED"
 
+    __str__ = str.__str__
+
 
 class BankAccountNumberFormat(str, Enum):
     IBAN = "IBAN"
     BBAN = "BBAN"
+
+    __str__ = str.__str__
 
 
 class BankAccountOwnershipType(str, Enum):
     THIRD_PARTY = "THIRD_PARTY"
     SELF = "SELF"
 
+    __str__ = str.__str__
+
 
 class BankNumberFormat(str, Enum):
     BIC = "BIC"
     BASIC = "BASIC"
+
+    __str__ = str.__str__
 
 
 class FeeType(str, Enum):
@@ -44,21 +54,29 @@ class FeeType(str, Enum):
     TAX = "TAX"
     TRANSACTION_FEE = "TRANSACTION_FEE"
 
+    __str__ = str.__str__
+
 
 class PayeeEntityType(str, Enum):
     INDIVIDUAL = "INDIVIDUAL"
     BUSINESS = "BUSINESS"
     TAX_AUTHORITY = "TAX_AUTHORITY"
 
+    __str__ = str.__str__
+
 
 class PaymentPreferencePaymentType(str, Enum):
     PERCENTAGE = "PERCENTAGE"
     AMOUNT = "AMOUNT"
 
+    __str__ = str.__str__
+
 
 class RateDirection(str, Enum):
     BUY = "BUY"
     SELL = "SELL"
+
+    __str__ = str.__str__
 
 
 class RecurringFrequency(str, Enum):
@@ -67,14 +85,20 @@ class RecurringFrequency(str, Enum):
     BIWEEKLY = "BIWEEKLY"
     MONTHLY = "MONTHLY"
 
+    __str__ = str.__str__
+
 
 class ScheduleExpressionType(str, Enum):
     RECURRING = "RECURRING"
     ONE_TIME = "ONE_TIME"
 
+    __str__ = str.__str__
+
 
 class ScheduleTransferType(str, Enum):
     TIME_BASED = "TIME_BASED"
+
+    __str__ = str.__str__
 
 
 class TransactionStatus(str, Enum):
@@ -85,10 +109,14 @@ class TransactionStatus(str, Enum):
     PENDING_USER_APPROVAL = "PENDING_USER_APPROVAL"
     SUCCESSFUL = "SUCCESSFUL"
 
+    __str__ = str.__str__
+
 
 class TransactionType(str, Enum):
     CREDIT = "CREDIT"
     DEBIT = "DEBIT"
+
+    __str__ = str.__str__
 
 
 class TransferScheduleStatus(str, Enum):
@@ -96,6 +124,8 @@ class TransferScheduleStatus(str, Enum):
     DISABLED = "DISABLED"
     EXPIRED = "EXPIRED"
     DELETED = "DELETED"
+
+    __str__ = str.__str__
 
 
 __all__ = [

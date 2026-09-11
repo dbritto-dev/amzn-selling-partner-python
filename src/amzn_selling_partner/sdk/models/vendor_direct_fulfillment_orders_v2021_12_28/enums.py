@@ -16,6 +16,8 @@ class OrderDetailsOrderStatus(str, Enum):
     ACCEPTED = "ACCEPTED"
     CANCELLED = "CANCELLED"
 
+    __str__ = str.__str__
+
 
 class TaxDetailsType(str, Enum):
     CONSUMPTION = "CONSUMPTION"
@@ -26,15 +28,21 @@ class TaxDetailsType(str, Enum):
     TVA = "TVA"
     VAT = "VAT"
 
+    __str__ = str.__str__
+
 
 class TaxRegistrationDetailsTaxRegistrationType(str, Enum):
     VAT = "VAT"
     GST = "GST"
 
+    __str__ = str.__str__
+
 
 class VendorDirectFulfillmentOrdersV20211228SortOrder(str, Enum):
     ASC = "ASC"
     DESC = "DESC"
+
+    __str__ = str.__str__
 
 
 class VendorDirectFulfillmentOrdersV20211228Status(str, Enum):
@@ -42,6 +50,8 @@ class VendorDirectFulfillmentOrdersV20211228Status(str, Enum):
     SHIPPED = "SHIPPED"
     ACCEPTED = "ACCEPTED"
     CANCELLED = "CANCELLED"
+
+    __str__ = str.__str__
 
 
 __all__ = [

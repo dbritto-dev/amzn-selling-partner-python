@@ -25,11 +25,15 @@ class ListingsRestrictionsV20210801ConditionType(str, Enum):
     COLLECTIBLE_ACCEPTABLE = "collectible_acceptable"
     CLUB_CLUB = "club_club"
 
+    __str__ = str.__str__
+
 
 class ReasonReasonCode(str, Enum):
     APPROVAL_REQUIRED = "APPROVAL_REQUIRED"
     ASIN_NOT_FOUND = "ASIN_NOT_FOUND"
     NOT_ELIGIBLE = "NOT_ELIGIBLE"
+
+    __str__ = str.__str__
 
 
 class RestrictionConditionType(str, Enum):
@@ -46,6 +50,8 @@ class RestrictionConditionType(str, Enum):
     COLLECTIBLE_GOOD = "collectible_good"
     COLLECTIBLE_ACCEPTABLE = "collectible_acceptable"
     CLUB_CLUB = "club_club"
+
+    __str__ = str.__str__
 
 
 __all__ = [

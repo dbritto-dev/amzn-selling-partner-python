@@ -11,24 +11,24 @@ import datetime
 from collections.abc import AsyncIterator, Iterator
 from typing import Any
 
-from ..http_client import AsyncHttpClient, HttpClient, RequestOptions, apaginate, paginate, path_segment
+from .._http import AsyncHttpClient, HttpClient, RequestOptions, apaginate, paginate, path_segment
 from ..models import finances_invoices_v2026_06_25
 
 SERVICE = "finances_invoices_v2026_06_25"
 
 
-class FinancesInvoicesV20260625Client:
+class FinancesInvoicesV20260625Resource:
     """Synchronous ``FinancesInvoicesV20260625`` resource."""
 
-    __slots__ = ("_client",)
+    __slots__ = ("_http",)
 
-    def __init__(self, client: HttpClient) -> None:
-        self._client = client
+    def __init__(self, http: HttpClient) -> None:
+        self._http = http
 
     def list_invoices(
         self,
-        *,
         marketplace_id: str,
+        *,
         next_token: str | None = None,
         from_issue_date: datetime.datetime | None = None,
         to_issue_date: datetime.datetime | None = None,
@@ -46,7 +46,7 @@ class FinancesInvoicesV20260625Client:
             "toIssueDate": to_issue_date,
             "invoicesModifiedAfter": invoices_modified_after,
         }
-        return self._client.request(
+        return self._http.request(
             "GET",
             "/finances/invoices/2026-06-25/invoices",
             operation="getInvoiceHeaders",
@@ -59,8 +59,8 @@ class FinancesInvoicesV20260625Client:
 
     def iter_list_invoices(
         self,
-        *,
         marketplace_id: str,
+        *,
         next_token: str | None = None,
         from_issue_date: datetime.datetime | None = None,
         to_issue_date: datetime.datetime | None = None,
@@ -87,9 +87,9 @@ class FinancesInvoicesV20260625Client:
 
     def get_invoice(
         self,
-        *,
         invoice_identifier: str,
         marketplace_id: str,
+        *,
         next_token_for_line_items: str | None = None,
         request_options: RequestOptions | None = None,
     ) -> finances_invoices_v2026_06_25.GetInvoiceResponse:
@@ -98,7 +98,7 @@ class FinancesInvoicesV20260625Client:
         GET /finances/invoices/2026-06-25/invoices/{invoiceIdentifier}
         """
         params: dict[str, Any] = {"marketplaceId": marketplace_id, "nextTokenForLineItems": next_token_for_line_items}
-        return self._client.request(
+        return self._http.request(
             "GET",
             f"/finances/invoices/2026-06-25/invoices/{path_segment(invoice_identifier)}",
             operation="getInvoice",
@@ -110,18 +110,18 @@ class FinancesInvoicesV20260625Client:
         )
 
 
-class AsyncFinancesInvoicesV20260625Client:
+class AsyncFinancesInvoicesV20260625Resource:
     """Asynchronous ``FinancesInvoicesV20260625`` resource."""
 
-    __slots__ = ("_client",)
+    __slots__ = ("_http",)
 
-    def __init__(self, client: AsyncHttpClient) -> None:
-        self._client = client
+    def __init__(self, http: AsyncHttpClient) -> None:
+        self._http = http
 
     async def list_invoices(
         self,
-        *,
         marketplace_id: str,
+        *,
         next_token: str | None = None,
         from_issue_date: datetime.datetime | None = None,
         to_issue_date: datetime.datetime | None = None,
@@ -139,7 +139,7 @@ class AsyncFinancesInvoicesV20260625Client:
             "toIssueDate": to_issue_date,
             "invoicesModifiedAfter": invoices_modified_after,
         }
-        return await self._client.request(
+        return await self._http.request(
             "GET",
             "/finances/invoices/2026-06-25/invoices",
             operation="getInvoiceHeaders",
@@ -152,8 +152,8 @@ class AsyncFinancesInvoicesV20260625Client:
 
     def iter_list_invoices(
         self,
-        *,
         marketplace_id: str,
+        *,
         next_token: str | None = None,
         from_issue_date: datetime.datetime | None = None,
         to_issue_date: datetime.datetime | None = None,
@@ -180,9 +180,9 @@ class AsyncFinancesInvoicesV20260625Client:
 
     async def get_invoice(
         self,
-        *,
         invoice_identifier: str,
         marketplace_id: str,
+        *,
         next_token_for_line_items: str | None = None,
         request_options: RequestOptions | None = None,
     ) -> finances_invoices_v2026_06_25.GetInvoiceResponse:
@@ -191,7 +191,7 @@ class AsyncFinancesInvoicesV20260625Client:
         GET /finances/invoices/2026-06-25/invoices/{invoiceIdentifier}
         """
         params: dict[str, Any] = {"marketplaceId": marketplace_id, "nextTokenForLineItems": next_token_for_line_items}
-        return await self._client.request(
+        return await self._http.request(
             "GET",
             f"/finances/invoices/2026-06-25/invoices/{path_segment(invoice_identifier)}",
             operation="getInvoice",
@@ -203,4 +203,4 @@ class AsyncFinancesInvoicesV20260625Client:
         )
 
 
-__all__ = ["AsyncFinancesInvoicesV20260625Client", "FinancesInvoicesV20260625Client"]
+__all__ = ["AsyncFinancesInvoicesV20260625Resource", "FinancesInvoicesV20260625Resource"]

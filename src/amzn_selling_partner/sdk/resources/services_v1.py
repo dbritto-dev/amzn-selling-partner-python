@@ -10,24 +10,24 @@ from __future__ import annotations
 from collections.abc import AsyncIterator, Iterator, Mapping
 from typing import Any
 
-from ..http_client import AsyncHttpClient, HttpClient, RateLimit, RequestOptions, apaginate, joined, paginate, path_segment
+from .._http import AsyncHttpClient, HttpClient, RateLimit, RequestOptions, apaginate, joined, paginate, path_segment
 from ..models import services_v1
 
 SERVICE = "services_v1"
 
 
-class ServicesV1Client:
+class ServicesV1Resource:
     """Synchronous ``ServicesV1`` resource."""
 
-    __slots__ = ("_client",)
+    __slots__ = ("_http",)
 
-    def __init__(self, client: HttpClient) -> None:
-        self._client = client
+    def __init__(self, http: HttpClient) -> None:
+        self._http = http
 
     def get_service_job(
         self,
-        *,
         service_job_id: str,
+        *,
         request_options: RequestOptions | None = None,
     ) -> services_v1.GetServiceJobByServiceJobIdResponse:
         """Gets details of service job indicated by the provided `serviceJobID`.
@@ -42,7 +42,7 @@ class ServicesV1Client:
 
         GET /service/v1/serviceJobs/{serviceJobId}
         """
-        return self._client.request(
+        return self._http.request(
             "GET",
             f"/service/v1/serviceJobs/{path_segment(service_job_id)}",
             operation="getServiceJobByServiceJobId",
@@ -55,9 +55,9 @@ class ServicesV1Client:
 
     def update_service_job_cancellations(
         self,
-        *,
         service_job_id: str,
         cancellation_reason_code: str,
+        *,
         request_options: RequestOptions | None = None,
     ) -> services_v1.CancelServiceJobByServiceJobIdResponse:
         """Cancels the service job indicated by the service job identifier specified.
@@ -73,7 +73,7 @@ class ServicesV1Client:
         PUT /service/v1/serviceJobs/{serviceJobId}/cancellations
         """
         params: dict[str, Any] = {"cancellationReasonCode": cancellation_reason_code}
-        return self._client.request(
+        return self._http.request(
             "PUT",
             f"/service/v1/serviceJobs/{path_segment(service_job_id)}/cancellations",
             operation="cancelServiceJobByServiceJobId",
@@ -87,8 +87,8 @@ class ServicesV1Client:
 
     def update_service_job_completions(
         self,
-        *,
         service_job_id: str,
+        *,
         request_options: RequestOptions | None = None,
     ) -> services_v1.CompleteServiceJobByServiceJobIdResponse:
         """Completes the service job indicated by the service job identifier specified.
@@ -103,7 +103,7 @@ class ServicesV1Client:
 
         PUT /service/v1/serviceJobs/{serviceJobId}/completions
         """
-        return self._client.request(
+        return self._http.request(
             "PUT",
             f"/service/v1/serviceJobs/{path_segment(service_job_id)}/completions",
             operation="completeServiceJobByServiceJobId",
@@ -116,8 +116,8 @@ class ServicesV1Client:
 
     def list_service_jobs(
         self,
-        *,
         marketplace_ids: list[str],
+        *,
         service_order_ids: list[str] | None = None,
         product_order_ids: list[str] | None = None,
         tracking_ids: list[str] | None = None,
@@ -169,7 +169,7 @@ class ServicesV1Client:
             "requiredSkills": joined(required_skills, ","),
             "storeIds": joined(store_ids, ","),
         }
-        return self._client.request(
+        return self._http.request(
             "GET",
             "/service/v1/serviceJobs",
             operation="getServiceJobs",
@@ -183,8 +183,8 @@ class ServicesV1Client:
 
     def iter_list_service_jobs(
         self,
-        *,
         marketplace_ids: list[str],
+        *,
         service_order_ids: list[str] | None = None,
         product_order_ids: list[str] | None = None,
         tracking_ids: list[str] | None = None,
@@ -237,9 +237,9 @@ class ServicesV1Client:
 
     def add_appointment_for_service_job_by_service_job_id(
         self,
-        *,
         service_job_id: str,
         body: services_v1.AddAppointmentRequest | Mapping[str, Any],
+        *,
         request_options: RequestOptions | None = None,
     ) -> services_v1.SetAppointmentResponse:
         """Adds an appointment to the service job indicated by the service job identifier specified.
@@ -254,7 +254,7 @@ class ServicesV1Client:
 
         POST /service/v1/serviceJobs/{serviceJobId}/appointments
         """
-        return self._client.request(
+        return self._http.request(
             "POST",
             f"/service/v1/serviceJobs/{path_segment(service_job_id)}/appointments",
             operation="addAppointmentForServiceJobByServiceJobId",
@@ -268,10 +268,10 @@ class ServicesV1Client:
 
     def reschedule_appointment_for_service_job_by_service_job_id(
         self,
-        *,
         service_job_id: str,
         appointment_id: str,
         body: services_v1.RescheduleAppointmentRequest | Mapping[str, Any],
+        *,
         request_options: RequestOptions | None = None,
     ) -> services_v1.SetAppointmentResponse:
         """Reschedules an appointment for the service job indicated by the service job identifier specified.
@@ -286,7 +286,7 @@ class ServicesV1Client:
 
         POST /service/v1/serviceJobs/{serviceJobId}/appointments/{appointmentId}
         """
-        return self._client.request(
+        return self._http.request(
             "POST",
             f"/service/v1/serviceJobs/{path_segment(service_job_id)}/appointments/{path_segment(appointment_id)}",
             operation="rescheduleAppointmentForServiceJobByServiceJobId",
@@ -300,10 +300,10 @@ class ServicesV1Client:
 
     def update_appointment_resources(
         self,
-        *,
         service_job_id: str,
         appointment_id: str,
         body: services_v1.AssignAppointmentResourcesRequest | Mapping[str, Any],
+        *,
         request_options: RequestOptions | None = None,
     ) -> services_v1.AssignAppointmentResourcesResponse:
         """Assigns new resource(s) or overwrite/update the existing one(s) to a service job appointment.
@@ -318,7 +318,7 @@ class ServicesV1Client:
 
         PUT /service/v1/serviceJobs/{serviceJobId}/appointments/{appointmentId}/resources
         """
-        return self._client.request(
+        return self._http.request(
             "PUT",
             f"/service/v1/serviceJobs/{path_segment(service_job_id)}/appointments/{path_segment(appointment_id)}/resources",
             operation="assignAppointmentResources",
@@ -332,10 +332,10 @@ class ServicesV1Client:
 
     def update_appointment_fulfillment(
         self,
-        *,
         service_job_id: str,
         appointment_id: str,
         body: services_v1.SetAppointmentFulfillmentDataRequest | Mapping[str, Any],
+        *,
         request_options: RequestOptions | None = None,
     ) -> str:
         """Updates the appointment fulfillment data related to a given `jobID` and `appointmentID`.
@@ -350,7 +350,7 @@ class ServicesV1Client:
 
         PUT /service/v1/serviceJobs/{serviceJobId}/appointments/{appointmentId}/fulfillment
         """
-        return self._client.request(
+        return self._http.request(
             "PUT",
             f"/service/v1/serviceJobs/{path_segment(service_job_id)}/appointments/{path_segment(appointment_id)}/fulfillment",
             operation="setAppointmentFulfillmentData",
@@ -364,10 +364,10 @@ class ServicesV1Client:
 
     def create_range(
         self,
-        *,
         resource_id: str,
-        marketplace_ids: list[str],
         body: services_v1.RangeSlotCapacityQuery | Mapping[str, Any],
+        marketplace_ids: list[str],
+        *,
         next_page_token: str | None = None,
         request_options: RequestOptions | None = None,
     ) -> services_v1.RangeSlotCapacity:
@@ -384,7 +384,7 @@ class ServicesV1Client:
         POST /service/v1/serviceResources/{resourceId}/capacity/range
         """
         params: dict[str, Any] = {"marketplaceIds": joined(marketplace_ids, ","), "nextPageToken": next_page_token}
-        return self._client.request(
+        return self._http.request(
             "POST",
             f"/service/v1/serviceResources/{path_segment(resource_id)}/capacity/range",
             operation="getRangeSlotCapacity",
@@ -399,10 +399,10 @@ class ServicesV1Client:
 
     def create_fixed(
         self,
-        *,
         resource_id: str,
-        marketplace_ids: list[str],
         body: services_v1.FixedSlotCapacityQuery | Mapping[str, Any],
+        marketplace_ids: list[str],
+        *,
         next_page_token: str | None = None,
         request_options: RequestOptions | None = None,
     ) -> services_v1.FixedSlotCapacity:
@@ -419,7 +419,7 @@ class ServicesV1Client:
         POST /service/v1/serviceResources/{resourceId}/capacity/fixed
         """
         params: dict[str, Any] = {"marketplaceIds": joined(marketplace_ids, ","), "nextPageToken": next_page_token}
-        return self._client.request(
+        return self._http.request(
             "POST",
             f"/service/v1/serviceResources/{path_segment(resource_id)}/capacity/fixed",
             operation="getFixedSlotCapacity",
@@ -434,10 +434,10 @@ class ServicesV1Client:
 
     def update_service_resource_schedules(
         self,
-        *,
         resource_id: str,
-        marketplace_ids: list[str],
         body: services_v1.UpdateScheduleRequest | Mapping[str, Any],
+        marketplace_ids: list[str],
+        *,
         request_options: RequestOptions | None = None,
     ) -> services_v1.UpdateScheduleResponse:
         """Update the schedule of the given resource.
@@ -453,7 +453,7 @@ class ServicesV1Client:
         PUT /service/v1/serviceResources/{resourceId}/schedules
         """
         params: dict[str, Any] = {"marketplaceIds": joined(marketplace_ids, ",")}
-        return self._client.request(
+        return self._http.request(
             "PUT",
             f"/service/v1/serviceResources/{path_segment(resource_id)}/schedules",
             operation="updateSchedule",
@@ -468,9 +468,9 @@ class ServicesV1Client:
 
     def create_reservation(
         self,
-        *,
-        marketplace_ids: list[str],
         body: services_v1.CreateReservationRequest | Mapping[str, Any],
+        marketplace_ids: list[str],
+        *,
         request_options: RequestOptions | None = None,
     ) -> services_v1.CreateReservationResponse:
         """Create a reservation.
@@ -486,7 +486,7 @@ class ServicesV1Client:
         POST /service/v1/reservation
         """
         params: dict[str, Any] = {"marketplaceIds": joined(marketplace_ids, ",")}
-        return self._client.request(
+        return self._http.request(
             "POST",
             "/service/v1/reservation",
             operation="createReservation",
@@ -501,10 +501,10 @@ class ServicesV1Client:
 
     def update_reservation(
         self,
-        *,
         reservation_id: str,
-        marketplace_ids: list[str],
         body: services_v1.UpdateReservationRequest | Mapping[str, Any],
+        marketplace_ids: list[str],
+        *,
         request_options: RequestOptions | None = None,
     ) -> services_v1.UpdateReservationResponse:
         """Update a reservation.
@@ -520,7 +520,7 @@ class ServicesV1Client:
         PUT /service/v1/reservation/{reservationId}
         """
         params: dict[str, Any] = {"marketplaceIds": joined(marketplace_ids, ",")}
-        return self._client.request(
+        return self._http.request(
             "PUT",
             f"/service/v1/reservation/{path_segment(reservation_id)}",
             operation="updateReservation",
@@ -535,9 +535,9 @@ class ServicesV1Client:
 
     def delete_reservation(
         self,
-        *,
         reservation_id: str,
         marketplace_ids: list[str],
+        *,
         request_options: RequestOptions | None = None,
     ) -> services_v1.CancelReservationResponse:
         """Cancel a reservation.
@@ -553,7 +553,7 @@ class ServicesV1Client:
         DELETE /service/v1/reservation/{reservationId}
         """
         params: dict[str, Any] = {"marketplaceIds": joined(marketplace_ids, ",")}
-        return self._client.request(
+        return self._http.request(
             "DELETE",
             f"/service/v1/reservation/{path_segment(reservation_id)}",
             operation="cancelReservation",
@@ -567,9 +567,9 @@ class ServicesV1Client:
 
     def list_service_job_appointment_slots(
         self,
-        *,
         service_job_id: str,
         marketplace_ids: list[str],
+        *,
         start_time: str | None = None,
         end_time: str | None = None,
         request_options: RequestOptions | None = None,
@@ -587,7 +587,7 @@ class ServicesV1Client:
         GET /service/v1/serviceJobs/{serviceJobId}/appointmentSlots
         """
         params: dict[str, Any] = {"marketplaceIds": joined(marketplace_ids, ","), "startTime": start_time, "endTime": end_time}
-        return self._client.request(
+        return self._http.request(
             "GET",
             f"/service/v1/serviceJobs/{path_segment(service_job_id)}/appointmentSlots",
             operation="getAppointmmentSlotsByJobId",
@@ -601,10 +601,10 @@ class ServicesV1Client:
 
     def list_appointment_slots(
         self,
-        *,
         asin: str,
         store_id: str,
         marketplace_ids: list[str],
+        *,
         start_time: str | None = None,
         end_time: str | None = None,
         request_options: RequestOptions | None = None,
@@ -628,7 +628,7 @@ class ServicesV1Client:
             "startTime": start_time,
             "endTime": end_time,
         }
-        return self._client.request(
+        return self._http.request(
             "GET",
             "/service/v1/appointmentSlots",
             operation="getAppointmentSlots",
@@ -642,8 +642,8 @@ class ServicesV1Client:
 
     def create_document(
         self,
-        *,
         body: services_v1.ServiceUploadDocument | Mapping[str, Any],
+        *,
         request_options: RequestOptions | None = None,
     ) -> services_v1.CreateServiceDocumentUploadDestination:
         """Creates an upload destination.
@@ -658,7 +658,7 @@ class ServicesV1Client:
 
         POST /service/v1/documents
         """
-        return self._client.request(
+        return self._http.request(
             "POST",
             "/service/v1/documents",
             operation="createServiceDocumentUploadDestination",
@@ -671,18 +671,18 @@ class ServicesV1Client:
         )
 
 
-class AsyncServicesV1Client:
+class AsyncServicesV1Resource:
     """Asynchronous ``ServicesV1`` resource."""
 
-    __slots__ = ("_client",)
+    __slots__ = ("_http",)
 
-    def __init__(self, client: AsyncHttpClient) -> None:
-        self._client = client
+    def __init__(self, http: AsyncHttpClient) -> None:
+        self._http = http
 
     async def get_service_job(
         self,
-        *,
         service_job_id: str,
+        *,
         request_options: RequestOptions | None = None,
     ) -> services_v1.GetServiceJobByServiceJobIdResponse:
         """Gets details of service job indicated by the provided `serviceJobID`.
@@ -697,7 +697,7 @@ class AsyncServicesV1Client:
 
         GET /service/v1/serviceJobs/{serviceJobId}
         """
-        return await self._client.request(
+        return await self._http.request(
             "GET",
             f"/service/v1/serviceJobs/{path_segment(service_job_id)}",
             operation="getServiceJobByServiceJobId",
@@ -710,9 +710,9 @@ class AsyncServicesV1Client:
 
     async def update_service_job_cancellations(
         self,
-        *,
         service_job_id: str,
         cancellation_reason_code: str,
+        *,
         request_options: RequestOptions | None = None,
     ) -> services_v1.CancelServiceJobByServiceJobIdResponse:
         """Cancels the service job indicated by the service job identifier specified.
@@ -728,7 +728,7 @@ class AsyncServicesV1Client:
         PUT /service/v1/serviceJobs/{serviceJobId}/cancellations
         """
         params: dict[str, Any] = {"cancellationReasonCode": cancellation_reason_code}
-        return await self._client.request(
+        return await self._http.request(
             "PUT",
             f"/service/v1/serviceJobs/{path_segment(service_job_id)}/cancellations",
             operation="cancelServiceJobByServiceJobId",
@@ -742,8 +742,8 @@ class AsyncServicesV1Client:
 
     async def update_service_job_completions(
         self,
-        *,
         service_job_id: str,
+        *,
         request_options: RequestOptions | None = None,
     ) -> services_v1.CompleteServiceJobByServiceJobIdResponse:
         """Completes the service job indicated by the service job identifier specified.
@@ -758,7 +758,7 @@ class AsyncServicesV1Client:
 
         PUT /service/v1/serviceJobs/{serviceJobId}/completions
         """
-        return await self._client.request(
+        return await self._http.request(
             "PUT",
             f"/service/v1/serviceJobs/{path_segment(service_job_id)}/completions",
             operation="completeServiceJobByServiceJobId",
@@ -771,8 +771,8 @@ class AsyncServicesV1Client:
 
     async def list_service_jobs(
         self,
-        *,
         marketplace_ids: list[str],
+        *,
         service_order_ids: list[str] | None = None,
         product_order_ids: list[str] | None = None,
         tracking_ids: list[str] | None = None,
@@ -824,7 +824,7 @@ class AsyncServicesV1Client:
             "requiredSkills": joined(required_skills, ","),
             "storeIds": joined(store_ids, ","),
         }
-        return await self._client.request(
+        return await self._http.request(
             "GET",
             "/service/v1/serviceJobs",
             operation="getServiceJobs",
@@ -838,8 +838,8 @@ class AsyncServicesV1Client:
 
     def iter_list_service_jobs(
         self,
-        *,
         marketplace_ids: list[str],
+        *,
         service_order_ids: list[str] | None = None,
         product_order_ids: list[str] | None = None,
         tracking_ids: list[str] | None = None,
@@ -892,9 +892,9 @@ class AsyncServicesV1Client:
 
     async def add_appointment_for_service_job_by_service_job_id(
         self,
-        *,
         service_job_id: str,
         body: services_v1.AddAppointmentRequest | Mapping[str, Any],
+        *,
         request_options: RequestOptions | None = None,
     ) -> services_v1.SetAppointmentResponse:
         """Adds an appointment to the service job indicated by the service job identifier specified.
@@ -909,7 +909,7 @@ class AsyncServicesV1Client:
 
         POST /service/v1/serviceJobs/{serviceJobId}/appointments
         """
-        return await self._client.request(
+        return await self._http.request(
             "POST",
             f"/service/v1/serviceJobs/{path_segment(service_job_id)}/appointments",
             operation="addAppointmentForServiceJobByServiceJobId",
@@ -923,10 +923,10 @@ class AsyncServicesV1Client:
 
     async def reschedule_appointment_for_service_job_by_service_job_id(
         self,
-        *,
         service_job_id: str,
         appointment_id: str,
         body: services_v1.RescheduleAppointmentRequest | Mapping[str, Any],
+        *,
         request_options: RequestOptions | None = None,
     ) -> services_v1.SetAppointmentResponse:
         """Reschedules an appointment for the service job indicated by the service job identifier specified.
@@ -941,7 +941,7 @@ class AsyncServicesV1Client:
 
         POST /service/v1/serviceJobs/{serviceJobId}/appointments/{appointmentId}
         """
-        return await self._client.request(
+        return await self._http.request(
             "POST",
             f"/service/v1/serviceJobs/{path_segment(service_job_id)}/appointments/{path_segment(appointment_id)}",
             operation="rescheduleAppointmentForServiceJobByServiceJobId",
@@ -955,10 +955,10 @@ class AsyncServicesV1Client:
 
     async def update_appointment_resources(
         self,
-        *,
         service_job_id: str,
         appointment_id: str,
         body: services_v1.AssignAppointmentResourcesRequest | Mapping[str, Any],
+        *,
         request_options: RequestOptions | None = None,
     ) -> services_v1.AssignAppointmentResourcesResponse:
         """Assigns new resource(s) or overwrite/update the existing one(s) to a service job appointment.
@@ -973,7 +973,7 @@ class AsyncServicesV1Client:
 
         PUT /service/v1/serviceJobs/{serviceJobId}/appointments/{appointmentId}/resources
         """
-        return await self._client.request(
+        return await self._http.request(
             "PUT",
             f"/service/v1/serviceJobs/{path_segment(service_job_id)}/appointments/{path_segment(appointment_id)}/resources",
             operation="assignAppointmentResources",
@@ -987,10 +987,10 @@ class AsyncServicesV1Client:
 
     async def update_appointment_fulfillment(
         self,
-        *,
         service_job_id: str,
         appointment_id: str,
         body: services_v1.SetAppointmentFulfillmentDataRequest | Mapping[str, Any],
+        *,
         request_options: RequestOptions | None = None,
     ) -> str:
         """Updates the appointment fulfillment data related to a given `jobID` and `appointmentID`.
@@ -1005,7 +1005,7 @@ class AsyncServicesV1Client:
 
         PUT /service/v1/serviceJobs/{serviceJobId}/appointments/{appointmentId}/fulfillment
         """
-        return await self._client.request(
+        return await self._http.request(
             "PUT",
             f"/service/v1/serviceJobs/{path_segment(service_job_id)}/appointments/{path_segment(appointment_id)}/fulfillment",
             operation="setAppointmentFulfillmentData",
@@ -1019,10 +1019,10 @@ class AsyncServicesV1Client:
 
     async def create_range(
         self,
-        *,
         resource_id: str,
-        marketplace_ids: list[str],
         body: services_v1.RangeSlotCapacityQuery | Mapping[str, Any],
+        marketplace_ids: list[str],
+        *,
         next_page_token: str | None = None,
         request_options: RequestOptions | None = None,
     ) -> services_v1.RangeSlotCapacity:
@@ -1039,7 +1039,7 @@ class AsyncServicesV1Client:
         POST /service/v1/serviceResources/{resourceId}/capacity/range
         """
         params: dict[str, Any] = {"marketplaceIds": joined(marketplace_ids, ","), "nextPageToken": next_page_token}
-        return await self._client.request(
+        return await self._http.request(
             "POST",
             f"/service/v1/serviceResources/{path_segment(resource_id)}/capacity/range",
             operation="getRangeSlotCapacity",
@@ -1054,10 +1054,10 @@ class AsyncServicesV1Client:
 
     async def create_fixed(
         self,
-        *,
         resource_id: str,
-        marketplace_ids: list[str],
         body: services_v1.FixedSlotCapacityQuery | Mapping[str, Any],
+        marketplace_ids: list[str],
+        *,
         next_page_token: str | None = None,
         request_options: RequestOptions | None = None,
     ) -> services_v1.FixedSlotCapacity:
@@ -1074,7 +1074,7 @@ class AsyncServicesV1Client:
         POST /service/v1/serviceResources/{resourceId}/capacity/fixed
         """
         params: dict[str, Any] = {"marketplaceIds": joined(marketplace_ids, ","), "nextPageToken": next_page_token}
-        return await self._client.request(
+        return await self._http.request(
             "POST",
             f"/service/v1/serviceResources/{path_segment(resource_id)}/capacity/fixed",
             operation="getFixedSlotCapacity",
@@ -1089,10 +1089,10 @@ class AsyncServicesV1Client:
 
     async def update_service_resource_schedules(
         self,
-        *,
         resource_id: str,
-        marketplace_ids: list[str],
         body: services_v1.UpdateScheduleRequest | Mapping[str, Any],
+        marketplace_ids: list[str],
+        *,
         request_options: RequestOptions | None = None,
     ) -> services_v1.UpdateScheduleResponse:
         """Update the schedule of the given resource.
@@ -1108,7 +1108,7 @@ class AsyncServicesV1Client:
         PUT /service/v1/serviceResources/{resourceId}/schedules
         """
         params: dict[str, Any] = {"marketplaceIds": joined(marketplace_ids, ",")}
-        return await self._client.request(
+        return await self._http.request(
             "PUT",
             f"/service/v1/serviceResources/{path_segment(resource_id)}/schedules",
             operation="updateSchedule",
@@ -1123,9 +1123,9 @@ class AsyncServicesV1Client:
 
     async def create_reservation(
         self,
-        *,
-        marketplace_ids: list[str],
         body: services_v1.CreateReservationRequest | Mapping[str, Any],
+        marketplace_ids: list[str],
+        *,
         request_options: RequestOptions | None = None,
     ) -> services_v1.CreateReservationResponse:
         """Create a reservation.
@@ -1141,7 +1141,7 @@ class AsyncServicesV1Client:
         POST /service/v1/reservation
         """
         params: dict[str, Any] = {"marketplaceIds": joined(marketplace_ids, ",")}
-        return await self._client.request(
+        return await self._http.request(
             "POST",
             "/service/v1/reservation",
             operation="createReservation",
@@ -1156,10 +1156,10 @@ class AsyncServicesV1Client:
 
     async def update_reservation(
         self,
-        *,
         reservation_id: str,
-        marketplace_ids: list[str],
         body: services_v1.UpdateReservationRequest | Mapping[str, Any],
+        marketplace_ids: list[str],
+        *,
         request_options: RequestOptions | None = None,
     ) -> services_v1.UpdateReservationResponse:
         """Update a reservation.
@@ -1175,7 +1175,7 @@ class AsyncServicesV1Client:
         PUT /service/v1/reservation/{reservationId}
         """
         params: dict[str, Any] = {"marketplaceIds": joined(marketplace_ids, ",")}
-        return await self._client.request(
+        return await self._http.request(
             "PUT",
             f"/service/v1/reservation/{path_segment(reservation_id)}",
             operation="updateReservation",
@@ -1190,9 +1190,9 @@ class AsyncServicesV1Client:
 
     async def delete_reservation(
         self,
-        *,
         reservation_id: str,
         marketplace_ids: list[str],
+        *,
         request_options: RequestOptions | None = None,
     ) -> services_v1.CancelReservationResponse:
         """Cancel a reservation.
@@ -1208,7 +1208,7 @@ class AsyncServicesV1Client:
         DELETE /service/v1/reservation/{reservationId}
         """
         params: dict[str, Any] = {"marketplaceIds": joined(marketplace_ids, ",")}
-        return await self._client.request(
+        return await self._http.request(
             "DELETE",
             f"/service/v1/reservation/{path_segment(reservation_id)}",
             operation="cancelReservation",
@@ -1222,9 +1222,9 @@ class AsyncServicesV1Client:
 
     async def list_service_job_appointment_slots(
         self,
-        *,
         service_job_id: str,
         marketplace_ids: list[str],
+        *,
         start_time: str | None = None,
         end_time: str | None = None,
         request_options: RequestOptions | None = None,
@@ -1242,7 +1242,7 @@ class AsyncServicesV1Client:
         GET /service/v1/serviceJobs/{serviceJobId}/appointmentSlots
         """
         params: dict[str, Any] = {"marketplaceIds": joined(marketplace_ids, ","), "startTime": start_time, "endTime": end_time}
-        return await self._client.request(
+        return await self._http.request(
             "GET",
             f"/service/v1/serviceJobs/{path_segment(service_job_id)}/appointmentSlots",
             operation="getAppointmmentSlotsByJobId",
@@ -1256,10 +1256,10 @@ class AsyncServicesV1Client:
 
     async def list_appointment_slots(
         self,
-        *,
         asin: str,
         store_id: str,
         marketplace_ids: list[str],
+        *,
         start_time: str | None = None,
         end_time: str | None = None,
         request_options: RequestOptions | None = None,
@@ -1283,7 +1283,7 @@ class AsyncServicesV1Client:
             "startTime": start_time,
             "endTime": end_time,
         }
-        return await self._client.request(
+        return await self._http.request(
             "GET",
             "/service/v1/appointmentSlots",
             operation="getAppointmentSlots",
@@ -1297,8 +1297,8 @@ class AsyncServicesV1Client:
 
     async def create_document(
         self,
-        *,
         body: services_v1.ServiceUploadDocument | Mapping[str, Any],
+        *,
         request_options: RequestOptions | None = None,
     ) -> services_v1.CreateServiceDocumentUploadDestination:
         """Creates an upload destination.
@@ -1313,7 +1313,7 @@ class AsyncServicesV1Client:
 
         POST /service/v1/documents
         """
-        return await self._client.request(
+        return await self._http.request(
             "POST",
             "/service/v1/documents",
             operation="createServiceDocumentUploadDestination",
@@ -1326,4 +1326,4 @@ class AsyncServicesV1Client:
         )
 
 
-__all__ = ["AsyncServicesV1Client", "ServicesV1Client"]
+__all__ = ["AsyncServicesV1Resource", "ServicesV1Resource"]

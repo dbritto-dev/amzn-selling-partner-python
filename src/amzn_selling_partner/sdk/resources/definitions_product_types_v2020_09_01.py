@@ -9,24 +9,24 @@ from __future__ import annotations
 
 from typing import Any
 
-from ..http_client import AsyncHttpClient, HttpClient, RateLimit, RequestOptions, joined, path_segment
+from .._http import AsyncHttpClient, HttpClient, RateLimit, RequestOptions, joined, path_segment
 from ..models import definitions_product_types_v2020_09_01
 
 SERVICE = "definitions_product_types_v2020_09_01"
 
 
-class DefinitionsProductTypesV20200901Client:
+class DefinitionsProductTypesV20200901Resource:
     """Synchronous ``DefinitionsProductTypesV20200901`` resource."""
 
-    __slots__ = ("_client",)
+    __slots__ = ("_http",)
 
-    def __init__(self, client: HttpClient) -> None:
-        self._client = client
+    def __init__(self, http: HttpClient) -> None:
+        self._http = http
 
     def list_product_types(
         self,
-        *,
         marketplace_ids: list[str],
+        *,
         keywords: list[str] | None = None,
         item_name: str | None = None,
         locale: str | None = None,
@@ -53,7 +53,7 @@ class DefinitionsProductTypesV20200901Client:
             "locale": locale,
             "searchLocale": search_locale,
         }
-        return self._client.request(
+        return self._http.request(
             "GET",
             "/definitions/2020-09-01/productTypes",
             operation="searchDefinitionsProductTypes",
@@ -67,9 +67,9 @@ class DefinitionsProductTypesV20200901Client:
 
     def get_product_type(
         self,
-        *,
         product_type: str,
         marketplace_ids: list[str],
+        *,
         seller_id: str | None = None,
         product_type_version: str | None = None,
         requirements: definitions_product_types_v2020_09_01.DefinitionsProductTypesV20200901Requirements | str | None = None,
@@ -102,7 +102,7 @@ class DefinitionsProductTypesV20200901Client:
             "locale": locale,
             "parentageLevel": parentage_level,
         }
-        return self._client.request(
+        return self._http.request(
             "GET",
             f"/definitions/2020-09-01/productTypes/{path_segment(product_type)}",
             operation="getDefinitionsProductType",
@@ -115,18 +115,18 @@ class DefinitionsProductTypesV20200901Client:
         )
 
 
-class AsyncDefinitionsProductTypesV20200901Client:
+class AsyncDefinitionsProductTypesV20200901Resource:
     """Asynchronous ``DefinitionsProductTypesV20200901`` resource."""
 
-    __slots__ = ("_client",)
+    __slots__ = ("_http",)
 
-    def __init__(self, client: AsyncHttpClient) -> None:
-        self._client = client
+    def __init__(self, http: AsyncHttpClient) -> None:
+        self._http = http
 
     async def list_product_types(
         self,
-        *,
         marketplace_ids: list[str],
+        *,
         keywords: list[str] | None = None,
         item_name: str | None = None,
         locale: str | None = None,
@@ -153,7 +153,7 @@ class AsyncDefinitionsProductTypesV20200901Client:
             "locale": locale,
             "searchLocale": search_locale,
         }
-        return await self._client.request(
+        return await self._http.request(
             "GET",
             "/definitions/2020-09-01/productTypes",
             operation="searchDefinitionsProductTypes",
@@ -167,9 +167,9 @@ class AsyncDefinitionsProductTypesV20200901Client:
 
     async def get_product_type(
         self,
-        *,
         product_type: str,
         marketplace_ids: list[str],
+        *,
         seller_id: str | None = None,
         product_type_version: str | None = None,
         requirements: definitions_product_types_v2020_09_01.DefinitionsProductTypesV20200901Requirements | str | None = None,
@@ -202,7 +202,7 @@ class AsyncDefinitionsProductTypesV20200901Client:
             "locale": locale,
             "parentageLevel": parentage_level,
         }
-        return await self._client.request(
+        return await self._http.request(
             "GET",
             f"/definitions/2020-09-01/productTypes/{path_segment(product_type)}",
             operation="getDefinitionsProductType",
@@ -215,4 +215,4 @@ class AsyncDefinitionsProductTypesV20200901Client:
         )
 
 
-__all__ = ["AsyncDefinitionsProductTypesV20200901Client", "DefinitionsProductTypesV20200901Client"]
+__all__ = ["AsyncDefinitionsProductTypesV20200901Resource", "DefinitionsProductTypesV20200901Resource"]

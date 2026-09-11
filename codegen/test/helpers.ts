@@ -1,4 +1,10 @@
-/** Run a spec through the emitter (the same pipeline as `oagen generate` with oagen.config.ts) and return the files by path. */
+/**
+ * Run a spec through the emitter (the same pipeline as `oagen generate` with
+ * oagen.config.ts) and return the generated files by path.
+ *
+ * `parseSpec` takes a file path, so an inline fixture is written to a temp
+ * file first (`emitInline`).
+ */
 import fs from 'node:fs';
 import os from 'node:os';
 import path from 'node:path';
@@ -26,6 +32,18 @@ export async function emit(specPath: string, namespace = 'TasksClient'): Promise
       emitterOptions: config.emitterOptions?.python,
     });
     return Object.fromEntries(files.map((f: GeneratedFile) => [f.path, f.content]));
+  } finally {
+    fs.rmSync(dir, { recursive: true, force: true });
+  }
+}
+
+/** Emit an inline YAML spec (written to a temp file, as `parseSpec` wants a path). */
+export async function emitInline(yaml: string, namespace = 'Client'): Promise<Record<string, string>> {
+  const dir = fs.mkdtempSync(path.join(os.tmpdir(), 'codegen-spec-'));
+  const file = path.join(dir, 'spec.yml');
+  fs.writeFileSync(file, yaml);
+  try {
+    return await emit(file, namespace);
   } finally {
     fs.rmSync(dir, { recursive: true, force: true });
   }

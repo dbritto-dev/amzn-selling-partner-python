@@ -10,19 +10,19 @@ from __future__ import annotations
 from collections.abc import AsyncIterator, Iterator, Mapping
 from typing import Any
 
-from ..http_client import AsyncHttpClient, HttpClient, RateLimit, RequestOptions, apaginate, paginate, path_segment
+from .._http import AsyncHttpClient, HttpClient, RateLimit, RequestOptions, apaginate, paginate, path_segment
 from ..models import fulfillment_inbound_v2024_03_20
 
 SERVICE = "fulfillment_inbound_v2024_03_20"
 
 
-class FulfillmentInboundV20240320Client:
+class FulfillmentInboundV20240320Resource:
     """Synchronous ``FulfillmentInboundV20240320`` resource."""
 
-    __slots__ = ("_client",)
+    __slots__ = ("_http",)
 
-    def __init__(self, client: HttpClient) -> None:
-        self._client = client
+    def __init__(self, http: HttpClient) -> None:
+        self._http = http
 
     def list_inbound_plans(
         self,
@@ -53,7 +53,7 @@ class FulfillmentInboundV20240320Client:
             "sortBy": sort_by,
             "sortOrder": sort_order,
         }
-        return self._client.request(
+        return self._http.request(
             "GET",
             "/inbound/fba/2024-03-20/inboundPlans",
             operation="listInboundPlans",
@@ -95,8 +95,8 @@ class FulfillmentInboundV20240320Client:
 
     def create_inbound_plan(
         self,
-        *,
         body: fulfillment_inbound_v2024_03_20.CreateInboundPlanRequest | Mapping[str, Any],
+        *,
         request_options: RequestOptions | None = None,
     ) -> fulfillment_inbound_v2024_03_20.CreateInboundPlanResponse:
         """Creates an inbound plan. An inbound plan contains all the necessary information to send shipments into Amazon's fufillment network.
@@ -111,7 +111,7 @@ class FulfillmentInboundV20240320Client:
 
         POST /inbound/fba/2024-03-20/inboundPlans
         """
-        return self._client.request(
+        return self._http.request(
             "POST",
             "/inbound/fba/2024-03-20/inboundPlans",
             operation="createInboundPlan",
@@ -125,8 +125,8 @@ class FulfillmentInboundV20240320Client:
 
     def get_inbound_plan(
         self,
-        *,
         inbound_plan_id: str,
+        *,
         request_options: RequestOptions | None = None,
     ) -> fulfillment_inbound_v2024_03_20.InboundPlan:
         """Fetches the top level information about an inbound plan.
@@ -141,7 +141,7 @@ class FulfillmentInboundV20240320Client:
 
         GET /inbound/fba/2024-03-20/inboundPlans/{inboundPlanId}
         """
-        return self._client.request(
+        return self._http.request(
             "GET",
             f"/inbound/fba/2024-03-20/inboundPlans/{path_segment(inbound_plan_id)}",
             operation="getInboundPlan",
@@ -154,8 +154,8 @@ class FulfillmentInboundV20240320Client:
 
     def list_inbound_plan_boxes(
         self,
-        *,
         inbound_plan_id: str,
+        *,
         page_size: int | None = None,
         pagination_token: str | None = None,
         request_options: RequestOptions | None = None,
@@ -173,7 +173,7 @@ class FulfillmentInboundV20240320Client:
         GET /inbound/fba/2024-03-20/inboundPlans/{inboundPlanId}/boxes
         """
         params: dict[str, Any] = {"pageSize": page_size, "paginationToken": pagination_token}
-        return self._client.request(
+        return self._http.request(
             "GET",
             f"/inbound/fba/2024-03-20/inboundPlans/{path_segment(inbound_plan_id)}/boxes",
             operation="listInboundPlanBoxes",
@@ -187,8 +187,8 @@ class FulfillmentInboundV20240320Client:
 
     def iter_list_inbound_plan_boxes(
         self,
-        *,
         inbound_plan_id: str,
+        *,
         page_size: int | None = None,
         pagination_token: str | None = None,
         request_options: RequestOptions | None = None,
@@ -211,8 +211,8 @@ class FulfillmentInboundV20240320Client:
 
     def update_inbound_plan_cancellation(
         self,
-        *,
         inbound_plan_id: str,
+        *,
         request_options: RequestOptions | None = None,
     ) -> fulfillment_inbound_v2024_03_20.CancelInboundPlanResponse:
         """Cancels an Inbound Plan. Charges may apply if the cancellation is performed outside of a void window. The window for Amazon Partnered Carriers is 24 hours for Small Parcel Delivery (SPD) and one hour for Less-Than-Truckload (LTL) carrier shipments.
@@ -227,7 +227,7 @@ class FulfillmentInboundV20240320Client:
 
         PUT /inbound/fba/2024-03-20/inboundPlans/{inboundPlanId}/cancellation
         """
-        return self._client.request(
+        return self._http.request(
             "PUT",
             f"/inbound/fba/2024-03-20/inboundPlans/{path_segment(inbound_plan_id)}/cancellation",
             operation="cancelInboundPlan",
@@ -240,8 +240,8 @@ class FulfillmentInboundV20240320Client:
 
     def list_inbound_plan_items(
         self,
-        *,
         inbound_plan_id: str,
+        *,
         page_size: int | None = None,
         pagination_token: str | None = None,
         request_options: RequestOptions | None = None,
@@ -259,7 +259,7 @@ class FulfillmentInboundV20240320Client:
         GET /inbound/fba/2024-03-20/inboundPlans/{inboundPlanId}/items
         """
         params: dict[str, Any] = {"pageSize": page_size, "paginationToken": pagination_token}
-        return self._client.request(
+        return self._http.request(
             "GET",
             f"/inbound/fba/2024-03-20/inboundPlans/{path_segment(inbound_plan_id)}/items",
             operation="listInboundPlanItems",
@@ -273,8 +273,8 @@ class FulfillmentInboundV20240320Client:
 
     def iter_list_inbound_plan_items(
         self,
-        *,
         inbound_plan_id: str,
+        *,
         page_size: int | None = None,
         pagination_token: str | None = None,
         request_options: RequestOptions | None = None,
@@ -297,9 +297,9 @@ class FulfillmentInboundV20240320Client:
 
     def update_inbound_plan_name(
         self,
-        *,
         inbound_plan_id: str,
         body: fulfillment_inbound_v2024_03_20.UpdateInboundPlanNameRequest | Mapping[str, Any],
+        *,
         request_options: RequestOptions | None = None,
     ) -> None:
         """Updates the name of an existing inbound plan.
@@ -314,7 +314,7 @@ class FulfillmentInboundV20240320Client:
 
         PUT /inbound/fba/2024-03-20/inboundPlans/{inboundPlanId}/name
         """
-        return self._client.request(
+        return self._http.request(
             "PUT",
             f"/inbound/fba/2024-03-20/inboundPlans/{path_segment(inbound_plan_id)}/name",
             operation="updateInboundPlanName",
@@ -327,9 +327,9 @@ class FulfillmentInboundV20240320Client:
 
     def list_packing_group_boxes(
         self,
-        *,
         inbound_plan_id: str,
         packing_group_id: str,
+        *,
         page_size: int | None = None,
         pagination_token: str | None = None,
         request_options: RequestOptions | None = None,
@@ -347,7 +347,7 @@ class FulfillmentInboundV20240320Client:
         GET /inbound/fba/2024-03-20/inboundPlans/{inboundPlanId}/packingGroups/{packingGroupId}/boxes
         """
         params: dict[str, Any] = {"pageSize": page_size, "paginationToken": pagination_token}
-        return self._client.request(
+        return self._http.request(
             "GET",
             f"/inbound/fba/2024-03-20/inboundPlans/{path_segment(inbound_plan_id)}/packingGroups/{path_segment(packing_group_id)}/boxes",
             operation="listPackingGroupBoxes",
@@ -361,9 +361,9 @@ class FulfillmentInboundV20240320Client:
 
     def iter_list_packing_group_boxes(
         self,
-        *,
         inbound_plan_id: str,
         packing_group_id: str,
+        *,
         page_size: int | None = None,
         pagination_token: str | None = None,
         request_options: RequestOptions | None = None,
@@ -387,9 +387,9 @@ class FulfillmentInboundV20240320Client:
 
     def list_packing_group_items(
         self,
-        *,
         inbound_plan_id: str,
         packing_group_id: str,
+        *,
         page_size: int | None = None,
         pagination_token: str | None = None,
         request_options: RequestOptions | None = None,
@@ -407,7 +407,7 @@ class FulfillmentInboundV20240320Client:
         GET /inbound/fba/2024-03-20/inboundPlans/{inboundPlanId}/packingGroups/{packingGroupId}/items
         """
         params: dict[str, Any] = {"pageSize": page_size, "paginationToken": pagination_token}
-        return self._client.request(
+        return self._http.request(
             "GET",
             f"/inbound/fba/2024-03-20/inboundPlans/{path_segment(inbound_plan_id)}/packingGroups/{path_segment(packing_group_id)}/items",
             operation="listPackingGroupItems",
@@ -421,9 +421,9 @@ class FulfillmentInboundV20240320Client:
 
     def iter_list_packing_group_items(
         self,
-        *,
         inbound_plan_id: str,
         packing_group_id: str,
+        *,
         page_size: int | None = None,
         pagination_token: str | None = None,
         request_options: RequestOptions | None = None,
@@ -447,9 +447,9 @@ class FulfillmentInboundV20240320Client:
 
     def create_inbound_plan_packing_information(
         self,
-        *,
         inbound_plan_id: str,
         body: fulfillment_inbound_v2024_03_20.SetPackingInformationRequest | Mapping[str, Any],
+        *,
         request_options: RequestOptions | None = None,
     ) -> fulfillment_inbound_v2024_03_20.SetPackingInformationResponse:
         """Sets packing information for an inbound plan. This should be called after an inbound plan is created to populate the box level information required for planning and transportation estimates.
@@ -464,7 +464,7 @@ class FulfillmentInboundV20240320Client:
 
         POST /inbound/fba/2024-03-20/inboundPlans/{inboundPlanId}/packingInformation
         """
-        return self._client.request(
+        return self._http.request(
             "POST",
             f"/inbound/fba/2024-03-20/inboundPlans/{path_segment(inbound_plan_id)}/packingInformation",
             operation="setPackingInformation",
@@ -478,8 +478,8 @@ class FulfillmentInboundV20240320Client:
 
     def list_inbound_plan_packing_options(
         self,
-        *,
         inbound_plan_id: str,
+        *,
         page_size: int | None = None,
         pagination_token: str | None = None,
         request_options: RequestOptions | None = None,
@@ -497,7 +497,7 @@ class FulfillmentInboundV20240320Client:
         GET /inbound/fba/2024-03-20/inboundPlans/{inboundPlanId}/packingOptions
         """
         params: dict[str, Any] = {"pageSize": page_size, "paginationToken": pagination_token}
-        return self._client.request(
+        return self._http.request(
             "GET",
             f"/inbound/fba/2024-03-20/inboundPlans/{path_segment(inbound_plan_id)}/packingOptions",
             operation="listPackingOptions",
@@ -511,8 +511,8 @@ class FulfillmentInboundV20240320Client:
 
     def iter_list_inbound_plan_packing_options(
         self,
-        *,
         inbound_plan_id: str,
+        *,
         page_size: int | None = None,
         pagination_token: str | None = None,
         request_options: RequestOptions | None = None,
@@ -535,8 +535,8 @@ class FulfillmentInboundV20240320Client:
 
     def create_inbound_plan_packing_option(
         self,
-        *,
         inbound_plan_id: str,
+        *,
         request_options: RequestOptions | None = None,
     ) -> fulfillment_inbound_v2024_03_20.GeneratePackingOptionsResponse:
         """Generates available packing options for the inbound plan.
@@ -551,7 +551,7 @@ class FulfillmentInboundV20240320Client:
 
         POST /inbound/fba/2024-03-20/inboundPlans/{inboundPlanId}/packingOptions
         """
-        return self._client.request(
+        return self._http.request(
             "POST",
             f"/inbound/fba/2024-03-20/inboundPlans/{path_segment(inbound_plan_id)}/packingOptions",
             operation="generatePackingOptions",
@@ -564,9 +564,9 @@ class FulfillmentInboundV20240320Client:
 
     def create_packing_option_confirmation(
         self,
-        *,
         inbound_plan_id: str,
         packing_option_id: str,
+        *,
         request_options: RequestOptions | None = None,
     ) -> fulfillment_inbound_v2024_03_20.ConfirmPackingOptionResponse:
         """Confirms the packing option for an inbound plan.
@@ -581,7 +581,7 @@ class FulfillmentInboundV20240320Client:
 
         POST /inbound/fba/2024-03-20/inboundPlans/{inboundPlanId}/packingOptions/{packingOptionId}/confirmation
         """
-        return self._client.request(
+        return self._http.request(
             "POST",
             f"/inbound/fba/2024-03-20/inboundPlans/{path_segment(inbound_plan_id)}/packingOptions/{path_segment(packing_option_id)}/confirmation",
             operation="confirmPackingOption",
@@ -594,8 +594,8 @@ class FulfillmentInboundV20240320Client:
 
     def list_inbound_plan_pallets(
         self,
-        *,
         inbound_plan_id: str,
+        *,
         page_size: int | None = None,
         pagination_token: str | None = None,
         request_options: RequestOptions | None = None,
@@ -613,7 +613,7 @@ class FulfillmentInboundV20240320Client:
         GET /inbound/fba/2024-03-20/inboundPlans/{inboundPlanId}/pallets
         """
         params: dict[str, Any] = {"pageSize": page_size, "paginationToken": pagination_token}
-        return self._client.request(
+        return self._http.request(
             "GET",
             f"/inbound/fba/2024-03-20/inboundPlans/{path_segment(inbound_plan_id)}/pallets",
             operation="listInboundPlanPallets",
@@ -627,8 +627,8 @@ class FulfillmentInboundV20240320Client:
 
     def iter_list_inbound_plan_pallets(
         self,
-        *,
         inbound_plan_id: str,
+        *,
         page_size: int | None = None,
         pagination_token: str | None = None,
         request_options: RequestOptions | None = None,
@@ -651,8 +651,8 @@ class FulfillmentInboundV20240320Client:
 
     def list_inbound_plan_placement_options(
         self,
-        *,
         inbound_plan_id: str,
+        *,
         page_size: int | None = None,
         pagination_token: str | None = None,
         request_options: RequestOptions | None = None,
@@ -670,7 +670,7 @@ class FulfillmentInboundV20240320Client:
         GET /inbound/fba/2024-03-20/inboundPlans/{inboundPlanId}/placementOptions
         """
         params: dict[str, Any] = {"pageSize": page_size, "paginationToken": pagination_token}
-        return self._client.request(
+        return self._http.request(
             "GET",
             f"/inbound/fba/2024-03-20/inboundPlans/{path_segment(inbound_plan_id)}/placementOptions",
             operation="listPlacementOptions",
@@ -684,8 +684,8 @@ class FulfillmentInboundV20240320Client:
 
     def iter_list_inbound_plan_placement_options(
         self,
-        *,
         inbound_plan_id: str,
+        *,
         page_size: int | None = None,
         pagination_token: str | None = None,
         request_options: RequestOptions | None = None,
@@ -708,9 +708,9 @@ class FulfillmentInboundV20240320Client:
 
     def create_inbound_plan_placement_option(
         self,
-        *,
         inbound_plan_id: str,
         body: fulfillment_inbound_v2024_03_20.GeneratePlacementOptionsRequest | Mapping[str, Any],
+        *,
         request_options: RequestOptions | None = None,
     ) -> fulfillment_inbound_v2024_03_20.GeneratePlacementOptionsResponse:
         """Generates placement options for the inbound plan.
@@ -725,7 +725,7 @@ class FulfillmentInboundV20240320Client:
 
         POST /inbound/fba/2024-03-20/inboundPlans/{inboundPlanId}/placementOptions
         """
-        return self._client.request(
+        return self._http.request(
             "POST",
             f"/inbound/fba/2024-03-20/inboundPlans/{path_segment(inbound_plan_id)}/placementOptions",
             operation="generatePlacementOptions",
@@ -739,9 +739,9 @@ class FulfillmentInboundV20240320Client:
 
     def create_placement_option_confirmation(
         self,
-        *,
         inbound_plan_id: str,
         placement_option_id: str,
+        *,
         request_options: RequestOptions | None = None,
     ) -> fulfillment_inbound_v2024_03_20.ConfirmPlacementOptionResponse:
         """Confirms the placement option for an inbound plan. Once confirmed, it cannot be changed for the Inbound Plan.
@@ -756,7 +756,7 @@ class FulfillmentInboundV20240320Client:
 
         POST /inbound/fba/2024-03-20/inboundPlans/{inboundPlanId}/placementOptions/{placementOptionId}/confirmation
         """
-        return self._client.request(
+        return self._http.request(
             "POST",
             f"/inbound/fba/2024-03-20/inboundPlans/{path_segment(inbound_plan_id)}/placementOptions/{path_segment(placement_option_id)}/confirmation",
             operation="confirmPlacementOption",
@@ -769,9 +769,9 @@ class FulfillmentInboundV20240320Client:
 
     def get_inbound_plan_shipment(
         self,
-        *,
         inbound_plan_id: str,
         shipment_id: str,
+        *,
         request_options: RequestOptions | None = None,
     ) -> fulfillment_inbound_v2024_03_20.Shipment:
         """Provides the full details for a specific shipment within an inbound plan. The `transportationOptionId` inside `acceptedTransportationSelection` can be used to retrieve the transportation details for the shipment.
@@ -786,7 +786,7 @@ class FulfillmentInboundV20240320Client:
 
         GET /inbound/fba/2024-03-20/inboundPlans/{inboundPlanId}/shipments/{shipmentId}
         """
-        return self._client.request(
+        return self._http.request(
             "GET",
             f"/inbound/fba/2024-03-20/inboundPlans/{path_segment(inbound_plan_id)}/shipments/{path_segment(shipment_id)}",
             operation="getShipment",
@@ -799,9 +799,9 @@ class FulfillmentInboundV20240320Client:
 
     def list_shipment_boxes(
         self,
-        *,
         inbound_plan_id: str,
         shipment_id: str,
+        *,
         page_size: int | None = None,
         pagination_token: str | None = None,
         request_options: RequestOptions | None = None,
@@ -819,7 +819,7 @@ class FulfillmentInboundV20240320Client:
         GET /inbound/fba/2024-03-20/inboundPlans/{inboundPlanId}/shipments/{shipmentId}/boxes
         """
         params: dict[str, Any] = {"pageSize": page_size, "paginationToken": pagination_token}
-        return self._client.request(
+        return self._http.request(
             "GET",
             f"/inbound/fba/2024-03-20/inboundPlans/{path_segment(inbound_plan_id)}/shipments/{path_segment(shipment_id)}/boxes",
             operation="listShipmentBoxes",
@@ -833,9 +833,9 @@ class FulfillmentInboundV20240320Client:
 
     def iter_list_shipment_boxes(
         self,
-        *,
         inbound_plan_id: str,
         shipment_id: str,
+        *,
         page_size: int | None = None,
         pagination_token: str | None = None,
         request_options: RequestOptions | None = None,
@@ -859,9 +859,9 @@ class FulfillmentInboundV20240320Client:
 
     def list_shipment_content_update_previews(
         self,
-        *,
         inbound_plan_id: str,
         shipment_id: str,
+        *,
         page_size: int | None = None,
         pagination_token: str | None = None,
         request_options: RequestOptions | None = None,
@@ -879,7 +879,7 @@ class FulfillmentInboundV20240320Client:
         GET /inbound/fba/2024-03-20/inboundPlans/{inboundPlanId}/shipments/{shipmentId}/contentUpdatePreviews
         """
         params: dict[str, Any] = {"pageSize": page_size, "paginationToken": pagination_token}
-        return self._client.request(
+        return self._http.request(
             "GET",
             f"/inbound/fba/2024-03-20/inboundPlans/{path_segment(inbound_plan_id)}/shipments/{path_segment(shipment_id)}/contentUpdatePreviews",
             operation="listShipmentContentUpdatePreviews",
@@ -893,9 +893,9 @@ class FulfillmentInboundV20240320Client:
 
     def iter_list_shipment_content_update_previews(
         self,
-        *,
         inbound_plan_id: str,
         shipment_id: str,
+        *,
         page_size: int | None = None,
         pagination_token: str | None = None,
         request_options: RequestOptions | None = None,
@@ -919,10 +919,10 @@ class FulfillmentInboundV20240320Client:
 
     def create_shipment_content_update_preview(
         self,
-        *,
         inbound_plan_id: str,
         shipment_id: str,
         body: fulfillment_inbound_v2024_03_20.GenerateShipmentContentUpdatePreviewsRequest | Mapping[str, Any],
+        *,
         request_options: RequestOptions | None = None,
     ) -> fulfillment_inbound_v2024_03_20.GenerateShipmentContentUpdatePreviewsResponse:
         """Generate a shipment content update preview given a set of intended boxes and/or items for a shipment with a confirmed carrier. The shipment content update preview will be viewable with the updated costs and contents prior to confirmation.
@@ -937,7 +937,7 @@ class FulfillmentInboundV20240320Client:
 
         POST /inbound/fba/2024-03-20/inboundPlans/{inboundPlanId}/shipments/{shipmentId}/contentUpdatePreviews
         """
-        return self._client.request(
+        return self._http.request(
             "POST",
             f"/inbound/fba/2024-03-20/inboundPlans/{path_segment(inbound_plan_id)}/shipments/{path_segment(shipment_id)}/contentUpdatePreviews",
             operation="generateShipmentContentUpdatePreviews",
@@ -951,10 +951,10 @@ class FulfillmentInboundV20240320Client:
 
     def get_shipment_content_update_preview(
         self,
-        *,
         inbound_plan_id: str,
         shipment_id: str,
         content_update_preview_id: str,
+        *,
         request_options: RequestOptions | None = None,
     ) -> fulfillment_inbound_v2024_03_20.ContentUpdatePreview:
         """Retrieve a shipment content update preview which provides a summary of the requested shipment content changes along with the transportation cost implications of the change that can only be confirmed prior to the expiry date specified.
@@ -969,7 +969,7 @@ class FulfillmentInboundV20240320Client:
 
         GET /inbound/fba/2024-03-20/inboundPlans/{inboundPlanId}/shipments/{shipmentId}/contentUpdatePreviews/{contentUpdatePreviewId}
         """
-        return self._client.request(
+        return self._http.request(
             "GET",
             f"/inbound/fba/2024-03-20/inboundPlans/{path_segment(inbound_plan_id)}/shipments/{path_segment(shipment_id)}/contentUpdatePreviews/{path_segment(content_update_preview_id)}",
             operation="getShipmentContentUpdatePreview",
@@ -982,10 +982,10 @@ class FulfillmentInboundV20240320Client:
 
     def create_content_update_preview_confirmation(
         self,
-        *,
         inbound_plan_id: str,
         shipment_id: str,
         content_update_preview_id: str,
+        *,
         request_options: RequestOptions | None = None,
     ) -> fulfillment_inbound_v2024_03_20.ConfirmShipmentContentUpdatePreviewResponse:
         """Confirm a shipment content update preview and accept the changes in transportation cost.
@@ -1000,7 +1000,7 @@ class FulfillmentInboundV20240320Client:
 
         POST /inbound/fba/2024-03-20/inboundPlans/{inboundPlanId}/shipments/{shipmentId}/contentUpdatePreviews/{contentUpdatePreviewId}/confirmation
         """
-        return self._client.request(
+        return self._http.request(
             "POST",
             f"/inbound/fba/2024-03-20/inboundPlans/{path_segment(inbound_plan_id)}/shipments/{path_segment(shipment_id)}/contentUpdatePreviews/{path_segment(content_update_preview_id)}/confirmation",
             operation="confirmShipmentContentUpdatePreview",
@@ -1013,9 +1013,9 @@ class FulfillmentInboundV20240320Client:
 
     def list_shipment_delivery_challan_document(
         self,
-        *,
         inbound_plan_id: str,
         shipment_id: str,
+        *,
         request_options: RequestOptions | None = None,
     ) -> fulfillment_inbound_v2024_03_20.GetDeliveryChallanDocumentResponse:
         """Provide delivery challan document for PCP transportation in IN marketplace.
@@ -1030,7 +1030,7 @@ class FulfillmentInboundV20240320Client:
 
         GET /inbound/fba/2024-03-20/inboundPlans/{inboundPlanId}/shipments/{shipmentId}/deliveryChallanDocument
         """
-        return self._client.request(
+        return self._http.request(
             "GET",
             f"/inbound/fba/2024-03-20/inboundPlans/{path_segment(inbound_plan_id)}/shipments/{path_segment(shipment_id)}/deliveryChallanDocument",
             operation="getDeliveryChallanDocument",
@@ -1043,9 +1043,9 @@ class FulfillmentInboundV20240320Client:
 
     def list_shipment_delivery_window_options(
         self,
-        *,
         inbound_plan_id: str,
         shipment_id: str,
+        *,
         page_size: int | None = None,
         pagination_token: str | None = None,
         request_options: RequestOptions | None = None,
@@ -1063,7 +1063,7 @@ class FulfillmentInboundV20240320Client:
         GET /inbound/fba/2024-03-20/inboundPlans/{inboundPlanId}/shipments/{shipmentId}/deliveryWindowOptions
         """
         params: dict[str, Any] = {"pageSize": page_size, "paginationToken": pagination_token}
-        return self._client.request(
+        return self._http.request(
             "GET",
             f"/inbound/fba/2024-03-20/inboundPlans/{path_segment(inbound_plan_id)}/shipments/{path_segment(shipment_id)}/deliveryWindowOptions",
             operation="listDeliveryWindowOptions",
@@ -1077,9 +1077,9 @@ class FulfillmentInboundV20240320Client:
 
     def iter_list_shipment_delivery_window_options(
         self,
-        *,
         inbound_plan_id: str,
         shipment_id: str,
+        *,
         page_size: int | None = None,
         pagination_token: str | None = None,
         request_options: RequestOptions | None = None,
@@ -1103,9 +1103,9 @@ class FulfillmentInboundV20240320Client:
 
     def create_shipment_delivery_window_option(
         self,
-        *,
         inbound_plan_id: str,
         shipment_id: str,
+        *,
         request_options: RequestOptions | None = None,
     ) -> fulfillment_inbound_v2024_03_20.GenerateDeliveryWindowOptionsResponse:
         """Generates available delivery window options for a given shipment.
@@ -1120,7 +1120,7 @@ class FulfillmentInboundV20240320Client:
 
         POST /inbound/fba/2024-03-20/inboundPlans/{inboundPlanId}/shipments/{shipmentId}/deliveryWindowOptions
         """
-        return self._client.request(
+        return self._http.request(
             "POST",
             f"/inbound/fba/2024-03-20/inboundPlans/{path_segment(inbound_plan_id)}/shipments/{path_segment(shipment_id)}/deliveryWindowOptions",
             operation="generateDeliveryWindowOptions",
@@ -1133,10 +1133,10 @@ class FulfillmentInboundV20240320Client:
 
     def create_delivery_window_option_confirmation(
         self,
-        *,
         inbound_plan_id: str,
         shipment_id: str,
         delivery_window_option_id: str,
+        *,
         request_options: RequestOptions | None = None,
     ) -> fulfillment_inbound_v2024_03_20.ConfirmDeliveryWindowOptionsResponse:
         """Confirms the delivery window option for chosen shipment within an inbound plan. A placement option must be confirmed prior to use of this API. Once confirmed, new delivery window options cannot be generated, but the chosen delivery window option can be updated before shipment closure. The window is used to provide the expected time when a shipment will arrive at the warehouse. All transportation options which have the program `CONFIRMED_DELIVERY_WINDOW` require a delivery window to be confirmed prior to transportation option confirmation.
@@ -1151,7 +1151,7 @@ class FulfillmentInboundV20240320Client:
 
         POST /inbound/fba/2024-03-20/inboundPlans/{inboundPlanId}/shipments/{shipmentId}/deliveryWindowOptions/{deliveryWindowOptionId}/confirmation
         """
-        return self._client.request(
+        return self._http.request(
             "POST",
             f"/inbound/fba/2024-03-20/inboundPlans/{path_segment(inbound_plan_id)}/shipments/{path_segment(shipment_id)}/deliveryWindowOptions/{path_segment(delivery_window_option_id)}/confirmation",
             operation="confirmDeliveryWindowOptions",
@@ -1164,9 +1164,9 @@ class FulfillmentInboundV20240320Client:
 
     def list_shipment_items(
         self,
-        *,
         inbound_plan_id: str,
         shipment_id: str,
+        *,
         page_size: int | None = None,
         pagination_token: str | None = None,
         request_options: RequestOptions | None = None,
@@ -1184,7 +1184,7 @@ class FulfillmentInboundV20240320Client:
         GET /inbound/fba/2024-03-20/inboundPlans/{inboundPlanId}/shipments/{shipmentId}/items
         """
         params: dict[str, Any] = {"pageSize": page_size, "paginationToken": pagination_token}
-        return self._client.request(
+        return self._http.request(
             "GET",
             f"/inbound/fba/2024-03-20/inboundPlans/{path_segment(inbound_plan_id)}/shipments/{path_segment(shipment_id)}/items",
             operation="listShipmentItems",
@@ -1198,9 +1198,9 @@ class FulfillmentInboundV20240320Client:
 
     def iter_list_shipment_items(
         self,
-        *,
         inbound_plan_id: str,
         shipment_id: str,
+        *,
         page_size: int | None = None,
         pagination_token: str | None = None,
         request_options: RequestOptions | None = None,
@@ -1224,10 +1224,10 @@ class FulfillmentInboundV20240320Client:
 
     def update_shipment_name(
         self,
-        *,
         inbound_plan_id: str,
         shipment_id: str,
         body: fulfillment_inbound_v2024_03_20.UpdateShipmentNameRequest | Mapping[str, Any],
+        *,
         request_options: RequestOptions | None = None,
     ) -> None:
         """Updates the name of an existing shipment.
@@ -1242,7 +1242,7 @@ class FulfillmentInboundV20240320Client:
 
         PUT /inbound/fba/2024-03-20/inboundPlans/{inboundPlanId}/shipments/{shipmentId}/name
         """
-        return self._client.request(
+        return self._http.request(
             "PUT",
             f"/inbound/fba/2024-03-20/inboundPlans/{path_segment(inbound_plan_id)}/shipments/{path_segment(shipment_id)}/name",
             operation="updateShipmentName",
@@ -1255,9 +1255,9 @@ class FulfillmentInboundV20240320Client:
 
     def list_shipment_pallets(
         self,
-        *,
         inbound_plan_id: str,
         shipment_id: str,
+        *,
         page_size: int | None = None,
         pagination_token: str | None = None,
         request_options: RequestOptions | None = None,
@@ -1275,7 +1275,7 @@ class FulfillmentInboundV20240320Client:
         GET /inbound/fba/2024-03-20/inboundPlans/{inboundPlanId}/shipments/{shipmentId}/pallets
         """
         params: dict[str, Any] = {"pageSize": page_size, "paginationToken": pagination_token}
-        return self._client.request(
+        return self._http.request(
             "GET",
             f"/inbound/fba/2024-03-20/inboundPlans/{path_segment(inbound_plan_id)}/shipments/{path_segment(shipment_id)}/pallets",
             operation="listShipmentPallets",
@@ -1289,9 +1289,9 @@ class FulfillmentInboundV20240320Client:
 
     def iter_list_shipment_pallets(
         self,
-        *,
         inbound_plan_id: str,
         shipment_id: str,
+        *,
         page_size: int | None = None,
         pagination_token: str | None = None,
         request_options: RequestOptions | None = None,
@@ -1315,10 +1315,10 @@ class FulfillmentInboundV20240320Client:
 
     def update_shipment_self_ship_appointment_cancellation(
         self,
-        *,
         inbound_plan_id: str,
         shipment_id: str,
         body: fulfillment_inbound_v2024_03_20.CancelSelfShipAppointmentRequest | Mapping[str, Any],
+        *,
         request_options: RequestOptions | None = None,
     ) -> fulfillment_inbound_v2024_03_20.CancelSelfShipAppointmentResponse:
         """Cancels a self-ship appointment slot against a shipment. Only available in the following [marketplaces](https://developer-docs.amazon.com/sp-api/docs/marketplace-ids): MX, BR, EG, SA, AE, IN.
@@ -1333,7 +1333,7 @@ class FulfillmentInboundV20240320Client:
 
         PUT /inbound/fba/2024-03-20/inboundPlans/{inboundPlanId}/shipments/{shipmentId}/selfShipAppointmentCancellation
         """
-        return self._client.request(
+        return self._http.request(
             "PUT",
             f"/inbound/fba/2024-03-20/inboundPlans/{path_segment(inbound_plan_id)}/shipments/{path_segment(shipment_id)}/selfShipAppointmentCancellation",
             operation="cancelSelfShipAppointment",
@@ -1346,9 +1346,9 @@ class FulfillmentInboundV20240320Client:
 
     def list_shipment_self_ship_appointment_slots(
         self,
-        *,
         inbound_plan_id: str,
         shipment_id: str,
+        *,
         page_size: int | None = None,
         pagination_token: str | None = None,
         request_options: RequestOptions | None = None,
@@ -1366,7 +1366,7 @@ class FulfillmentInboundV20240320Client:
         GET /inbound/fba/2024-03-20/inboundPlans/{inboundPlanId}/shipments/{shipmentId}/selfShipAppointmentSlots
         """
         params: dict[str, Any] = {"pageSize": page_size, "paginationToken": pagination_token}
-        return self._client.request(
+        return self._http.request(
             "GET",
             f"/inbound/fba/2024-03-20/inboundPlans/{path_segment(inbound_plan_id)}/shipments/{path_segment(shipment_id)}/selfShipAppointmentSlots",
             operation="getSelfShipAppointmentSlots",
@@ -1379,9 +1379,9 @@ class FulfillmentInboundV20240320Client:
 
     def iter_list_shipment_self_ship_appointment_slots(
         self,
-        *,
         inbound_plan_id: str,
         shipment_id: str,
+        *,
         page_size: int | None = None,
         pagination_token: str | None = None,
         request_options: RequestOptions | None = None,
@@ -1405,10 +1405,10 @@ class FulfillmentInboundV20240320Client:
 
     def create_shipment_self_ship_appointment_slot(
         self,
-        *,
         inbound_plan_id: str,
         shipment_id: str,
         body: fulfillment_inbound_v2024_03_20.GenerateSelfShipAppointmentSlotsRequest | Mapping[str, Any],
+        *,
         request_options: RequestOptions | None = None,
     ) -> fulfillment_inbound_v2024_03_20.GenerateSelfShipAppointmentSlotsResponse:
         """Initiates the process of generating the appointment slots list. Only available in the following [marketplaces](https://developer-docs.amazon.com/sp-api/docs/marketplace-ids): MX, BR, EG, SA, AE, IN.
@@ -1423,7 +1423,7 @@ class FulfillmentInboundV20240320Client:
 
         POST /inbound/fba/2024-03-20/inboundPlans/{inboundPlanId}/shipments/{shipmentId}/selfShipAppointmentSlots
         """
-        return self._client.request(
+        return self._http.request(
             "POST",
             f"/inbound/fba/2024-03-20/inboundPlans/{path_segment(inbound_plan_id)}/shipments/{path_segment(shipment_id)}/selfShipAppointmentSlots",
             operation="generateSelfShipAppointmentSlots",
@@ -1436,11 +1436,11 @@ class FulfillmentInboundV20240320Client:
 
     def create_self_ship_appointment_slot_schedule(
         self,
-        *,
         inbound_plan_id: str,
         shipment_id: str,
         slot_id: str,
         body: fulfillment_inbound_v2024_03_20.ScheduleSelfShipAppointmentRequest | Mapping[str, Any],
+        *,
         request_options: RequestOptions | None = None,
     ) -> fulfillment_inbound_v2024_03_20.ScheduleSelfShipAppointmentResponse:
         """Confirms or reschedules a self-ship appointment slot against a shipment. Only available in the following [marketplaces](https://developer-docs.amazon.com/sp-api/docs/marketplace-ids): MX, BR, EG, SA, AE, IN.
@@ -1455,7 +1455,7 @@ class FulfillmentInboundV20240320Client:
 
         POST /inbound/fba/2024-03-20/inboundPlans/{inboundPlanId}/shipments/{shipmentId}/selfShipAppointmentSlots/{slotId}/schedule
         """
-        return self._client.request(
+        return self._http.request(
             "POST",
             f"/inbound/fba/2024-03-20/inboundPlans/{path_segment(inbound_plan_id)}/shipments/{path_segment(shipment_id)}/selfShipAppointmentSlots/{path_segment(slot_id)}/schedule",
             operation="scheduleSelfShipAppointment",
@@ -1468,10 +1468,10 @@ class FulfillmentInboundV20240320Client:
 
     def update_shipment_source_address(
         self,
-        *,
         inbound_plan_id: str,
         shipment_id: str,
         body: fulfillment_inbound_v2024_03_20.UpdateShipmentSourceAddressRequest | Mapping[str, Any],
+        *,
         request_options: RequestOptions | None = None,
     ) -> fulfillment_inbound_v2024_03_20.UpdateShipmentSourceAddressResponse:
         """Updates the source address of an existing shipment. The shipment source address can only be updated prior to the confirmation of the shipment carriers. As a result of the updated source address, existing transportation options will be invalidated and will need to be regenerated to capture the potential difference in transportation options and quotes due to the new source address.
@@ -1486,7 +1486,7 @@ class FulfillmentInboundV20240320Client:
 
         PUT /inbound/fba/2024-03-20/inboundPlans/{inboundPlanId}/shipments/{shipmentId}/sourceAddress
         """
-        return self._client.request(
+        return self._http.request(
             "PUT",
             f"/inbound/fba/2024-03-20/inboundPlans/{path_segment(inbound_plan_id)}/shipments/{path_segment(shipment_id)}/sourceAddress",
             operation="updateShipmentSourceAddress",
@@ -1500,10 +1500,10 @@ class FulfillmentInboundV20240320Client:
 
     def update_shipment_tracking_details(
         self,
-        *,
         inbound_plan_id: str,
         shipment_id: str,
         body: fulfillment_inbound_v2024_03_20.UpdateShipmentTrackingDetailsRequest | Mapping[str, Any],
+        *,
         request_options: RequestOptions | None = None,
     ) -> fulfillment_inbound_v2024_03_20.UpdateShipmentTrackingDetailsResponse:
         """Updates a shipment's tracking details.
@@ -1518,7 +1518,7 @@ class FulfillmentInboundV20240320Client:
 
         PUT /inbound/fba/2024-03-20/inboundPlans/{inboundPlanId}/shipments/{shipmentId}/trackingDetails
         """
-        return self._client.request(
+        return self._http.request(
             "PUT",
             f"/inbound/fba/2024-03-20/inboundPlans/{path_segment(inbound_plan_id)}/shipments/{path_segment(shipment_id)}/trackingDetails",
             operation="updateShipmentTrackingDetails",
@@ -1532,8 +1532,8 @@ class FulfillmentInboundV20240320Client:
 
     def list_inbound_plan_transportation_options(
         self,
-        *,
         inbound_plan_id: str,
+        *,
         page_size: int | None = None,
         pagination_token: str | None = None,
         placement_option_id: str | None = None,
@@ -1558,7 +1558,7 @@ class FulfillmentInboundV20240320Client:
             "placementOptionId": placement_option_id,
             "shipmentId": shipment_id,
         }
-        return self._client.request(
+        return self._http.request(
             "GET",
             f"/inbound/fba/2024-03-20/inboundPlans/{path_segment(inbound_plan_id)}/transportationOptions",
             operation="listTransportationOptions",
@@ -1572,8 +1572,8 @@ class FulfillmentInboundV20240320Client:
 
     def iter_list_inbound_plan_transportation_options(
         self,
-        *,
         inbound_plan_id: str,
+        *,
         page_size: int | None = None,
         pagination_token: str | None = None,
         placement_option_id: str | None = None,
@@ -1600,9 +1600,9 @@ class FulfillmentInboundV20240320Client:
 
     def create_inbound_plan_transportation_option(
         self,
-        *,
         inbound_plan_id: str,
         body: fulfillment_inbound_v2024_03_20.GenerateTransportationOptionsRequest | Mapping[str, Any],
+        *,
         request_options: RequestOptions | None = None,
     ) -> fulfillment_inbound_v2024_03_20.GenerateTransportationOptionsResponse:
         """Generates available transportation options for a given placement option.
@@ -1617,7 +1617,7 @@ class FulfillmentInboundV20240320Client:
 
         POST /inbound/fba/2024-03-20/inboundPlans/{inboundPlanId}/transportationOptions
         """
-        return self._client.request(
+        return self._http.request(
             "POST",
             f"/inbound/fba/2024-03-20/inboundPlans/{path_segment(inbound_plan_id)}/transportationOptions",
             operation="generateTransportationOptions",
@@ -1631,9 +1631,9 @@ class FulfillmentInboundV20240320Client:
 
     def create_confirmation(
         self,
-        *,
         inbound_plan_id: str,
         body: fulfillment_inbound_v2024_03_20.ConfirmTransportationOptionsRequest | Mapping[str, Any],
+        *,
         request_options: RequestOptions | None = None,
     ) -> fulfillment_inbound_v2024_03_20.ConfirmTransportationOptionsResponse:
         """Confirms all the transportation options for an inbound plan. A placement option must be confirmed prior to use of this API. Once confirmed, new transportation options can not be generated or confirmed for the Inbound Plan.
@@ -1648,7 +1648,7 @@ class FulfillmentInboundV20240320Client:
 
         POST /inbound/fba/2024-03-20/inboundPlans/{inboundPlanId}/transportationOptions/confirmation
         """
-        return self._client.request(
+        return self._http.request(
             "POST",
             f"/inbound/fba/2024-03-20/inboundPlans/{path_segment(inbound_plan_id)}/transportationOptions/confirmation",
             operation="confirmTransportationOptions",
@@ -1662,9 +1662,9 @@ class FulfillmentInboundV20240320Client:
 
     def list_compliance(
         self,
-        *,
         mskus: list[str],
         marketplace_id: str,
+        *,
         request_options: RequestOptions | None = None,
     ) -> fulfillment_inbound_v2024_03_20.ListItemComplianceDetailsResponse:
         """List the inbound compliance details for MSKUs in a given marketplace.
@@ -1690,7 +1690,7 @@ class FulfillmentInboundV20240320Client:
         GET /inbound/fba/2024-03-20/items/compliance
         """
         params: dict[str, Any] = {"mskus": mskus, "marketplaceId": marketplace_id}
-        return self._client.request(
+        return self._http.request(
             "GET",
             "/inbound/fba/2024-03-20/items/compliance",
             operation="listItemComplianceDetails",
@@ -1704,9 +1704,9 @@ class FulfillmentInboundV20240320Client:
 
     def update_compliance(
         self,
-        *,
-        marketplace_id: str,
         body: fulfillment_inbound_v2024_03_20.UpdateItemComplianceDetailsRequest | Mapping[str, Any],
+        marketplace_id: str,
+        *,
         request_options: RequestOptions | None = None,
     ) -> fulfillment_inbound_v2024_03_20.UpdateItemComplianceDetailsResponse:
         """Update compliance details for a list of MSKUs. The details provided here are only used for the India (IN - A21TJRUUN4KGV) marketplace compliance validation.
@@ -1722,7 +1722,7 @@ class FulfillmentInboundV20240320Client:
         PUT /inbound/fba/2024-03-20/items/compliance
         """
         params: dict[str, Any] = {"marketplaceId": marketplace_id}
-        return self._client.request(
+        return self._http.request(
             "PUT",
             "/inbound/fba/2024-03-20/items/compliance",
             operation="updateItemComplianceDetails",
@@ -1737,8 +1737,8 @@ class FulfillmentInboundV20240320Client:
 
     def create_label(
         self,
-        *,
         body: fulfillment_inbound_v2024_03_20.CreateMarketplaceItemLabelsRequest | Mapping[str, Any],
+        *,
         request_options: RequestOptions | None = None,
     ) -> fulfillment_inbound_v2024_03_20.CreateMarketplaceItemLabelsResponse:
         """For a given marketplace - creates labels for a list of MSKUs.
@@ -1753,7 +1753,7 @@ class FulfillmentInboundV20240320Client:
 
         POST /inbound/fba/2024-03-20/items/labels
         """
-        return self._client.request(
+        return self._http.request(
             "POST",
             "/inbound/fba/2024-03-20/items/labels",
             operation="createMarketplaceItemLabels",
@@ -1767,9 +1767,9 @@ class FulfillmentInboundV20240320Client:
 
     def list_prep_details(
         self,
-        *,
         marketplace_id: str,
         mskus: list[str],
+        *,
         request_options: RequestOptions | None = None,
     ) -> fulfillment_inbound_v2024_03_20.ListPrepDetailsResponse:
         """Get preparation details for a list of MSKUs in a specified marketplace.
@@ -1795,7 +1795,7 @@ class FulfillmentInboundV20240320Client:
         GET /inbound/fba/2024-03-20/items/prepDetails
         """
         params: dict[str, Any] = {"marketplaceId": marketplace_id, "mskus": mskus}
-        return self._client.request(
+        return self._http.request(
             "GET",
             "/inbound/fba/2024-03-20/items/prepDetails",
             operation="listPrepDetails",
@@ -1808,8 +1808,8 @@ class FulfillmentInboundV20240320Client:
 
     def create_prep_detail(
         self,
-        *,
         body: fulfillment_inbound_v2024_03_20.SetPrepDetailsRequest | Mapping[str, Any],
+        *,
         request_options: RequestOptions | None = None,
     ) -> fulfillment_inbound_v2024_03_20.SetPrepDetailsResponse:
         """Set the preparation details for a list of MSKUs in a specified marketplace.
@@ -1824,7 +1824,7 @@ class FulfillmentInboundV20240320Client:
 
         POST /inbound/fba/2024-03-20/items/prepDetails
         """
-        return self._client.request(
+        return self._http.request(
             "POST",
             "/inbound/fba/2024-03-20/items/prepDetails",
             operation="setPrepDetails",
@@ -1838,8 +1838,8 @@ class FulfillmentInboundV20240320Client:
 
     def get_operation(
         self,
-        *,
         operation_id: str,
+        *,
         request_options: RequestOptions | None = None,
     ) -> fulfillment_inbound_v2024_03_20.InboundOperationStatus:
         """Gets the status of the processing of an asynchronous API call.
@@ -1854,7 +1854,7 @@ class FulfillmentInboundV20240320Client:
 
         GET /inbound/fba/2024-03-20/operations/{operationId}
         """
-        return self._client.request(
+        return self._http.request(
             "GET",
             f"/inbound/fba/2024-03-20/operations/{path_segment(operation_id)}",
             operation="getInboundOperationStatus",
@@ -1866,13 +1866,13 @@ class FulfillmentInboundV20240320Client:
         )
 
 
-class AsyncFulfillmentInboundV20240320Client:
+class AsyncFulfillmentInboundV20240320Resource:
     """Asynchronous ``FulfillmentInboundV20240320`` resource."""
 
-    __slots__ = ("_client",)
+    __slots__ = ("_http",)
 
-    def __init__(self, client: AsyncHttpClient) -> None:
-        self._client = client
+    def __init__(self, http: AsyncHttpClient) -> None:
+        self._http = http
 
     async def list_inbound_plans(
         self,
@@ -1903,7 +1903,7 @@ class AsyncFulfillmentInboundV20240320Client:
             "sortBy": sort_by,
             "sortOrder": sort_order,
         }
-        return await self._client.request(
+        return await self._http.request(
             "GET",
             "/inbound/fba/2024-03-20/inboundPlans",
             operation="listInboundPlans",
@@ -1945,8 +1945,8 @@ class AsyncFulfillmentInboundV20240320Client:
 
     async def create_inbound_plan(
         self,
-        *,
         body: fulfillment_inbound_v2024_03_20.CreateInboundPlanRequest | Mapping[str, Any],
+        *,
         request_options: RequestOptions | None = None,
     ) -> fulfillment_inbound_v2024_03_20.CreateInboundPlanResponse:
         """Creates an inbound plan. An inbound plan contains all the necessary information to send shipments into Amazon's fufillment network.
@@ -1961,7 +1961,7 @@ class AsyncFulfillmentInboundV20240320Client:
 
         POST /inbound/fba/2024-03-20/inboundPlans
         """
-        return await self._client.request(
+        return await self._http.request(
             "POST",
             "/inbound/fba/2024-03-20/inboundPlans",
             operation="createInboundPlan",
@@ -1975,8 +1975,8 @@ class AsyncFulfillmentInboundV20240320Client:
 
     async def get_inbound_plan(
         self,
-        *,
         inbound_plan_id: str,
+        *,
         request_options: RequestOptions | None = None,
     ) -> fulfillment_inbound_v2024_03_20.InboundPlan:
         """Fetches the top level information about an inbound plan.
@@ -1991,7 +1991,7 @@ class AsyncFulfillmentInboundV20240320Client:
 
         GET /inbound/fba/2024-03-20/inboundPlans/{inboundPlanId}
         """
-        return await self._client.request(
+        return await self._http.request(
             "GET",
             f"/inbound/fba/2024-03-20/inboundPlans/{path_segment(inbound_plan_id)}",
             operation="getInboundPlan",
@@ -2004,8 +2004,8 @@ class AsyncFulfillmentInboundV20240320Client:
 
     async def list_inbound_plan_boxes(
         self,
-        *,
         inbound_plan_id: str,
+        *,
         page_size: int | None = None,
         pagination_token: str | None = None,
         request_options: RequestOptions | None = None,
@@ -2023,7 +2023,7 @@ class AsyncFulfillmentInboundV20240320Client:
         GET /inbound/fba/2024-03-20/inboundPlans/{inboundPlanId}/boxes
         """
         params: dict[str, Any] = {"pageSize": page_size, "paginationToken": pagination_token}
-        return await self._client.request(
+        return await self._http.request(
             "GET",
             f"/inbound/fba/2024-03-20/inboundPlans/{path_segment(inbound_plan_id)}/boxes",
             operation="listInboundPlanBoxes",
@@ -2037,8 +2037,8 @@ class AsyncFulfillmentInboundV20240320Client:
 
     def iter_list_inbound_plan_boxes(
         self,
-        *,
         inbound_plan_id: str,
+        *,
         page_size: int | None = None,
         pagination_token: str | None = None,
         request_options: RequestOptions | None = None,
@@ -2061,8 +2061,8 @@ class AsyncFulfillmentInboundV20240320Client:
 
     async def update_inbound_plan_cancellation(
         self,
-        *,
         inbound_plan_id: str,
+        *,
         request_options: RequestOptions | None = None,
     ) -> fulfillment_inbound_v2024_03_20.CancelInboundPlanResponse:
         """Cancels an Inbound Plan. Charges may apply if the cancellation is performed outside of a void window. The window for Amazon Partnered Carriers is 24 hours for Small Parcel Delivery (SPD) and one hour for Less-Than-Truckload (LTL) carrier shipments.
@@ -2077,7 +2077,7 @@ class AsyncFulfillmentInboundV20240320Client:
 
         PUT /inbound/fba/2024-03-20/inboundPlans/{inboundPlanId}/cancellation
         """
-        return await self._client.request(
+        return await self._http.request(
             "PUT",
             f"/inbound/fba/2024-03-20/inboundPlans/{path_segment(inbound_plan_id)}/cancellation",
             operation="cancelInboundPlan",
@@ -2090,8 +2090,8 @@ class AsyncFulfillmentInboundV20240320Client:
 
     async def list_inbound_plan_items(
         self,
-        *,
         inbound_plan_id: str,
+        *,
         page_size: int | None = None,
         pagination_token: str | None = None,
         request_options: RequestOptions | None = None,
@@ -2109,7 +2109,7 @@ class AsyncFulfillmentInboundV20240320Client:
         GET /inbound/fba/2024-03-20/inboundPlans/{inboundPlanId}/items
         """
         params: dict[str, Any] = {"pageSize": page_size, "paginationToken": pagination_token}
-        return await self._client.request(
+        return await self._http.request(
             "GET",
             f"/inbound/fba/2024-03-20/inboundPlans/{path_segment(inbound_plan_id)}/items",
             operation="listInboundPlanItems",
@@ -2123,8 +2123,8 @@ class AsyncFulfillmentInboundV20240320Client:
 
     def iter_list_inbound_plan_items(
         self,
-        *,
         inbound_plan_id: str,
+        *,
         page_size: int | None = None,
         pagination_token: str | None = None,
         request_options: RequestOptions | None = None,
@@ -2147,9 +2147,9 @@ class AsyncFulfillmentInboundV20240320Client:
 
     async def update_inbound_plan_name(
         self,
-        *,
         inbound_plan_id: str,
         body: fulfillment_inbound_v2024_03_20.UpdateInboundPlanNameRequest | Mapping[str, Any],
+        *,
         request_options: RequestOptions | None = None,
     ) -> None:
         """Updates the name of an existing inbound plan.
@@ -2164,7 +2164,7 @@ class AsyncFulfillmentInboundV20240320Client:
 
         PUT /inbound/fba/2024-03-20/inboundPlans/{inboundPlanId}/name
         """
-        return await self._client.request(
+        return await self._http.request(
             "PUT",
             f"/inbound/fba/2024-03-20/inboundPlans/{path_segment(inbound_plan_id)}/name",
             operation="updateInboundPlanName",
@@ -2177,9 +2177,9 @@ class AsyncFulfillmentInboundV20240320Client:
 
     async def list_packing_group_boxes(
         self,
-        *,
         inbound_plan_id: str,
         packing_group_id: str,
+        *,
         page_size: int | None = None,
         pagination_token: str | None = None,
         request_options: RequestOptions | None = None,
@@ -2197,7 +2197,7 @@ class AsyncFulfillmentInboundV20240320Client:
         GET /inbound/fba/2024-03-20/inboundPlans/{inboundPlanId}/packingGroups/{packingGroupId}/boxes
         """
         params: dict[str, Any] = {"pageSize": page_size, "paginationToken": pagination_token}
-        return await self._client.request(
+        return await self._http.request(
             "GET",
             f"/inbound/fba/2024-03-20/inboundPlans/{path_segment(inbound_plan_id)}/packingGroups/{path_segment(packing_group_id)}/boxes",
             operation="listPackingGroupBoxes",
@@ -2211,9 +2211,9 @@ class AsyncFulfillmentInboundV20240320Client:
 
     def iter_list_packing_group_boxes(
         self,
-        *,
         inbound_plan_id: str,
         packing_group_id: str,
+        *,
         page_size: int | None = None,
         pagination_token: str | None = None,
         request_options: RequestOptions | None = None,
@@ -2237,9 +2237,9 @@ class AsyncFulfillmentInboundV20240320Client:
 
     async def list_packing_group_items(
         self,
-        *,
         inbound_plan_id: str,
         packing_group_id: str,
+        *,
         page_size: int | None = None,
         pagination_token: str | None = None,
         request_options: RequestOptions | None = None,
@@ -2257,7 +2257,7 @@ class AsyncFulfillmentInboundV20240320Client:
         GET /inbound/fba/2024-03-20/inboundPlans/{inboundPlanId}/packingGroups/{packingGroupId}/items
         """
         params: dict[str, Any] = {"pageSize": page_size, "paginationToken": pagination_token}
-        return await self._client.request(
+        return await self._http.request(
             "GET",
             f"/inbound/fba/2024-03-20/inboundPlans/{path_segment(inbound_plan_id)}/packingGroups/{path_segment(packing_group_id)}/items",
             operation="listPackingGroupItems",
@@ -2271,9 +2271,9 @@ class AsyncFulfillmentInboundV20240320Client:
 
     def iter_list_packing_group_items(
         self,
-        *,
         inbound_plan_id: str,
         packing_group_id: str,
+        *,
         page_size: int | None = None,
         pagination_token: str | None = None,
         request_options: RequestOptions | None = None,
@@ -2297,9 +2297,9 @@ class AsyncFulfillmentInboundV20240320Client:
 
     async def create_inbound_plan_packing_information(
         self,
-        *,
         inbound_plan_id: str,
         body: fulfillment_inbound_v2024_03_20.SetPackingInformationRequest | Mapping[str, Any],
+        *,
         request_options: RequestOptions | None = None,
     ) -> fulfillment_inbound_v2024_03_20.SetPackingInformationResponse:
         """Sets packing information for an inbound plan. This should be called after an inbound plan is created to populate the box level information required for planning and transportation estimates.
@@ -2314,7 +2314,7 @@ class AsyncFulfillmentInboundV20240320Client:
 
         POST /inbound/fba/2024-03-20/inboundPlans/{inboundPlanId}/packingInformation
         """
-        return await self._client.request(
+        return await self._http.request(
             "POST",
             f"/inbound/fba/2024-03-20/inboundPlans/{path_segment(inbound_plan_id)}/packingInformation",
             operation="setPackingInformation",
@@ -2328,8 +2328,8 @@ class AsyncFulfillmentInboundV20240320Client:
 
     async def list_inbound_plan_packing_options(
         self,
-        *,
         inbound_plan_id: str,
+        *,
         page_size: int | None = None,
         pagination_token: str | None = None,
         request_options: RequestOptions | None = None,
@@ -2347,7 +2347,7 @@ class AsyncFulfillmentInboundV20240320Client:
         GET /inbound/fba/2024-03-20/inboundPlans/{inboundPlanId}/packingOptions
         """
         params: dict[str, Any] = {"pageSize": page_size, "paginationToken": pagination_token}
-        return await self._client.request(
+        return await self._http.request(
             "GET",
             f"/inbound/fba/2024-03-20/inboundPlans/{path_segment(inbound_plan_id)}/packingOptions",
             operation="listPackingOptions",
@@ -2361,8 +2361,8 @@ class AsyncFulfillmentInboundV20240320Client:
 
     def iter_list_inbound_plan_packing_options(
         self,
-        *,
         inbound_plan_id: str,
+        *,
         page_size: int | None = None,
         pagination_token: str | None = None,
         request_options: RequestOptions | None = None,
@@ -2385,8 +2385,8 @@ class AsyncFulfillmentInboundV20240320Client:
 
     async def create_inbound_plan_packing_option(
         self,
-        *,
         inbound_plan_id: str,
+        *,
         request_options: RequestOptions | None = None,
     ) -> fulfillment_inbound_v2024_03_20.GeneratePackingOptionsResponse:
         """Generates available packing options for the inbound plan.
@@ -2401,7 +2401,7 @@ class AsyncFulfillmentInboundV20240320Client:
 
         POST /inbound/fba/2024-03-20/inboundPlans/{inboundPlanId}/packingOptions
         """
-        return await self._client.request(
+        return await self._http.request(
             "POST",
             f"/inbound/fba/2024-03-20/inboundPlans/{path_segment(inbound_plan_id)}/packingOptions",
             operation="generatePackingOptions",
@@ -2414,9 +2414,9 @@ class AsyncFulfillmentInboundV20240320Client:
 
     async def create_packing_option_confirmation(
         self,
-        *,
         inbound_plan_id: str,
         packing_option_id: str,
+        *,
         request_options: RequestOptions | None = None,
     ) -> fulfillment_inbound_v2024_03_20.ConfirmPackingOptionResponse:
         """Confirms the packing option for an inbound plan.
@@ -2431,7 +2431,7 @@ class AsyncFulfillmentInboundV20240320Client:
 
         POST /inbound/fba/2024-03-20/inboundPlans/{inboundPlanId}/packingOptions/{packingOptionId}/confirmation
         """
-        return await self._client.request(
+        return await self._http.request(
             "POST",
             f"/inbound/fba/2024-03-20/inboundPlans/{path_segment(inbound_plan_id)}/packingOptions/{path_segment(packing_option_id)}/confirmation",
             operation="confirmPackingOption",
@@ -2444,8 +2444,8 @@ class AsyncFulfillmentInboundV20240320Client:
 
     async def list_inbound_plan_pallets(
         self,
-        *,
         inbound_plan_id: str,
+        *,
         page_size: int | None = None,
         pagination_token: str | None = None,
         request_options: RequestOptions | None = None,
@@ -2463,7 +2463,7 @@ class AsyncFulfillmentInboundV20240320Client:
         GET /inbound/fba/2024-03-20/inboundPlans/{inboundPlanId}/pallets
         """
         params: dict[str, Any] = {"pageSize": page_size, "paginationToken": pagination_token}
-        return await self._client.request(
+        return await self._http.request(
             "GET",
             f"/inbound/fba/2024-03-20/inboundPlans/{path_segment(inbound_plan_id)}/pallets",
             operation="listInboundPlanPallets",
@@ -2477,8 +2477,8 @@ class AsyncFulfillmentInboundV20240320Client:
 
     def iter_list_inbound_plan_pallets(
         self,
-        *,
         inbound_plan_id: str,
+        *,
         page_size: int | None = None,
         pagination_token: str | None = None,
         request_options: RequestOptions | None = None,
@@ -2501,8 +2501,8 @@ class AsyncFulfillmentInboundV20240320Client:
 
     async def list_inbound_plan_placement_options(
         self,
-        *,
         inbound_plan_id: str,
+        *,
         page_size: int | None = None,
         pagination_token: str | None = None,
         request_options: RequestOptions | None = None,
@@ -2520,7 +2520,7 @@ class AsyncFulfillmentInboundV20240320Client:
         GET /inbound/fba/2024-03-20/inboundPlans/{inboundPlanId}/placementOptions
         """
         params: dict[str, Any] = {"pageSize": page_size, "paginationToken": pagination_token}
-        return await self._client.request(
+        return await self._http.request(
             "GET",
             f"/inbound/fba/2024-03-20/inboundPlans/{path_segment(inbound_plan_id)}/placementOptions",
             operation="listPlacementOptions",
@@ -2534,8 +2534,8 @@ class AsyncFulfillmentInboundV20240320Client:
 
     def iter_list_inbound_plan_placement_options(
         self,
-        *,
         inbound_plan_id: str,
+        *,
         page_size: int | None = None,
         pagination_token: str | None = None,
         request_options: RequestOptions | None = None,
@@ -2558,9 +2558,9 @@ class AsyncFulfillmentInboundV20240320Client:
 
     async def create_inbound_plan_placement_option(
         self,
-        *,
         inbound_plan_id: str,
         body: fulfillment_inbound_v2024_03_20.GeneratePlacementOptionsRequest | Mapping[str, Any],
+        *,
         request_options: RequestOptions | None = None,
     ) -> fulfillment_inbound_v2024_03_20.GeneratePlacementOptionsResponse:
         """Generates placement options for the inbound plan.
@@ -2575,7 +2575,7 @@ class AsyncFulfillmentInboundV20240320Client:
 
         POST /inbound/fba/2024-03-20/inboundPlans/{inboundPlanId}/placementOptions
         """
-        return await self._client.request(
+        return await self._http.request(
             "POST",
             f"/inbound/fba/2024-03-20/inboundPlans/{path_segment(inbound_plan_id)}/placementOptions",
             operation="generatePlacementOptions",
@@ -2589,9 +2589,9 @@ class AsyncFulfillmentInboundV20240320Client:
 
     async def create_placement_option_confirmation(
         self,
-        *,
         inbound_plan_id: str,
         placement_option_id: str,
+        *,
         request_options: RequestOptions | None = None,
     ) -> fulfillment_inbound_v2024_03_20.ConfirmPlacementOptionResponse:
         """Confirms the placement option for an inbound plan. Once confirmed, it cannot be changed for the Inbound Plan.
@@ -2606,7 +2606,7 @@ class AsyncFulfillmentInboundV20240320Client:
 
         POST /inbound/fba/2024-03-20/inboundPlans/{inboundPlanId}/placementOptions/{placementOptionId}/confirmation
         """
-        return await self._client.request(
+        return await self._http.request(
             "POST",
             f"/inbound/fba/2024-03-20/inboundPlans/{path_segment(inbound_plan_id)}/placementOptions/{path_segment(placement_option_id)}/confirmation",
             operation="confirmPlacementOption",
@@ -2619,9 +2619,9 @@ class AsyncFulfillmentInboundV20240320Client:
 
     async def get_inbound_plan_shipment(
         self,
-        *,
         inbound_plan_id: str,
         shipment_id: str,
+        *,
         request_options: RequestOptions | None = None,
     ) -> fulfillment_inbound_v2024_03_20.Shipment:
         """Provides the full details for a specific shipment within an inbound plan. The `transportationOptionId` inside `acceptedTransportationSelection` can be used to retrieve the transportation details for the shipment.
@@ -2636,7 +2636,7 @@ class AsyncFulfillmentInboundV20240320Client:
 
         GET /inbound/fba/2024-03-20/inboundPlans/{inboundPlanId}/shipments/{shipmentId}
         """
-        return await self._client.request(
+        return await self._http.request(
             "GET",
             f"/inbound/fba/2024-03-20/inboundPlans/{path_segment(inbound_plan_id)}/shipments/{path_segment(shipment_id)}",
             operation="getShipment",
@@ -2649,9 +2649,9 @@ class AsyncFulfillmentInboundV20240320Client:
 
     async def list_shipment_boxes(
         self,
-        *,
         inbound_plan_id: str,
         shipment_id: str,
+        *,
         page_size: int | None = None,
         pagination_token: str | None = None,
         request_options: RequestOptions | None = None,
@@ -2669,7 +2669,7 @@ class AsyncFulfillmentInboundV20240320Client:
         GET /inbound/fba/2024-03-20/inboundPlans/{inboundPlanId}/shipments/{shipmentId}/boxes
         """
         params: dict[str, Any] = {"pageSize": page_size, "paginationToken": pagination_token}
-        return await self._client.request(
+        return await self._http.request(
             "GET",
             f"/inbound/fba/2024-03-20/inboundPlans/{path_segment(inbound_plan_id)}/shipments/{path_segment(shipment_id)}/boxes",
             operation="listShipmentBoxes",
@@ -2683,9 +2683,9 @@ class AsyncFulfillmentInboundV20240320Client:
 
     def iter_list_shipment_boxes(
         self,
-        *,
         inbound_plan_id: str,
         shipment_id: str,
+        *,
         page_size: int | None = None,
         pagination_token: str | None = None,
         request_options: RequestOptions | None = None,
@@ -2709,9 +2709,9 @@ class AsyncFulfillmentInboundV20240320Client:
 
     async def list_shipment_content_update_previews(
         self,
-        *,
         inbound_plan_id: str,
         shipment_id: str,
+        *,
         page_size: int | None = None,
         pagination_token: str | None = None,
         request_options: RequestOptions | None = None,
@@ -2729,7 +2729,7 @@ class AsyncFulfillmentInboundV20240320Client:
         GET /inbound/fba/2024-03-20/inboundPlans/{inboundPlanId}/shipments/{shipmentId}/contentUpdatePreviews
         """
         params: dict[str, Any] = {"pageSize": page_size, "paginationToken": pagination_token}
-        return await self._client.request(
+        return await self._http.request(
             "GET",
             f"/inbound/fba/2024-03-20/inboundPlans/{path_segment(inbound_plan_id)}/shipments/{path_segment(shipment_id)}/contentUpdatePreviews",
             operation="listShipmentContentUpdatePreviews",
@@ -2743,9 +2743,9 @@ class AsyncFulfillmentInboundV20240320Client:
 
     def iter_list_shipment_content_update_previews(
         self,
-        *,
         inbound_plan_id: str,
         shipment_id: str,
+        *,
         page_size: int | None = None,
         pagination_token: str | None = None,
         request_options: RequestOptions | None = None,
@@ -2769,10 +2769,10 @@ class AsyncFulfillmentInboundV20240320Client:
 
     async def create_shipment_content_update_preview(
         self,
-        *,
         inbound_plan_id: str,
         shipment_id: str,
         body: fulfillment_inbound_v2024_03_20.GenerateShipmentContentUpdatePreviewsRequest | Mapping[str, Any],
+        *,
         request_options: RequestOptions | None = None,
     ) -> fulfillment_inbound_v2024_03_20.GenerateShipmentContentUpdatePreviewsResponse:
         """Generate a shipment content update preview given a set of intended boxes and/or items for a shipment with a confirmed carrier. The shipment content update preview will be viewable with the updated costs and contents prior to confirmation.
@@ -2787,7 +2787,7 @@ class AsyncFulfillmentInboundV20240320Client:
 
         POST /inbound/fba/2024-03-20/inboundPlans/{inboundPlanId}/shipments/{shipmentId}/contentUpdatePreviews
         """
-        return await self._client.request(
+        return await self._http.request(
             "POST",
             f"/inbound/fba/2024-03-20/inboundPlans/{path_segment(inbound_plan_id)}/shipments/{path_segment(shipment_id)}/contentUpdatePreviews",
             operation="generateShipmentContentUpdatePreviews",
@@ -2801,10 +2801,10 @@ class AsyncFulfillmentInboundV20240320Client:
 
     async def get_shipment_content_update_preview(
         self,
-        *,
         inbound_plan_id: str,
         shipment_id: str,
         content_update_preview_id: str,
+        *,
         request_options: RequestOptions | None = None,
     ) -> fulfillment_inbound_v2024_03_20.ContentUpdatePreview:
         """Retrieve a shipment content update preview which provides a summary of the requested shipment content changes along with the transportation cost implications of the change that can only be confirmed prior to the expiry date specified.
@@ -2819,7 +2819,7 @@ class AsyncFulfillmentInboundV20240320Client:
 
         GET /inbound/fba/2024-03-20/inboundPlans/{inboundPlanId}/shipments/{shipmentId}/contentUpdatePreviews/{contentUpdatePreviewId}
         """
-        return await self._client.request(
+        return await self._http.request(
             "GET",
             f"/inbound/fba/2024-03-20/inboundPlans/{path_segment(inbound_plan_id)}/shipments/{path_segment(shipment_id)}/contentUpdatePreviews/{path_segment(content_update_preview_id)}",
             operation="getShipmentContentUpdatePreview",
@@ -2832,10 +2832,10 @@ class AsyncFulfillmentInboundV20240320Client:
 
     async def create_content_update_preview_confirmation(
         self,
-        *,
         inbound_plan_id: str,
         shipment_id: str,
         content_update_preview_id: str,
+        *,
         request_options: RequestOptions | None = None,
     ) -> fulfillment_inbound_v2024_03_20.ConfirmShipmentContentUpdatePreviewResponse:
         """Confirm a shipment content update preview and accept the changes in transportation cost.
@@ -2850,7 +2850,7 @@ class AsyncFulfillmentInboundV20240320Client:
 
         POST /inbound/fba/2024-03-20/inboundPlans/{inboundPlanId}/shipments/{shipmentId}/contentUpdatePreviews/{contentUpdatePreviewId}/confirmation
         """
-        return await self._client.request(
+        return await self._http.request(
             "POST",
             f"/inbound/fba/2024-03-20/inboundPlans/{path_segment(inbound_plan_id)}/shipments/{path_segment(shipment_id)}/contentUpdatePreviews/{path_segment(content_update_preview_id)}/confirmation",
             operation="confirmShipmentContentUpdatePreview",
@@ -2863,9 +2863,9 @@ class AsyncFulfillmentInboundV20240320Client:
 
     async def list_shipment_delivery_challan_document(
         self,
-        *,
         inbound_plan_id: str,
         shipment_id: str,
+        *,
         request_options: RequestOptions | None = None,
     ) -> fulfillment_inbound_v2024_03_20.GetDeliveryChallanDocumentResponse:
         """Provide delivery challan document for PCP transportation in IN marketplace.
@@ -2880,7 +2880,7 @@ class AsyncFulfillmentInboundV20240320Client:
 
         GET /inbound/fba/2024-03-20/inboundPlans/{inboundPlanId}/shipments/{shipmentId}/deliveryChallanDocument
         """
-        return await self._client.request(
+        return await self._http.request(
             "GET",
             f"/inbound/fba/2024-03-20/inboundPlans/{path_segment(inbound_plan_id)}/shipments/{path_segment(shipment_id)}/deliveryChallanDocument",
             operation="getDeliveryChallanDocument",
@@ -2893,9 +2893,9 @@ class AsyncFulfillmentInboundV20240320Client:
 
     async def list_shipment_delivery_window_options(
         self,
-        *,
         inbound_plan_id: str,
         shipment_id: str,
+        *,
         page_size: int | None = None,
         pagination_token: str | None = None,
         request_options: RequestOptions | None = None,
@@ -2913,7 +2913,7 @@ class AsyncFulfillmentInboundV20240320Client:
         GET /inbound/fba/2024-03-20/inboundPlans/{inboundPlanId}/shipments/{shipmentId}/deliveryWindowOptions
         """
         params: dict[str, Any] = {"pageSize": page_size, "paginationToken": pagination_token}
-        return await self._client.request(
+        return await self._http.request(
             "GET",
             f"/inbound/fba/2024-03-20/inboundPlans/{path_segment(inbound_plan_id)}/shipments/{path_segment(shipment_id)}/deliveryWindowOptions",
             operation="listDeliveryWindowOptions",
@@ -2927,9 +2927,9 @@ class AsyncFulfillmentInboundV20240320Client:
 
     def iter_list_shipment_delivery_window_options(
         self,
-        *,
         inbound_plan_id: str,
         shipment_id: str,
+        *,
         page_size: int | None = None,
         pagination_token: str | None = None,
         request_options: RequestOptions | None = None,
@@ -2953,9 +2953,9 @@ class AsyncFulfillmentInboundV20240320Client:
 
     async def create_shipment_delivery_window_option(
         self,
-        *,
         inbound_plan_id: str,
         shipment_id: str,
+        *,
         request_options: RequestOptions | None = None,
     ) -> fulfillment_inbound_v2024_03_20.GenerateDeliveryWindowOptionsResponse:
         """Generates available delivery window options for a given shipment.
@@ -2970,7 +2970,7 @@ class AsyncFulfillmentInboundV20240320Client:
 
         POST /inbound/fba/2024-03-20/inboundPlans/{inboundPlanId}/shipments/{shipmentId}/deliveryWindowOptions
         """
-        return await self._client.request(
+        return await self._http.request(
             "POST",
             f"/inbound/fba/2024-03-20/inboundPlans/{path_segment(inbound_plan_id)}/shipments/{path_segment(shipment_id)}/deliveryWindowOptions",
             operation="generateDeliveryWindowOptions",
@@ -2983,10 +2983,10 @@ class AsyncFulfillmentInboundV20240320Client:
 
     async def create_delivery_window_option_confirmation(
         self,
-        *,
         inbound_plan_id: str,
         shipment_id: str,
         delivery_window_option_id: str,
+        *,
         request_options: RequestOptions | None = None,
     ) -> fulfillment_inbound_v2024_03_20.ConfirmDeliveryWindowOptionsResponse:
         """Confirms the delivery window option for chosen shipment within an inbound plan. A placement option must be confirmed prior to use of this API. Once confirmed, new delivery window options cannot be generated, but the chosen delivery window option can be updated before shipment closure. The window is used to provide the expected time when a shipment will arrive at the warehouse. All transportation options which have the program `CONFIRMED_DELIVERY_WINDOW` require a delivery window to be confirmed prior to transportation option confirmation.
@@ -3001,7 +3001,7 @@ class AsyncFulfillmentInboundV20240320Client:
 
         POST /inbound/fba/2024-03-20/inboundPlans/{inboundPlanId}/shipments/{shipmentId}/deliveryWindowOptions/{deliveryWindowOptionId}/confirmation
         """
-        return await self._client.request(
+        return await self._http.request(
             "POST",
             f"/inbound/fba/2024-03-20/inboundPlans/{path_segment(inbound_plan_id)}/shipments/{path_segment(shipment_id)}/deliveryWindowOptions/{path_segment(delivery_window_option_id)}/confirmation",
             operation="confirmDeliveryWindowOptions",
@@ -3014,9 +3014,9 @@ class AsyncFulfillmentInboundV20240320Client:
 
     async def list_shipment_items(
         self,
-        *,
         inbound_plan_id: str,
         shipment_id: str,
+        *,
         page_size: int | None = None,
         pagination_token: str | None = None,
         request_options: RequestOptions | None = None,
@@ -3034,7 +3034,7 @@ class AsyncFulfillmentInboundV20240320Client:
         GET /inbound/fba/2024-03-20/inboundPlans/{inboundPlanId}/shipments/{shipmentId}/items
         """
         params: dict[str, Any] = {"pageSize": page_size, "paginationToken": pagination_token}
-        return await self._client.request(
+        return await self._http.request(
             "GET",
             f"/inbound/fba/2024-03-20/inboundPlans/{path_segment(inbound_plan_id)}/shipments/{path_segment(shipment_id)}/items",
             operation="listShipmentItems",
@@ -3048,9 +3048,9 @@ class AsyncFulfillmentInboundV20240320Client:
 
     def iter_list_shipment_items(
         self,
-        *,
         inbound_plan_id: str,
         shipment_id: str,
+        *,
         page_size: int | None = None,
         pagination_token: str | None = None,
         request_options: RequestOptions | None = None,
@@ -3074,10 +3074,10 @@ class AsyncFulfillmentInboundV20240320Client:
 
     async def update_shipment_name(
         self,
-        *,
         inbound_plan_id: str,
         shipment_id: str,
         body: fulfillment_inbound_v2024_03_20.UpdateShipmentNameRequest | Mapping[str, Any],
+        *,
         request_options: RequestOptions | None = None,
     ) -> None:
         """Updates the name of an existing shipment.
@@ -3092,7 +3092,7 @@ class AsyncFulfillmentInboundV20240320Client:
 
         PUT /inbound/fba/2024-03-20/inboundPlans/{inboundPlanId}/shipments/{shipmentId}/name
         """
-        return await self._client.request(
+        return await self._http.request(
             "PUT",
             f"/inbound/fba/2024-03-20/inboundPlans/{path_segment(inbound_plan_id)}/shipments/{path_segment(shipment_id)}/name",
             operation="updateShipmentName",
@@ -3105,9 +3105,9 @@ class AsyncFulfillmentInboundV20240320Client:
 
     async def list_shipment_pallets(
         self,
-        *,
         inbound_plan_id: str,
         shipment_id: str,
+        *,
         page_size: int | None = None,
         pagination_token: str | None = None,
         request_options: RequestOptions | None = None,
@@ -3125,7 +3125,7 @@ class AsyncFulfillmentInboundV20240320Client:
         GET /inbound/fba/2024-03-20/inboundPlans/{inboundPlanId}/shipments/{shipmentId}/pallets
         """
         params: dict[str, Any] = {"pageSize": page_size, "paginationToken": pagination_token}
-        return await self._client.request(
+        return await self._http.request(
             "GET",
             f"/inbound/fba/2024-03-20/inboundPlans/{path_segment(inbound_plan_id)}/shipments/{path_segment(shipment_id)}/pallets",
             operation="listShipmentPallets",
@@ -3139,9 +3139,9 @@ class AsyncFulfillmentInboundV20240320Client:
 
     def iter_list_shipment_pallets(
         self,
-        *,
         inbound_plan_id: str,
         shipment_id: str,
+        *,
         page_size: int | None = None,
         pagination_token: str | None = None,
         request_options: RequestOptions | None = None,
@@ -3165,10 +3165,10 @@ class AsyncFulfillmentInboundV20240320Client:
 
     async def update_shipment_self_ship_appointment_cancellation(
         self,
-        *,
         inbound_plan_id: str,
         shipment_id: str,
         body: fulfillment_inbound_v2024_03_20.CancelSelfShipAppointmentRequest | Mapping[str, Any],
+        *,
         request_options: RequestOptions | None = None,
     ) -> fulfillment_inbound_v2024_03_20.CancelSelfShipAppointmentResponse:
         """Cancels a self-ship appointment slot against a shipment. Only available in the following [marketplaces](https://developer-docs.amazon.com/sp-api/docs/marketplace-ids): MX, BR, EG, SA, AE, IN.
@@ -3183,7 +3183,7 @@ class AsyncFulfillmentInboundV20240320Client:
 
         PUT /inbound/fba/2024-03-20/inboundPlans/{inboundPlanId}/shipments/{shipmentId}/selfShipAppointmentCancellation
         """
-        return await self._client.request(
+        return await self._http.request(
             "PUT",
             f"/inbound/fba/2024-03-20/inboundPlans/{path_segment(inbound_plan_id)}/shipments/{path_segment(shipment_id)}/selfShipAppointmentCancellation",
             operation="cancelSelfShipAppointment",
@@ -3196,9 +3196,9 @@ class AsyncFulfillmentInboundV20240320Client:
 
     async def list_shipment_self_ship_appointment_slots(
         self,
-        *,
         inbound_plan_id: str,
         shipment_id: str,
+        *,
         page_size: int | None = None,
         pagination_token: str | None = None,
         request_options: RequestOptions | None = None,
@@ -3216,7 +3216,7 @@ class AsyncFulfillmentInboundV20240320Client:
         GET /inbound/fba/2024-03-20/inboundPlans/{inboundPlanId}/shipments/{shipmentId}/selfShipAppointmentSlots
         """
         params: dict[str, Any] = {"pageSize": page_size, "paginationToken": pagination_token}
-        return await self._client.request(
+        return await self._http.request(
             "GET",
             f"/inbound/fba/2024-03-20/inboundPlans/{path_segment(inbound_plan_id)}/shipments/{path_segment(shipment_id)}/selfShipAppointmentSlots",
             operation="getSelfShipAppointmentSlots",
@@ -3229,9 +3229,9 @@ class AsyncFulfillmentInboundV20240320Client:
 
     def iter_list_shipment_self_ship_appointment_slots(
         self,
-        *,
         inbound_plan_id: str,
         shipment_id: str,
+        *,
         page_size: int | None = None,
         pagination_token: str | None = None,
         request_options: RequestOptions | None = None,
@@ -3255,10 +3255,10 @@ class AsyncFulfillmentInboundV20240320Client:
 
     async def create_shipment_self_ship_appointment_slot(
         self,
-        *,
         inbound_plan_id: str,
         shipment_id: str,
         body: fulfillment_inbound_v2024_03_20.GenerateSelfShipAppointmentSlotsRequest | Mapping[str, Any],
+        *,
         request_options: RequestOptions | None = None,
     ) -> fulfillment_inbound_v2024_03_20.GenerateSelfShipAppointmentSlotsResponse:
         """Initiates the process of generating the appointment slots list. Only available in the following [marketplaces](https://developer-docs.amazon.com/sp-api/docs/marketplace-ids): MX, BR, EG, SA, AE, IN.
@@ -3273,7 +3273,7 @@ class AsyncFulfillmentInboundV20240320Client:
 
         POST /inbound/fba/2024-03-20/inboundPlans/{inboundPlanId}/shipments/{shipmentId}/selfShipAppointmentSlots
         """
-        return await self._client.request(
+        return await self._http.request(
             "POST",
             f"/inbound/fba/2024-03-20/inboundPlans/{path_segment(inbound_plan_id)}/shipments/{path_segment(shipment_id)}/selfShipAppointmentSlots",
             operation="generateSelfShipAppointmentSlots",
@@ -3286,11 +3286,11 @@ class AsyncFulfillmentInboundV20240320Client:
 
     async def create_self_ship_appointment_slot_schedule(
         self,
-        *,
         inbound_plan_id: str,
         shipment_id: str,
         slot_id: str,
         body: fulfillment_inbound_v2024_03_20.ScheduleSelfShipAppointmentRequest | Mapping[str, Any],
+        *,
         request_options: RequestOptions | None = None,
     ) -> fulfillment_inbound_v2024_03_20.ScheduleSelfShipAppointmentResponse:
         """Confirms or reschedules a self-ship appointment slot against a shipment. Only available in the following [marketplaces](https://developer-docs.amazon.com/sp-api/docs/marketplace-ids): MX, BR, EG, SA, AE, IN.
@@ -3305,7 +3305,7 @@ class AsyncFulfillmentInboundV20240320Client:
 
         POST /inbound/fba/2024-03-20/inboundPlans/{inboundPlanId}/shipments/{shipmentId}/selfShipAppointmentSlots/{slotId}/schedule
         """
-        return await self._client.request(
+        return await self._http.request(
             "POST",
             f"/inbound/fba/2024-03-20/inboundPlans/{path_segment(inbound_plan_id)}/shipments/{path_segment(shipment_id)}/selfShipAppointmentSlots/{path_segment(slot_id)}/schedule",
             operation="scheduleSelfShipAppointment",
@@ -3318,10 +3318,10 @@ class AsyncFulfillmentInboundV20240320Client:
 
     async def update_shipment_source_address(
         self,
-        *,
         inbound_plan_id: str,
         shipment_id: str,
         body: fulfillment_inbound_v2024_03_20.UpdateShipmentSourceAddressRequest | Mapping[str, Any],
+        *,
         request_options: RequestOptions | None = None,
     ) -> fulfillment_inbound_v2024_03_20.UpdateShipmentSourceAddressResponse:
         """Updates the source address of an existing shipment. The shipment source address can only be updated prior to the confirmation of the shipment carriers. As a result of the updated source address, existing transportation options will be invalidated and will need to be regenerated to capture the potential difference in transportation options and quotes due to the new source address.
@@ -3336,7 +3336,7 @@ class AsyncFulfillmentInboundV20240320Client:
 
         PUT /inbound/fba/2024-03-20/inboundPlans/{inboundPlanId}/shipments/{shipmentId}/sourceAddress
         """
-        return await self._client.request(
+        return await self._http.request(
             "PUT",
             f"/inbound/fba/2024-03-20/inboundPlans/{path_segment(inbound_plan_id)}/shipments/{path_segment(shipment_id)}/sourceAddress",
             operation="updateShipmentSourceAddress",
@@ -3350,10 +3350,10 @@ class AsyncFulfillmentInboundV20240320Client:
 
     async def update_shipment_tracking_details(
         self,
-        *,
         inbound_plan_id: str,
         shipment_id: str,
         body: fulfillment_inbound_v2024_03_20.UpdateShipmentTrackingDetailsRequest | Mapping[str, Any],
+        *,
         request_options: RequestOptions | None = None,
     ) -> fulfillment_inbound_v2024_03_20.UpdateShipmentTrackingDetailsResponse:
         """Updates a shipment's tracking details.
@@ -3368,7 +3368,7 @@ class AsyncFulfillmentInboundV20240320Client:
 
         PUT /inbound/fba/2024-03-20/inboundPlans/{inboundPlanId}/shipments/{shipmentId}/trackingDetails
         """
-        return await self._client.request(
+        return await self._http.request(
             "PUT",
             f"/inbound/fba/2024-03-20/inboundPlans/{path_segment(inbound_plan_id)}/shipments/{path_segment(shipment_id)}/trackingDetails",
             operation="updateShipmentTrackingDetails",
@@ -3382,8 +3382,8 @@ class AsyncFulfillmentInboundV20240320Client:
 
     async def list_inbound_plan_transportation_options(
         self,
-        *,
         inbound_plan_id: str,
+        *,
         page_size: int | None = None,
         pagination_token: str | None = None,
         placement_option_id: str | None = None,
@@ -3408,7 +3408,7 @@ class AsyncFulfillmentInboundV20240320Client:
             "placementOptionId": placement_option_id,
             "shipmentId": shipment_id,
         }
-        return await self._client.request(
+        return await self._http.request(
             "GET",
             f"/inbound/fba/2024-03-20/inboundPlans/{path_segment(inbound_plan_id)}/transportationOptions",
             operation="listTransportationOptions",
@@ -3422,8 +3422,8 @@ class AsyncFulfillmentInboundV20240320Client:
 
     def iter_list_inbound_plan_transportation_options(
         self,
-        *,
         inbound_plan_id: str,
+        *,
         page_size: int | None = None,
         pagination_token: str | None = None,
         placement_option_id: str | None = None,
@@ -3450,9 +3450,9 @@ class AsyncFulfillmentInboundV20240320Client:
 
     async def create_inbound_plan_transportation_option(
         self,
-        *,
         inbound_plan_id: str,
         body: fulfillment_inbound_v2024_03_20.GenerateTransportationOptionsRequest | Mapping[str, Any],
+        *,
         request_options: RequestOptions | None = None,
     ) -> fulfillment_inbound_v2024_03_20.GenerateTransportationOptionsResponse:
         """Generates available transportation options for a given placement option.
@@ -3467,7 +3467,7 @@ class AsyncFulfillmentInboundV20240320Client:
 
         POST /inbound/fba/2024-03-20/inboundPlans/{inboundPlanId}/transportationOptions
         """
-        return await self._client.request(
+        return await self._http.request(
             "POST",
             f"/inbound/fba/2024-03-20/inboundPlans/{path_segment(inbound_plan_id)}/transportationOptions",
             operation="generateTransportationOptions",
@@ -3481,9 +3481,9 @@ class AsyncFulfillmentInboundV20240320Client:
 
     async def create_confirmation(
         self,
-        *,
         inbound_plan_id: str,
         body: fulfillment_inbound_v2024_03_20.ConfirmTransportationOptionsRequest | Mapping[str, Any],
+        *,
         request_options: RequestOptions | None = None,
     ) -> fulfillment_inbound_v2024_03_20.ConfirmTransportationOptionsResponse:
         """Confirms all the transportation options for an inbound plan. A placement option must be confirmed prior to use of this API. Once confirmed, new transportation options can not be generated or confirmed for the Inbound Plan.
@@ -3498,7 +3498,7 @@ class AsyncFulfillmentInboundV20240320Client:
 
         POST /inbound/fba/2024-03-20/inboundPlans/{inboundPlanId}/transportationOptions/confirmation
         """
-        return await self._client.request(
+        return await self._http.request(
             "POST",
             f"/inbound/fba/2024-03-20/inboundPlans/{path_segment(inbound_plan_id)}/transportationOptions/confirmation",
             operation="confirmTransportationOptions",
@@ -3512,9 +3512,9 @@ class AsyncFulfillmentInboundV20240320Client:
 
     async def list_compliance(
         self,
-        *,
         mskus: list[str],
         marketplace_id: str,
+        *,
         request_options: RequestOptions | None = None,
     ) -> fulfillment_inbound_v2024_03_20.ListItemComplianceDetailsResponse:
         """List the inbound compliance details for MSKUs in a given marketplace.
@@ -3540,7 +3540,7 @@ class AsyncFulfillmentInboundV20240320Client:
         GET /inbound/fba/2024-03-20/items/compliance
         """
         params: dict[str, Any] = {"mskus": mskus, "marketplaceId": marketplace_id}
-        return await self._client.request(
+        return await self._http.request(
             "GET",
             "/inbound/fba/2024-03-20/items/compliance",
             operation="listItemComplianceDetails",
@@ -3554,9 +3554,9 @@ class AsyncFulfillmentInboundV20240320Client:
 
     async def update_compliance(
         self,
-        *,
-        marketplace_id: str,
         body: fulfillment_inbound_v2024_03_20.UpdateItemComplianceDetailsRequest | Mapping[str, Any],
+        marketplace_id: str,
+        *,
         request_options: RequestOptions | None = None,
     ) -> fulfillment_inbound_v2024_03_20.UpdateItemComplianceDetailsResponse:
         """Update compliance details for a list of MSKUs. The details provided here are only used for the India (IN - A21TJRUUN4KGV) marketplace compliance validation.
@@ -3572,7 +3572,7 @@ class AsyncFulfillmentInboundV20240320Client:
         PUT /inbound/fba/2024-03-20/items/compliance
         """
         params: dict[str, Any] = {"marketplaceId": marketplace_id}
-        return await self._client.request(
+        return await self._http.request(
             "PUT",
             "/inbound/fba/2024-03-20/items/compliance",
             operation="updateItemComplianceDetails",
@@ -3587,8 +3587,8 @@ class AsyncFulfillmentInboundV20240320Client:
 
     async def create_label(
         self,
-        *,
         body: fulfillment_inbound_v2024_03_20.CreateMarketplaceItemLabelsRequest | Mapping[str, Any],
+        *,
         request_options: RequestOptions | None = None,
     ) -> fulfillment_inbound_v2024_03_20.CreateMarketplaceItemLabelsResponse:
         """For a given marketplace - creates labels for a list of MSKUs.
@@ -3603,7 +3603,7 @@ class AsyncFulfillmentInboundV20240320Client:
 
         POST /inbound/fba/2024-03-20/items/labels
         """
-        return await self._client.request(
+        return await self._http.request(
             "POST",
             "/inbound/fba/2024-03-20/items/labels",
             operation="createMarketplaceItemLabels",
@@ -3617,9 +3617,9 @@ class AsyncFulfillmentInboundV20240320Client:
 
     async def list_prep_details(
         self,
-        *,
         marketplace_id: str,
         mskus: list[str],
+        *,
         request_options: RequestOptions | None = None,
     ) -> fulfillment_inbound_v2024_03_20.ListPrepDetailsResponse:
         """Get preparation details for a list of MSKUs in a specified marketplace.
@@ -3645,7 +3645,7 @@ class AsyncFulfillmentInboundV20240320Client:
         GET /inbound/fba/2024-03-20/items/prepDetails
         """
         params: dict[str, Any] = {"marketplaceId": marketplace_id, "mskus": mskus}
-        return await self._client.request(
+        return await self._http.request(
             "GET",
             "/inbound/fba/2024-03-20/items/prepDetails",
             operation="listPrepDetails",
@@ -3658,8 +3658,8 @@ class AsyncFulfillmentInboundV20240320Client:
 
     async def create_prep_detail(
         self,
-        *,
         body: fulfillment_inbound_v2024_03_20.SetPrepDetailsRequest | Mapping[str, Any],
+        *,
         request_options: RequestOptions | None = None,
     ) -> fulfillment_inbound_v2024_03_20.SetPrepDetailsResponse:
         """Set the preparation details for a list of MSKUs in a specified marketplace.
@@ -3674,7 +3674,7 @@ class AsyncFulfillmentInboundV20240320Client:
 
         POST /inbound/fba/2024-03-20/items/prepDetails
         """
-        return await self._client.request(
+        return await self._http.request(
             "POST",
             "/inbound/fba/2024-03-20/items/prepDetails",
             operation="setPrepDetails",
@@ -3688,8 +3688,8 @@ class AsyncFulfillmentInboundV20240320Client:
 
     async def get_operation(
         self,
-        *,
         operation_id: str,
+        *,
         request_options: RequestOptions | None = None,
     ) -> fulfillment_inbound_v2024_03_20.InboundOperationStatus:
         """Gets the status of the processing of an asynchronous API call.
@@ -3704,7 +3704,7 @@ class AsyncFulfillmentInboundV20240320Client:
 
         GET /inbound/fba/2024-03-20/operations/{operationId}
         """
-        return await self._client.request(
+        return await self._http.request(
             "GET",
             f"/inbound/fba/2024-03-20/operations/{path_segment(operation_id)}",
             operation="getInboundOperationStatus",
@@ -3716,4 +3716,4 @@ class AsyncFulfillmentInboundV20240320Client:
         )
 
 
-__all__ = ["AsyncFulfillmentInboundV20240320Client", "FulfillmentInboundV20240320Client"]
+__all__ = ["AsyncFulfillmentInboundV20240320Resource", "FulfillmentInboundV20240320Resource"]

@@ -10,24 +10,24 @@ from __future__ import annotations
 from collections.abc import AsyncIterator, Iterator
 from typing import Any
 
-from ..http_client import AsyncHttpClient, HttpClient, RateLimit, RequestOptions, apaginate, joined, paginate, path_segment
+from .._http import AsyncHttpClient, HttpClient, RateLimit, RequestOptions, apaginate, joined, paginate, path_segment
 from ..models import catalog_items_v2022_04_01
 
 SERVICE = "catalog_items_v2022_04_01"
 
 
-class CatalogItemsV20220401Client:
+class CatalogItemsV20220401Resource:
     """Synchronous ``CatalogItemsV20220401`` resource."""
 
-    __slots__ = ("_client",)
+    __slots__ = ("_http",)
 
-    def __init__(self, client: HttpClient) -> None:
-        self._client = client
+    def __init__(self, http: HttpClient) -> None:
+        self._http = http
 
     def list_items(
         self,
-        *,
         marketplace_ids: list[str],
+        *,
         identifiers: list[str] | None = None,
         identifiers_type: catalog_items_v2022_04_01.CatalogItemsV20220401IdentifiersType | str | None = None,
         included_data: list[catalog_items_v2022_04_01.CatalogItemsV20220401IncludedData] | None = None,
@@ -67,7 +67,7 @@ class CatalogItemsV20220401Client:
             "pageToken": page_token,
             "keywordsLocale": keywords_locale,
         }
-        return self._client.request(
+        return self._http.request(
             "GET",
             "/catalog/2022-04-01/items",
             operation="searchCatalogItems",
@@ -81,8 +81,8 @@ class CatalogItemsV20220401Client:
 
     def iter_list_items(
         self,
-        *,
         marketplace_ids: list[str],
+        *,
         identifiers: list[str] | None = None,
         identifiers_type: catalog_items_v2022_04_01.CatalogItemsV20220401IdentifiersType | str | None = None,
         included_data: list[catalog_items_v2022_04_01.CatalogItemsV20220401IncludedData] | None = None,
@@ -123,9 +123,9 @@ class CatalogItemsV20220401Client:
 
     def get_item(
         self,
-        *,
         asin: str,
         marketplace_ids: list[str],
+        *,
         included_data: list[catalog_items_v2022_04_01.CatalogItemsV20220401IncludedData] | None = None,
         locale: str | None = None,
         request_options: RequestOptions | None = None,
@@ -147,7 +147,7 @@ class CatalogItemsV20220401Client:
             "includedData": joined(included_data, ","),
             "locale": locale,
         }
-        return self._client.request(
+        return self._http.request(
             "GET",
             f"/catalog/2022-04-01/items/{path_segment(asin)}",
             operation="getCatalogItem",
@@ -160,18 +160,18 @@ class CatalogItemsV20220401Client:
         )
 
 
-class AsyncCatalogItemsV20220401Client:
+class AsyncCatalogItemsV20220401Resource:
     """Asynchronous ``CatalogItemsV20220401`` resource."""
 
-    __slots__ = ("_client",)
+    __slots__ = ("_http",)
 
-    def __init__(self, client: AsyncHttpClient) -> None:
-        self._client = client
+    def __init__(self, http: AsyncHttpClient) -> None:
+        self._http = http
 
     async def list_items(
         self,
-        *,
         marketplace_ids: list[str],
+        *,
         identifiers: list[str] | None = None,
         identifiers_type: catalog_items_v2022_04_01.CatalogItemsV20220401IdentifiersType | str | None = None,
         included_data: list[catalog_items_v2022_04_01.CatalogItemsV20220401IncludedData] | None = None,
@@ -211,7 +211,7 @@ class AsyncCatalogItemsV20220401Client:
             "pageToken": page_token,
             "keywordsLocale": keywords_locale,
         }
-        return await self._client.request(
+        return await self._http.request(
             "GET",
             "/catalog/2022-04-01/items",
             operation="searchCatalogItems",
@@ -225,8 +225,8 @@ class AsyncCatalogItemsV20220401Client:
 
     def iter_list_items(
         self,
-        *,
         marketplace_ids: list[str],
+        *,
         identifiers: list[str] | None = None,
         identifiers_type: catalog_items_v2022_04_01.CatalogItemsV20220401IdentifiersType | str | None = None,
         included_data: list[catalog_items_v2022_04_01.CatalogItemsV20220401IncludedData] | None = None,
@@ -267,9 +267,9 @@ class AsyncCatalogItemsV20220401Client:
 
     async def get_item(
         self,
-        *,
         asin: str,
         marketplace_ids: list[str],
+        *,
         included_data: list[catalog_items_v2022_04_01.CatalogItemsV20220401IncludedData] | None = None,
         locale: str | None = None,
         request_options: RequestOptions | None = None,
@@ -291,7 +291,7 @@ class AsyncCatalogItemsV20220401Client:
             "includedData": joined(included_data, ","),
             "locale": locale,
         }
-        return await self._client.request(
+        return await self._http.request(
             "GET",
             f"/catalog/2022-04-01/items/{path_segment(asin)}",
             operation="getCatalogItem",
@@ -304,4 +304,4 @@ class AsyncCatalogItemsV20220401Client:
         )
 
 
-__all__ = ["AsyncCatalogItemsV20220401Client", "CatalogItemsV20220401Client"]
+__all__ = ["AsyncCatalogItemsV20220401Resource", "CatalogItemsV20220401Resource"]

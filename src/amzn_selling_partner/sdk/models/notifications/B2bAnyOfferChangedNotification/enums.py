@@ -13,6 +13,8 @@ from enum import Enum
 class QuantityDiscountType(str, Enum):
     QUANTITY_DISCOUNT = "QUANTITY_DISCOUNT"
 
+    __str__ = str.__str__
+
 
 __all__ = [
     "QuantityDiscountType",

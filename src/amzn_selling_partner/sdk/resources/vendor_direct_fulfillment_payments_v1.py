@@ -10,24 +10,24 @@ from __future__ import annotations
 from collections.abc import Mapping
 from typing import Any
 
-from ..http_client import AsyncHttpClient, HttpClient, RateLimit, RequestOptions
+from .._http import AsyncHttpClient, HttpClient, RateLimit, RequestOptions
 from ..models import vendor_direct_fulfillment_payments_v1
 
 SERVICE = "vendor_direct_fulfillment_payments_v1"
 
 
-class VendorDirectFulfillmentPaymentsV1Client:
+class VendorDirectFulfillmentPaymentsV1Resource:
     """Synchronous ``VendorDirectFulfillmentPaymentsV1`` resource."""
 
-    __slots__ = ("_client",)
+    __slots__ = ("_http",)
 
-    def __init__(self, client: HttpClient) -> None:
-        self._client = client
+    def __init__(self, http: HttpClient) -> None:
+        self._http = http
 
     def create_invoice(
         self,
-        *,
         body: vendor_direct_fulfillment_payments_v1.SubmitInvoiceRequest | Mapping[str, Any],
+        *,
         request_options: RequestOptions | None = None,
     ) -> vendor_direct_fulfillment_payments_v1.SubmitInvoiceResponse:
         """Submits one or more invoices for a vendor's direct fulfillment orders.
@@ -42,7 +42,7 @@ class VendorDirectFulfillmentPaymentsV1Client:
 
         POST /vendor/directFulfillment/payments/v1/invoices
         """
-        return self._client.request(
+        return self._http.request(
             "POST",
             "/vendor/directFulfillment/payments/v1/invoices",
             operation="submitInvoice",
@@ -55,18 +55,18 @@ class VendorDirectFulfillmentPaymentsV1Client:
         )
 
 
-class AsyncVendorDirectFulfillmentPaymentsV1Client:
+class AsyncVendorDirectFulfillmentPaymentsV1Resource:
     """Asynchronous ``VendorDirectFulfillmentPaymentsV1`` resource."""
 
-    __slots__ = ("_client",)
+    __slots__ = ("_http",)
 
-    def __init__(self, client: AsyncHttpClient) -> None:
-        self._client = client
+    def __init__(self, http: AsyncHttpClient) -> None:
+        self._http = http
 
     async def create_invoice(
         self,
-        *,
         body: vendor_direct_fulfillment_payments_v1.SubmitInvoiceRequest | Mapping[str, Any],
+        *,
         request_options: RequestOptions | None = None,
     ) -> vendor_direct_fulfillment_payments_v1.SubmitInvoiceResponse:
         """Submits one or more invoices for a vendor's direct fulfillment orders.
@@ -81,7 +81,7 @@ class AsyncVendorDirectFulfillmentPaymentsV1Client:
 
         POST /vendor/directFulfillment/payments/v1/invoices
         """
-        return await self._client.request(
+        return await self._http.request(
             "POST",
             "/vendor/directFulfillment/payments/v1/invoices",
             operation="submitInvoice",
@@ -94,4 +94,4 @@ class AsyncVendorDirectFulfillmentPaymentsV1Client:
         )
 
 
-__all__ = ["AsyncVendorDirectFulfillmentPaymentsV1Client", "VendorDirectFulfillmentPaymentsV1Client"]
+__all__ = ["AsyncVendorDirectFulfillmentPaymentsV1Resource", "VendorDirectFulfillmentPaymentsV1Resource"]

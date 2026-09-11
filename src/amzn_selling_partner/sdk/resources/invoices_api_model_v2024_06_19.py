@@ -11,24 +11,24 @@ import datetime
 from collections.abc import AsyncIterator, Iterator, Mapping
 from typing import Any, Literal
 
-from ..http_client import AsyncHttpClient, HttpClient, RequestOptions, apaginate, joined, paginate, path_segment
+from .._http import AsyncHttpClient, HttpClient, RequestOptions, apaginate, joined, paginate, path_segment
 from ..models import invoices_api_model_v2024_06_19
 
 SERVICE = "invoices_api_model_v2024_06_19"
 
 
-class InvoicesApiModelV20240619Client:
+class InvoicesApiModelV20240619Resource:
     """Synchronous ``InvoicesApiModelV20240619`` resource."""
 
-    __slots__ = ("_client",)
+    __slots__ = ("_http",)
 
-    def __init__(self, client: HttpClient) -> None:
-        self._client = client
+    def __init__(self, http: HttpClient) -> None:
+        self._http = http
 
     def list_attributes(
         self,
-        *,
         marketplace_id: str,
+        *,
         request_options: RequestOptions | None = None,
     ) -> invoices_api_model_v2024_06_19.GetInvoicesAttributesResponse:
         """Returns marketplace-dependent schemas and their respective set of possible values.
@@ -36,7 +36,7 @@ class InvoicesApiModelV20240619Client:
         GET /tax/invoices/2024-06-19/attributes
         """
         params: dict[str, Any] = {"marketplaceId": marketplace_id}
-        return self._client.request(
+        return self._http.request(
             "GET",
             "/tax/invoices/2024-06-19/attributes",
             operation="getInvoicesAttributes",
@@ -49,15 +49,15 @@ class InvoicesApiModelV20240619Client:
 
     def get_document(
         self,
-        *,
         invoices_document_id: str,
+        *,
         request_options: RequestOptions | None = None,
     ) -> invoices_api_model_v2024_06_19.GetInvoicesDocumentResponse:
         """Returns the invoice document's ID and URL. Use the URL to download the ZIP file, which contains the invoices from the corresponding `createInvoicesExport` request.
 
         GET /tax/invoices/2024-06-19/documents/{invoicesDocumentId}
         """
-        return self._client.request(
+        return self._http.request(
             "GET",
             f"/tax/invoices/2024-06-19/documents/{path_segment(invoices_document_id)}",
             operation="getInvoicesDocument",
@@ -69,8 +69,8 @@ class InvoicesApiModelV20240619Client:
 
     def list_exports(
         self,
-        *,
         marketplace_id: str,
+        *,
         date_start: datetime.datetime | None = None,
         next_token: str | None = None,
         page_size: int | None = None,
@@ -90,7 +90,7 @@ class InvoicesApiModelV20240619Client:
             "dateEnd": date_end,
             "status": status,
         }
-        return self._client.request(
+        return self._http.request(
             "GET",
             "/tax/invoices/2024-06-19/exports",
             operation="getInvoicesExports",
@@ -103,8 +103,8 @@ class InvoicesApiModelV20240619Client:
 
     def iter_list_exports(
         self,
-        *,
         marketplace_id: str,
+        *,
         date_start: datetime.datetime | None = None,
         next_token: str | None = None,
         page_size: int | None = None,
@@ -133,15 +133,15 @@ class InvoicesApiModelV20240619Client:
 
     def create_export(
         self,
-        *,
         body: invoices_api_model_v2024_06_19.ExportInvoicesRequest | Mapping[str, Any],
+        *,
         request_options: RequestOptions | None = None,
     ) -> invoices_api_model_v2024_06_19.ExportInvoicesResponse:
         """Creates an invoice export request.
 
         POST /tax/invoices/2024-06-19/exports
         """
-        return self._client.request(
+        return self._http.request(
             "POST",
             "/tax/invoices/2024-06-19/exports",
             operation="createInvoicesExport",
@@ -154,15 +154,15 @@ class InvoicesApiModelV20240619Client:
 
     def get_export(
         self,
-        *,
         export_id: str,
+        *,
         request_options: RequestOptions | None = None,
     ) -> invoices_api_model_v2024_06_19.GetInvoicesExportResponse:
         """Returns invoice export details (including the `exportDocumentId`, if available) for the export that you specify.
 
         GET /tax/invoices/2024-06-19/exports/{exportId}
         """
-        return self._client.request(
+        return self._http.request(
             "GET",
             f"/tax/invoices/2024-06-19/exports/{path_segment(export_id)}",
             operation="getInvoicesExport",
@@ -174,11 +174,11 @@ class InvoicesApiModelV20240619Client:
 
     def list_government_invoice_requests(
         self,
-        *,
         marketplace_id: str,
         transaction_type: str,
         shipment_id: str,
         invoice_type: str,
+        *,
         inbound_plan_id: str | None = None,
         request_options: RequestOptions | None = None,
     ) -> invoices_api_model_v2024_06_19.GovernmentInvoiceStatusResponse:
@@ -193,7 +193,7 @@ class InvoicesApiModelV20240619Client:
             "invoiceType": invoice_type,
             "inboundPlanId": inbound_plan_id,
         }
-        return self._client.request(
+        return self._http.request(
             "GET",
             "/tax/invoices/2024-06-19/governmentInvoiceRequests",
             operation="getGovernmentInvoiceStatus",
@@ -206,15 +206,15 @@ class InvoicesApiModelV20240619Client:
 
     def create_government_invoice_request(
         self,
-        *,
         body: invoices_api_model_v2024_06_19.GovernmentInvoiceRequest | Mapping[str, Any],
+        *,
         request_options: RequestOptions | None = None,
     ) -> None:
         """Submit an asynchronous request to create a government invoice.
 
         POST /tax/invoices/2024-06-19/governmentInvoiceRequests
         """
-        return self._client.request(
+        return self._http.request(
             "POST",
             "/tax/invoices/2024-06-19/governmentInvoiceRequests",
             operation="createGovernmentInvoice",
@@ -226,11 +226,11 @@ class InvoicesApiModelV20240619Client:
 
     def get_government_invoice_request(
         self,
-        *,
         shipment_id: str,
         marketplace_id: str,
         transaction_type: str,
         invoice_type: str,
+        *,
         inbound_plan_id: str | None = None,
         file_format: str | None = None,
         request_options: RequestOptions | None = None,
@@ -246,7 +246,7 @@ class InvoicesApiModelV20240619Client:
             "inboundPlanId": inbound_plan_id,
             "fileFormat": file_format,
         }
-        return self._client.request(
+        return self._http.request(
             "GET",
             f"/tax/invoices/2024-06-19/governmentInvoiceRequests/{path_segment(shipment_id)}",
             operation="getGovernmentInvoiceDocument",
@@ -259,8 +259,8 @@ class InvoicesApiModelV20240619Client:
 
     def list_invoices(
         self,
-        *,
         marketplace_id: str,
+        *,
         transaction_identifier_name: str | None = None,
         page_size: int | None = None,
         date_end: datetime.datetime | None = None,
@@ -296,7 +296,7 @@ class InvoicesApiModelV20240619Client:
             "externalInvoiceId": external_invoice_id,
             "sortBy": sort_by,
         }
-        return self._client.request(
+        return self._http.request(
             "GET",
             "/tax/invoices/2024-06-19/invoices",
             operation="getInvoices",
@@ -309,8 +309,8 @@ class InvoicesApiModelV20240619Client:
 
     def iter_list_invoices(
         self,
-        *,
         marketplace_id: str,
+        *,
         transaction_identifier_name: str | None = None,
         page_size: int | None = None,
         date_end: datetime.datetime | None = None,
@@ -355,9 +355,9 @@ class InvoicesApiModelV20240619Client:
 
     def get_invoice(
         self,
-        *,
         invoice_id: str,
         marketplace_id: str,
+        *,
         request_options: RequestOptions | None = None,
     ) -> invoices_api_model_v2024_06_19.GetInvoiceResponse:
         """Returns invoice data for the specified invoice. This operation returns only a subset of the invoices data; refer to the response definition to get all the possible attributes.
@@ -366,7 +366,7 @@ class InvoicesApiModelV20240619Client:
         GET /tax/invoices/2024-06-19/invoices/{invoiceId}
         """
         params: dict[str, Any] = {"marketplaceId": marketplace_id}
-        return self._client.request(
+        return self._http.request(
             "GET",
             f"/tax/invoices/2024-06-19/invoices/{path_segment(invoice_id)}",
             operation="getInvoice",
@@ -378,18 +378,18 @@ class InvoicesApiModelV20240619Client:
         )
 
 
-class AsyncInvoicesApiModelV20240619Client:
+class AsyncInvoicesApiModelV20240619Resource:
     """Asynchronous ``InvoicesApiModelV20240619`` resource."""
 
-    __slots__ = ("_client",)
+    __slots__ = ("_http",)
 
-    def __init__(self, client: AsyncHttpClient) -> None:
-        self._client = client
+    def __init__(self, http: AsyncHttpClient) -> None:
+        self._http = http
 
     async def list_attributes(
         self,
-        *,
         marketplace_id: str,
+        *,
         request_options: RequestOptions | None = None,
     ) -> invoices_api_model_v2024_06_19.GetInvoicesAttributesResponse:
         """Returns marketplace-dependent schemas and their respective set of possible values.
@@ -397,7 +397,7 @@ class AsyncInvoicesApiModelV20240619Client:
         GET /tax/invoices/2024-06-19/attributes
         """
         params: dict[str, Any] = {"marketplaceId": marketplace_id}
-        return await self._client.request(
+        return await self._http.request(
             "GET",
             "/tax/invoices/2024-06-19/attributes",
             operation="getInvoicesAttributes",
@@ -410,15 +410,15 @@ class AsyncInvoicesApiModelV20240619Client:
 
     async def get_document(
         self,
-        *,
         invoices_document_id: str,
+        *,
         request_options: RequestOptions | None = None,
     ) -> invoices_api_model_v2024_06_19.GetInvoicesDocumentResponse:
         """Returns the invoice document's ID and URL. Use the URL to download the ZIP file, which contains the invoices from the corresponding `createInvoicesExport` request.
 
         GET /tax/invoices/2024-06-19/documents/{invoicesDocumentId}
         """
-        return await self._client.request(
+        return await self._http.request(
             "GET",
             f"/tax/invoices/2024-06-19/documents/{path_segment(invoices_document_id)}",
             operation="getInvoicesDocument",
@@ -430,8 +430,8 @@ class AsyncInvoicesApiModelV20240619Client:
 
     async def list_exports(
         self,
-        *,
         marketplace_id: str,
+        *,
         date_start: datetime.datetime | None = None,
         next_token: str | None = None,
         page_size: int | None = None,
@@ -451,7 +451,7 @@ class AsyncInvoicesApiModelV20240619Client:
             "dateEnd": date_end,
             "status": status,
         }
-        return await self._client.request(
+        return await self._http.request(
             "GET",
             "/tax/invoices/2024-06-19/exports",
             operation="getInvoicesExports",
@@ -464,8 +464,8 @@ class AsyncInvoicesApiModelV20240619Client:
 
     def iter_list_exports(
         self,
-        *,
         marketplace_id: str,
+        *,
         date_start: datetime.datetime | None = None,
         next_token: str | None = None,
         page_size: int | None = None,
@@ -494,15 +494,15 @@ class AsyncInvoicesApiModelV20240619Client:
 
     async def create_export(
         self,
-        *,
         body: invoices_api_model_v2024_06_19.ExportInvoicesRequest | Mapping[str, Any],
+        *,
         request_options: RequestOptions | None = None,
     ) -> invoices_api_model_v2024_06_19.ExportInvoicesResponse:
         """Creates an invoice export request.
 
         POST /tax/invoices/2024-06-19/exports
         """
-        return await self._client.request(
+        return await self._http.request(
             "POST",
             "/tax/invoices/2024-06-19/exports",
             operation="createInvoicesExport",
@@ -515,15 +515,15 @@ class AsyncInvoicesApiModelV20240619Client:
 
     async def get_export(
         self,
-        *,
         export_id: str,
+        *,
         request_options: RequestOptions | None = None,
     ) -> invoices_api_model_v2024_06_19.GetInvoicesExportResponse:
         """Returns invoice export details (including the `exportDocumentId`, if available) for the export that you specify.
 
         GET /tax/invoices/2024-06-19/exports/{exportId}
         """
-        return await self._client.request(
+        return await self._http.request(
             "GET",
             f"/tax/invoices/2024-06-19/exports/{path_segment(export_id)}",
             operation="getInvoicesExport",
@@ -535,11 +535,11 @@ class AsyncInvoicesApiModelV20240619Client:
 
     async def list_government_invoice_requests(
         self,
-        *,
         marketplace_id: str,
         transaction_type: str,
         shipment_id: str,
         invoice_type: str,
+        *,
         inbound_plan_id: str | None = None,
         request_options: RequestOptions | None = None,
     ) -> invoices_api_model_v2024_06_19.GovernmentInvoiceStatusResponse:
@@ -554,7 +554,7 @@ class AsyncInvoicesApiModelV20240619Client:
             "invoiceType": invoice_type,
             "inboundPlanId": inbound_plan_id,
         }
-        return await self._client.request(
+        return await self._http.request(
             "GET",
             "/tax/invoices/2024-06-19/governmentInvoiceRequests",
             operation="getGovernmentInvoiceStatus",
@@ -567,15 +567,15 @@ class AsyncInvoicesApiModelV20240619Client:
 
     async def create_government_invoice_request(
         self,
-        *,
         body: invoices_api_model_v2024_06_19.GovernmentInvoiceRequest | Mapping[str, Any],
+        *,
         request_options: RequestOptions | None = None,
     ) -> None:
         """Submit an asynchronous request to create a government invoice.
 
         POST /tax/invoices/2024-06-19/governmentInvoiceRequests
         """
-        return await self._client.request(
+        return await self._http.request(
             "POST",
             "/tax/invoices/2024-06-19/governmentInvoiceRequests",
             operation="createGovernmentInvoice",
@@ -587,11 +587,11 @@ class AsyncInvoicesApiModelV20240619Client:
 
     async def get_government_invoice_request(
         self,
-        *,
         shipment_id: str,
         marketplace_id: str,
         transaction_type: str,
         invoice_type: str,
+        *,
         inbound_plan_id: str | None = None,
         file_format: str | None = None,
         request_options: RequestOptions | None = None,
@@ -607,7 +607,7 @@ class AsyncInvoicesApiModelV20240619Client:
             "inboundPlanId": inbound_plan_id,
             "fileFormat": file_format,
         }
-        return await self._client.request(
+        return await self._http.request(
             "GET",
             f"/tax/invoices/2024-06-19/governmentInvoiceRequests/{path_segment(shipment_id)}",
             operation="getGovernmentInvoiceDocument",
@@ -620,8 +620,8 @@ class AsyncInvoicesApiModelV20240619Client:
 
     async def list_invoices(
         self,
-        *,
         marketplace_id: str,
+        *,
         transaction_identifier_name: str | None = None,
         page_size: int | None = None,
         date_end: datetime.datetime | None = None,
@@ -657,7 +657,7 @@ class AsyncInvoicesApiModelV20240619Client:
             "externalInvoiceId": external_invoice_id,
             "sortBy": sort_by,
         }
-        return await self._client.request(
+        return await self._http.request(
             "GET",
             "/tax/invoices/2024-06-19/invoices",
             operation="getInvoices",
@@ -670,8 +670,8 @@ class AsyncInvoicesApiModelV20240619Client:
 
     def iter_list_invoices(
         self,
-        *,
         marketplace_id: str,
+        *,
         transaction_identifier_name: str | None = None,
         page_size: int | None = None,
         date_end: datetime.datetime | None = None,
@@ -716,9 +716,9 @@ class AsyncInvoicesApiModelV20240619Client:
 
     async def get_invoice(
         self,
-        *,
         invoice_id: str,
         marketplace_id: str,
+        *,
         request_options: RequestOptions | None = None,
     ) -> invoices_api_model_v2024_06_19.GetInvoiceResponse:
         """Returns invoice data for the specified invoice. This operation returns only a subset of the invoices data; refer to the response definition to get all the possible attributes.
@@ -727,7 +727,7 @@ class AsyncInvoicesApiModelV20240619Client:
         GET /tax/invoices/2024-06-19/invoices/{invoiceId}
         """
         params: dict[str, Any] = {"marketplaceId": marketplace_id}
-        return await self._client.request(
+        return await self._http.request(
             "GET",
             f"/tax/invoices/2024-06-19/invoices/{path_segment(invoice_id)}",
             operation="getInvoice",
@@ -739,4 +739,4 @@ class AsyncInvoicesApiModelV20240619Client:
         )
 
 
-__all__ = ["AsyncInvoicesApiModelV20240619Client", "InvoicesApiModelV20240619Client"]
+__all__ = ["AsyncInvoicesApiModelV20240619Resource", "InvoicesApiModelV20240619Resource"]

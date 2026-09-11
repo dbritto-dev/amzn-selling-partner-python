@@ -1,4 +1,4 @@
-"""Hypothesis fuzzing of the generated parameter encoders (petstore_sdk.http_client)."""
+"""Hypothesis fuzzing of the generated parameter encoders (petstore_sdk._http)."""
 
 from __future__ import annotations
 
@@ -6,7 +6,7 @@ from urllib.parse import parse_qs, unquote
 
 from hypothesis import given, settings
 from hypothesis import strategies as st
-from petstore_sdk.http_client import _encode_query, _query_items, joined, path_segment, scalar
+from petstore_sdk._http import _encode_query, _query_items, joined, path_segment, scalar
 
 text = st.text(min_size=0, max_size=30)
 scalars = st.one_of(text, st.integers(), st.booleans(), st.floats(allow_nan=False, allow_infinity=False))

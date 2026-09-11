@@ -14,10 +14,14 @@ class BudgetType(str, Enum):
     AMOUNT = "AMOUNT"
     UNITS = "UNITS"
 
+    __str__ = str.__str__
+
 
 class ClaimCodeType(str, Enum):
     GROUP = "GROUP"
     INDIVIDUAL = "INDIVIDUAL"
+
+    __str__ = str.__str__
 
 
 class CouponType(str, Enum):
@@ -25,10 +29,14 @@ class CouponType(str, Enum):
     SUBSCRIBE_AND_SAVE = "SUBSCRIBE_AND_SAVE"
     REORDER_REWARDS = "REORDER_REWARDS"
 
+    __str__ = str.__str__
+
 
 class CustomerSegmentType(str, Enum):
     BRAND = "BRAND"
     PROGRAM = "PROGRAM"
+
+    __str__ = str.__str__
 
 
 class DiscountType(str, Enum):
@@ -36,10 +44,14 @@ class DiscountType(str, Enum):
     AMOUNT_OFF = "AMOUNT_OFF"
     FREE_ITEM = "FREE_ITEM"
 
+    __str__ = str.__str__
+
 
 class FeeFrequency(str, Enum):
     ONE_TIME = "ONE_TIME"
     DAILY = "DAILY"
+
+    __str__ = str.__str__
 
 
 class GetPromotionResponseStatus(str, Enum):
@@ -51,40 +63,56 @@ class GetPromotionResponseStatus(str, Enum):
     CANCELLING = "CANCELLING"
     CANCELLED = "CANCELLED"
 
+    __str__ = str.__str__
+
 
 class IssueSeverity(str, Enum):
     ERROR = "ERROR"
     WARNING = "WARNING"
+
+    __str__ = str.__str__
 
 
 class ItemBenefitType(str, Enum):
     FIXED_PRICE = "FIXED_PRICE"
     DISCOUNTED_PRICE = "DISCOUNTED_PRICE"
 
+    __str__ = str.__str__
+
 
 class ItemIssueSeverity(str, Enum):
     ERROR = "ERROR"
     WARNING = "WARNING"
+
+    __str__ = str.__str__
 
 
 class LatestRevisionRevisionStatus(str, Enum):
     PROCESSING = "PROCESSING"
     FAILED = "FAILED"
 
+    __str__ = str.__str__
+
 
 class MerchandisingDisplayOnWebsite(str, Enum):
     ALLOWED = "ALLOWED"
     NOT_ALLOWED = "NOT_ALLOWED"
+
+    __str__ = str.__str__
 
 
 class PromotionBenefitStacking(str, Enum):
     ALLOWED = "ALLOWED"
     NOT_ALLOWED = "NOT_ALLOWED"
 
+    __str__ = str.__str__
+
 
 class PromotionIssueSeverity(str, Enum):
     ERROR = "ERROR"
     WARNING = "WARNING"
+
+    __str__ = str.__str__
 
 
 class PromotionSummaryStatus(str, Enum):
@@ -96,10 +124,14 @@ class PromotionSummaryStatus(str, Enum):
     CANCELLING = "CANCELLING"
     CANCELLED = "CANCELLED"
 
+    __str__ = str.__str__
+
 
 class PromotionsV20251201IncludedData(str, Enum):
     ISSUES = "ISSUES"
     CUSTOMER_SEGMENTS = "CUSTOMER_SEGMENTS"
+
+    __str__ = str.__str__
 
 
 class PromotionsV20251201PromotionTypes(str, Enum):
@@ -108,11 +140,15 @@ class PromotionsV20251201PromotionTypes(str, Enum):
     PRICE_DISCOUNT = "PRICE_DISCOUNT"
     COUPON = "COUPON"
 
+    __str__ = str.__str__
+
 
 class PromotionsV20251201Revision(str, Enum):
     LATEST = "LATEST"
     PUBLISHED = "PUBLISHED"
     ANY = "ANY"
+
+    __str__ = str.__str__
 
 
 class PromotionsV20251201Statuses(str, Enum):
@@ -124,6 +160,8 @@ class PromotionsV20251201Statuses(str, Enum):
     CANCELLING = "CANCELLING"
     CANCELLED = "CANCELLED"
 
+    __str__ = str.__str__
+
 
 class PromotionType(str, Enum):
     BASKET_BUILDING = "BASKET_BUILDING"
@@ -131,15 +169,21 @@ class PromotionType(str, Enum):
     PRICE_DISCOUNT = "PRICE_DISCOUNT"
     COUPON = "COUPON"
 
+    __str__ = str.__str__
+
 
 class QuantityThresholdType(str, Enum):
     AT_LEAST = "AT_LEAST"
     FOR_EACH = "FOR_EACH"
 
+    __str__ = str.__str__
+
 
 class SelectionType(str, Enum):
     CATALOG = "CATALOG"
     ITEMS = "ITEMS"
+
+    __str__ = str.__str__
 
 
 __all__ = [

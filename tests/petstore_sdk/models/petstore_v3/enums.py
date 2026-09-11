@@ -15,6 +15,8 @@ class Status(str, Enum):
     PENDING = "pending"
     SOLD = "sold"
 
+    __str__ = str.__str__
+
 
 __all__ = [
     "Status",

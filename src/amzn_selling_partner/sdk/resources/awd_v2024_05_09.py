@@ -11,24 +11,24 @@ import datetime
 from collections.abc import AsyncIterator, Iterator, Mapping
 from typing import Any, Literal
 
-from ..http_client import AsyncHttpClient, HttpClient, RateLimit, RequestOptions, apaginate, paginate, path_segment
+from .._http import AsyncHttpClient, HttpClient, RateLimit, RequestOptions, apaginate, paginate, path_segment
 from ..models import awd_v2024_05_09
 
 SERVICE = "awd_v2024_05_09"
 
 
-class AwdV20240509Client:
+class AwdV20240509Resource:
     """Synchronous ``AwdV20240509`` resource."""
 
-    __slots__ = ("_client",)
+    __slots__ = ("_http",)
 
-    def __init__(self, client: HttpClient) -> None:
-        self._client = client
+    def __init__(self, http: HttpClient) -> None:
+        self._http = http
 
     def create_inbound_order(
         self,
-        *,
         body: awd_v2024_05_09.InboundOrderCreationData | Mapping[str, Any],
+        *,
         request_options: RequestOptions | None = None,
     ) -> awd_v2024_05_09.InboundOrderReference:
         """Creates a draft AWD inbound order with a list of packages for inbound shipment. The operation creates one shipment per order.
@@ -43,7 +43,7 @@ class AwdV20240509Client:
 
         POST /awd/2024-05-09/inboundOrders
         """
-        return self._client.request(
+        return self._http.request(
             "POST",
             "/awd/2024-05-09/inboundOrders",
             operation="createInbound",
@@ -57,8 +57,8 @@ class AwdV20240509Client:
 
     def get_inbound_order(
         self,
-        *,
         order_id: str,
+        *,
         request_options: RequestOptions | None = None,
     ) -> awd_v2024_05_09.InboundOrder:
         """Retrieves an AWD inbound order.
@@ -73,7 +73,7 @@ class AwdV20240509Client:
 
         GET /awd/2024-05-09/inboundOrders/{orderId}
         """
-        return self._client.request(
+        return self._http.request(
             "GET",
             f"/awd/2024-05-09/inboundOrders/{path_segment(order_id)}",
             operation="getInbound",
@@ -86,9 +86,9 @@ class AwdV20240509Client:
 
     def update_inbound_order(
         self,
-        *,
         order_id: str,
         body: awd_v2024_05_09.InboundOrder | Mapping[str, Any],
+        *,
         request_options: RequestOptions | None = None,
     ) -> None:
         """Updates an AWD inbound order that is in `DRAFT` status and not yet confirmed. Use this operation to update the `packagesToInbound`, `originAddress` and `preferences` attributes.
@@ -103,7 +103,7 @@ class AwdV20240509Client:
 
         PUT /awd/2024-05-09/inboundOrders/{orderId}
         """
-        return self._client.request(
+        return self._http.request(
             "PUT",
             f"/awd/2024-05-09/inboundOrders/{path_segment(order_id)}",
             operation="updateInbound",
@@ -116,8 +116,8 @@ class AwdV20240509Client:
 
     def create_inbound_order_cancellation(
         self,
-        *,
         order_id: str,
+        *,
         request_options: RequestOptions | None = None,
     ) -> None:
         """Cancels an AWD Inbound order and its associated shipment.
@@ -132,7 +132,7 @@ class AwdV20240509Client:
 
         POST /awd/2024-05-09/inboundOrders/{orderId}/cancellation
         """
-        return self._client.request(
+        return self._http.request(
             "POST",
             f"/awd/2024-05-09/inboundOrders/{path_segment(order_id)}/cancellation",
             operation="cancelInbound",
@@ -144,8 +144,8 @@ class AwdV20240509Client:
 
     def create_inbound_order_confirmation(
         self,
-        *,
         order_id: str,
+        *,
         request_options: RequestOptions | None = None,
     ) -> None:
         """Confirms an AWD inbound order in `DRAFT` status.
@@ -160,7 +160,7 @@ class AwdV20240509Client:
 
         POST /awd/2024-05-09/inboundOrders/{orderId}/confirmation
         """
-        return self._client.request(
+        return self._http.request(
             "POST",
             f"/awd/2024-05-09/inboundOrders/{path_segment(order_id)}/confirmation",
             operation="confirmInbound",
@@ -172,8 +172,8 @@ class AwdV20240509Client:
 
     def get_inbound_shipment(
         self,
-        *,
         shipment_id: str,
+        *,
         sku_quantities: awd_v2024_05_09.AwdV20240509SkuQuantities | str | None = None,
         request_options: RequestOptions | None = None,
     ) -> awd_v2024_05_09.InboundShipment:
@@ -190,7 +190,7 @@ class AwdV20240509Client:
         GET /awd/2024-05-09/inboundShipments/{shipmentId}
         """
         params: dict[str, Any] = {"skuQuantities": sku_quantities}
-        return self._client.request(
+        return self._http.request(
             "GET",
             f"/awd/2024-05-09/inboundShipments/{path_segment(shipment_id)}",
             operation="getInboundShipment",
@@ -204,8 +204,8 @@ class AwdV20240509Client:
 
     def list_inbound_shipment_labels(
         self,
-        *,
         shipment_id: str,
+        *,
         page_type: Literal["PLAIN_PAPER"] | None = None,
         format_type: Literal["PDF"] | None = None,
         request_options: RequestOptions | None = None,
@@ -223,7 +223,7 @@ class AwdV20240509Client:
         GET /awd/2024-05-09/inboundShipments/{shipmentId}/labels
         """
         params: dict[str, Any] = {"pageType": page_type, "formatType": format_type}
-        return self._client.request(
+        return self._http.request(
             "GET",
             f"/awd/2024-05-09/inboundShipments/{path_segment(shipment_id)}/labels",
             operation="getInboundShipmentLabels",
@@ -237,8 +237,8 @@ class AwdV20240509Client:
 
     def list_inbound_shipment_label_page_types(
         self,
-        *,
         shipment_id: str,
+        *,
         request_options: RequestOptions | None = None,
     ) -> awd_v2024_05_09.ShipmentLabelPageTypes:
         """Retrieves the available label page types for a shipment ID that you specify. This is an asynchronous operation. If the label status is `GENERATED`, then the pageTypes are available.
@@ -253,7 +253,7 @@ class AwdV20240509Client:
 
         GET /awd/2024-05-09/inboundShipments/{shipmentId}/labelPageTypes
         """
-        return self._client.request(
+        return self._http.request(
             "GET",
             f"/awd/2024-05-09/inboundShipments/{path_segment(shipment_id)}/labelPageTypes",
             operation="getLabelPageTypes",
@@ -266,9 +266,9 @@ class AwdV20240509Client:
 
     def update_inbound_shipment_transport(
         self,
-        *,
         shipment_id: str,
         body: awd_v2024_05_09.TransportationDetails | Mapping[str, Any],
+        *,
         request_options: RequestOptions | None = None,
     ) -> None:
         """Updates transport details for an AWD shipment.
@@ -283,7 +283,7 @@ class AwdV20240509Client:
 
         PUT /awd/2024-05-09/inboundShipments/{shipmentId}/transport
         """
-        return self._client.request(
+        return self._http.request(
             "PUT",
             f"/awd/2024-05-09/inboundShipments/{path_segment(shipment_id)}/transport",
             operation="updateInboundShipmentTransportDetails",
@@ -296,8 +296,8 @@ class AwdV20240509Client:
 
     def create_inbound_eligibility(
         self,
-        *,
         body: awd_v2024_05_09.InboundPackages | Mapping[str, Any],
+        *,
         request_options: RequestOptions | None = None,
     ) -> awd_v2024_05_09.InboundEligibility:
         """Determines if the packages you specify are eligible for an AWD inbound order and contains error details for ineligible packages.
@@ -312,7 +312,7 @@ class AwdV20240509Client:
 
         POST /awd/2024-05-09/inboundEligibility
         """
-        return self._client.request(
+        return self._http.request(
             "POST",
             "/awd/2024-05-09/inboundEligibility",
             operation="checkInboundEligibility",
@@ -357,7 +357,7 @@ class AwdV20240509Client:
             "maxResults": max_results,
             "nextToken": next_token,
         }
-        return self._client.request(
+        return self._http.request(
             "GET",
             "/awd/2024-05-09/inboundShipments",
             operation="listInboundShipments",
@@ -430,7 +430,7 @@ class AwdV20240509Client:
             "nextToken": next_token,
             "maxResults": max_results,
         }
-        return self._client.request(
+        return self._http.request(
             "GET",
             "/awd/2024-05-09/inventory",
             operation="listInventory",
@@ -499,7 +499,7 @@ class AwdV20240509Client:
             "maxResults": max_results,
             "nextToken": next_token,
         }
-        return self._client.request(
+        return self._http.request(
             "GET",
             "/awd/2024-05-09/outboundOrders",
             operation="listOutbounds",
@@ -541,8 +541,8 @@ class AwdV20240509Client:
 
     def create_outbound_order(
         self,
-        *,
         body: awd_v2024_05_09.OutboundOrderCreationData | Mapping[str, Any],
+        *,
         request_options: RequestOptions | None = None,
     ) -> awd_v2024_05_09.OutboundOrderReference:
         """Creates a draft AWD outbound order with the specified products. The API returns the order ID for the newly created order and starts an async validation check on the outbound products. After the validation check, the order status transitions from `VALIDATING` to `ELIGIBLE/INELIGIBLE`.
@@ -557,7 +557,7 @@ class AwdV20240509Client:
 
         POST /awd/2024-05-09/outboundOrders
         """
-        return self._client.request(
+        return self._http.request(
             "POST",
             "/awd/2024-05-09/outboundOrders",
             operation="createOutbound",
@@ -571,8 +571,8 @@ class AwdV20240509Client:
 
     def get_outbound_order(
         self,
-        *,
         order_id: str,
+        *,
         request_options: RequestOptions | None = None,
     ) -> awd_v2024_05_09.OutboundOrder:
         """Retrieves an AWD outbound order with a set of shipments that contain items that are outbound into a destination channel. If the order is not eligible, the validation errors field is included in the order response. The API returns the order ID for the newly created order and starts an async validation check on the outbound products. After the validation check, the order status transitions from `VALIDATING` to `ELIGIBLE/INELIGIBLE`.
@@ -587,7 +587,7 @@ class AwdV20240509Client:
 
         GET /awd/2024-05-09/outboundOrders/{orderId}
         """
-        return self._client.request(
+        return self._http.request(
             "GET",
             f"/awd/2024-05-09/outboundOrders/{path_segment(order_id)}",
             operation="getOutbound",
@@ -600,9 +600,9 @@ class AwdV20240509Client:
 
     def update_outbound_order(
         self,
-        *,
         order_id: str,
         body: awd_v2024_05_09.OutboundOrder | Mapping[str, Any],
+        *,
         request_options: RequestOptions | None = None,
     ) -> awd_v2024_05_09.OutboundOrderReference:
         """Updates an AWD outbound order that is in `DRAFT`, `ELIGIBLE`, or `INELIGIBLE` status. This API allows updates on `productsToOutbound` and `orderPreferences` attributes only. Any updates will restart the outbound order validation.
@@ -617,7 +617,7 @@ class AwdV20240509Client:
 
         PUT /awd/2024-05-09/outboundOrders/{orderId}
         """
-        return self._client.request(
+        return self._http.request(
             "PUT",
             f"/awd/2024-05-09/outboundOrders/{path_segment(order_id)}",
             operation="updateOutbound",
@@ -631,8 +631,8 @@ class AwdV20240509Client:
 
     def create_outbound_order_confirmation(
         self,
-        *,
         order_id: str,
+        *,
         request_options: RequestOptions | None = None,
     ) -> None:
         """Confirms an AWD outbound order for a set of shipments that contain items that must be outbound to a destination node. You can confirm the order only if it's in an`ELIGIBLE` state.
@@ -647,7 +647,7 @@ class AwdV20240509Client:
 
         POST /awd/2024-05-09/outboundOrders/{orderId}/confirmation
         """
-        return self._client.request(
+        return self._http.request(
             "POST",
             f"/awd/2024-05-09/outboundOrders/{path_segment(order_id)}/confirmation",
             operation="confirmOutbound",
@@ -679,7 +679,7 @@ class AwdV20240509Client:
             "maxResults": max_results,
             "nextToken": next_token,
         }
-        return self._client.request(
+        return self._http.request(
             "GET",
             "/awd/2024-05-09/replenishmentOrders",
             operation="listReplenishmentOrders",
@@ -720,8 +720,8 @@ class AwdV20240509Client:
 
     def create_replenishment_order(
         self,
-        *,
         body: awd_v2024_05_09.ReplenishmentOrderCreationData | Mapping[str, Any],
+        *,
         request_options: RequestOptions | None = None,
     ) -> awd_v2024_05_09.ReplenishmentOrderReference:
         """Creates an AWD replenishment order with given products to replenish.
@@ -730,7 +730,7 @@ class AwdV20240509Client:
 
         POST /awd/2024-05-09/replenishmentOrders
         """
-        return self._client.request(
+        return self._http.request(
             "POST",
             "/awd/2024-05-09/replenishmentOrders",
             operation="createReplenishmentOrder",
@@ -743,15 +743,15 @@ class AwdV20240509Client:
 
     def get_replenishment_order(
         self,
-        *,
         order_id: str,
+        *,
         request_options: RequestOptions | None = None,
     ) -> awd_v2024_05_09.ReplenishmentOrder:
         """Retrieves an AWD Replenishment order with a set of shipments containing items that is/was planned to be replenished into an FBA node.
 
         GET /awd/2024-05-09/replenishmentOrders/{orderId}
         """
-        return self._client.request(
+        return self._http.request(
             "GET",
             f"/awd/2024-05-09/replenishmentOrders/{path_segment(order_id)}",
             operation="getReplenishmentOrder",
@@ -763,8 +763,8 @@ class AwdV20240509Client:
 
     def create_replenishment_order_confirmation(
         self,
-        *,
         order_id: str,
+        *,
         request_options: RequestOptions | None = None,
     ) -> None:
         """Confirms an AWD replenishment order in ELIGIBLE state with a set of shipments containing items that are needed to be replenished to an FBA node.
@@ -772,7 +772,7 @@ class AwdV20240509Client:
 
         POST /awd/2024-05-09/replenishmentOrders/{orderId}/confirmation
         """
-        return self._client.request(
+        return self._http.request(
             "POST",
             f"/awd/2024-05-09/replenishmentOrders/{path_segment(order_id)}/confirmation",
             operation="confirmReplenishmentOrder",
@@ -782,18 +782,18 @@ class AwdV20240509Client:
         )
 
 
-class AsyncAwdV20240509Client:
+class AsyncAwdV20240509Resource:
     """Asynchronous ``AwdV20240509`` resource."""
 
-    __slots__ = ("_client",)
+    __slots__ = ("_http",)
 
-    def __init__(self, client: AsyncHttpClient) -> None:
-        self._client = client
+    def __init__(self, http: AsyncHttpClient) -> None:
+        self._http = http
 
     async def create_inbound_order(
         self,
-        *,
         body: awd_v2024_05_09.InboundOrderCreationData | Mapping[str, Any],
+        *,
         request_options: RequestOptions | None = None,
     ) -> awd_v2024_05_09.InboundOrderReference:
         """Creates a draft AWD inbound order with a list of packages for inbound shipment. The operation creates one shipment per order.
@@ -808,7 +808,7 @@ class AsyncAwdV20240509Client:
 
         POST /awd/2024-05-09/inboundOrders
         """
-        return await self._client.request(
+        return await self._http.request(
             "POST",
             "/awd/2024-05-09/inboundOrders",
             operation="createInbound",
@@ -822,8 +822,8 @@ class AsyncAwdV20240509Client:
 
     async def get_inbound_order(
         self,
-        *,
         order_id: str,
+        *,
         request_options: RequestOptions | None = None,
     ) -> awd_v2024_05_09.InboundOrder:
         """Retrieves an AWD inbound order.
@@ -838,7 +838,7 @@ class AsyncAwdV20240509Client:
 
         GET /awd/2024-05-09/inboundOrders/{orderId}
         """
-        return await self._client.request(
+        return await self._http.request(
             "GET",
             f"/awd/2024-05-09/inboundOrders/{path_segment(order_id)}",
             operation="getInbound",
@@ -851,9 +851,9 @@ class AsyncAwdV20240509Client:
 
     async def update_inbound_order(
         self,
-        *,
         order_id: str,
         body: awd_v2024_05_09.InboundOrder | Mapping[str, Any],
+        *,
         request_options: RequestOptions | None = None,
     ) -> None:
         """Updates an AWD inbound order that is in `DRAFT` status and not yet confirmed. Use this operation to update the `packagesToInbound`, `originAddress` and `preferences` attributes.
@@ -868,7 +868,7 @@ class AsyncAwdV20240509Client:
 
         PUT /awd/2024-05-09/inboundOrders/{orderId}
         """
-        return await self._client.request(
+        return await self._http.request(
             "PUT",
             f"/awd/2024-05-09/inboundOrders/{path_segment(order_id)}",
             operation="updateInbound",
@@ -881,8 +881,8 @@ class AsyncAwdV20240509Client:
 
     async def create_inbound_order_cancellation(
         self,
-        *,
         order_id: str,
+        *,
         request_options: RequestOptions | None = None,
     ) -> None:
         """Cancels an AWD Inbound order and its associated shipment.
@@ -897,7 +897,7 @@ class AsyncAwdV20240509Client:
 
         POST /awd/2024-05-09/inboundOrders/{orderId}/cancellation
         """
-        return await self._client.request(
+        return await self._http.request(
             "POST",
             f"/awd/2024-05-09/inboundOrders/{path_segment(order_id)}/cancellation",
             operation="cancelInbound",
@@ -909,8 +909,8 @@ class AsyncAwdV20240509Client:
 
     async def create_inbound_order_confirmation(
         self,
-        *,
         order_id: str,
+        *,
         request_options: RequestOptions | None = None,
     ) -> None:
         """Confirms an AWD inbound order in `DRAFT` status.
@@ -925,7 +925,7 @@ class AsyncAwdV20240509Client:
 
         POST /awd/2024-05-09/inboundOrders/{orderId}/confirmation
         """
-        return await self._client.request(
+        return await self._http.request(
             "POST",
             f"/awd/2024-05-09/inboundOrders/{path_segment(order_id)}/confirmation",
             operation="confirmInbound",
@@ -937,8 +937,8 @@ class AsyncAwdV20240509Client:
 
     async def get_inbound_shipment(
         self,
-        *,
         shipment_id: str,
+        *,
         sku_quantities: awd_v2024_05_09.AwdV20240509SkuQuantities | str | None = None,
         request_options: RequestOptions | None = None,
     ) -> awd_v2024_05_09.InboundShipment:
@@ -955,7 +955,7 @@ class AsyncAwdV20240509Client:
         GET /awd/2024-05-09/inboundShipments/{shipmentId}
         """
         params: dict[str, Any] = {"skuQuantities": sku_quantities}
-        return await self._client.request(
+        return await self._http.request(
             "GET",
             f"/awd/2024-05-09/inboundShipments/{path_segment(shipment_id)}",
             operation="getInboundShipment",
@@ -969,8 +969,8 @@ class AsyncAwdV20240509Client:
 
     async def list_inbound_shipment_labels(
         self,
-        *,
         shipment_id: str,
+        *,
         page_type: Literal["PLAIN_PAPER"] | None = None,
         format_type: Literal["PDF"] | None = None,
         request_options: RequestOptions | None = None,
@@ -988,7 +988,7 @@ class AsyncAwdV20240509Client:
         GET /awd/2024-05-09/inboundShipments/{shipmentId}/labels
         """
         params: dict[str, Any] = {"pageType": page_type, "formatType": format_type}
-        return await self._client.request(
+        return await self._http.request(
             "GET",
             f"/awd/2024-05-09/inboundShipments/{path_segment(shipment_id)}/labels",
             operation="getInboundShipmentLabels",
@@ -1002,8 +1002,8 @@ class AsyncAwdV20240509Client:
 
     async def list_inbound_shipment_label_page_types(
         self,
-        *,
         shipment_id: str,
+        *,
         request_options: RequestOptions | None = None,
     ) -> awd_v2024_05_09.ShipmentLabelPageTypes:
         """Retrieves the available label page types for a shipment ID that you specify. This is an asynchronous operation. If the label status is `GENERATED`, then the pageTypes are available.
@@ -1018,7 +1018,7 @@ class AsyncAwdV20240509Client:
 
         GET /awd/2024-05-09/inboundShipments/{shipmentId}/labelPageTypes
         """
-        return await self._client.request(
+        return await self._http.request(
             "GET",
             f"/awd/2024-05-09/inboundShipments/{path_segment(shipment_id)}/labelPageTypes",
             operation="getLabelPageTypes",
@@ -1031,9 +1031,9 @@ class AsyncAwdV20240509Client:
 
     async def update_inbound_shipment_transport(
         self,
-        *,
         shipment_id: str,
         body: awd_v2024_05_09.TransportationDetails | Mapping[str, Any],
+        *,
         request_options: RequestOptions | None = None,
     ) -> None:
         """Updates transport details for an AWD shipment.
@@ -1048,7 +1048,7 @@ class AsyncAwdV20240509Client:
 
         PUT /awd/2024-05-09/inboundShipments/{shipmentId}/transport
         """
-        return await self._client.request(
+        return await self._http.request(
             "PUT",
             f"/awd/2024-05-09/inboundShipments/{path_segment(shipment_id)}/transport",
             operation="updateInboundShipmentTransportDetails",
@@ -1061,8 +1061,8 @@ class AsyncAwdV20240509Client:
 
     async def create_inbound_eligibility(
         self,
-        *,
         body: awd_v2024_05_09.InboundPackages | Mapping[str, Any],
+        *,
         request_options: RequestOptions | None = None,
     ) -> awd_v2024_05_09.InboundEligibility:
         """Determines if the packages you specify are eligible for an AWD inbound order and contains error details for ineligible packages.
@@ -1077,7 +1077,7 @@ class AsyncAwdV20240509Client:
 
         POST /awd/2024-05-09/inboundEligibility
         """
-        return await self._client.request(
+        return await self._http.request(
             "POST",
             "/awd/2024-05-09/inboundEligibility",
             operation="checkInboundEligibility",
@@ -1122,7 +1122,7 @@ class AsyncAwdV20240509Client:
             "maxResults": max_results,
             "nextToken": next_token,
         }
-        return await self._client.request(
+        return await self._http.request(
             "GET",
             "/awd/2024-05-09/inboundShipments",
             operation="listInboundShipments",
@@ -1195,7 +1195,7 @@ class AsyncAwdV20240509Client:
             "nextToken": next_token,
             "maxResults": max_results,
         }
-        return await self._client.request(
+        return await self._http.request(
             "GET",
             "/awd/2024-05-09/inventory",
             operation="listInventory",
@@ -1264,7 +1264,7 @@ class AsyncAwdV20240509Client:
             "maxResults": max_results,
             "nextToken": next_token,
         }
-        return await self._client.request(
+        return await self._http.request(
             "GET",
             "/awd/2024-05-09/outboundOrders",
             operation="listOutbounds",
@@ -1306,8 +1306,8 @@ class AsyncAwdV20240509Client:
 
     async def create_outbound_order(
         self,
-        *,
         body: awd_v2024_05_09.OutboundOrderCreationData | Mapping[str, Any],
+        *,
         request_options: RequestOptions | None = None,
     ) -> awd_v2024_05_09.OutboundOrderReference:
         """Creates a draft AWD outbound order with the specified products. The API returns the order ID for the newly created order and starts an async validation check on the outbound products. After the validation check, the order status transitions from `VALIDATING` to `ELIGIBLE/INELIGIBLE`.
@@ -1322,7 +1322,7 @@ class AsyncAwdV20240509Client:
 
         POST /awd/2024-05-09/outboundOrders
         """
-        return await self._client.request(
+        return await self._http.request(
             "POST",
             "/awd/2024-05-09/outboundOrders",
             operation="createOutbound",
@@ -1336,8 +1336,8 @@ class AsyncAwdV20240509Client:
 
     async def get_outbound_order(
         self,
-        *,
         order_id: str,
+        *,
         request_options: RequestOptions | None = None,
     ) -> awd_v2024_05_09.OutboundOrder:
         """Retrieves an AWD outbound order with a set of shipments that contain items that are outbound into a destination channel. If the order is not eligible, the validation errors field is included in the order response. The API returns the order ID for the newly created order and starts an async validation check on the outbound products. After the validation check, the order status transitions from `VALIDATING` to `ELIGIBLE/INELIGIBLE`.
@@ -1352,7 +1352,7 @@ class AsyncAwdV20240509Client:
 
         GET /awd/2024-05-09/outboundOrders/{orderId}
         """
-        return await self._client.request(
+        return await self._http.request(
             "GET",
             f"/awd/2024-05-09/outboundOrders/{path_segment(order_id)}",
             operation="getOutbound",
@@ -1365,9 +1365,9 @@ class AsyncAwdV20240509Client:
 
     async def update_outbound_order(
         self,
-        *,
         order_id: str,
         body: awd_v2024_05_09.OutboundOrder | Mapping[str, Any],
+        *,
         request_options: RequestOptions | None = None,
     ) -> awd_v2024_05_09.OutboundOrderReference:
         """Updates an AWD outbound order that is in `DRAFT`, `ELIGIBLE`, or `INELIGIBLE` status. This API allows updates on `productsToOutbound` and `orderPreferences` attributes only. Any updates will restart the outbound order validation.
@@ -1382,7 +1382,7 @@ class AsyncAwdV20240509Client:
 
         PUT /awd/2024-05-09/outboundOrders/{orderId}
         """
-        return await self._client.request(
+        return await self._http.request(
             "PUT",
             f"/awd/2024-05-09/outboundOrders/{path_segment(order_id)}",
             operation="updateOutbound",
@@ -1396,8 +1396,8 @@ class AsyncAwdV20240509Client:
 
     async def create_outbound_order_confirmation(
         self,
-        *,
         order_id: str,
+        *,
         request_options: RequestOptions | None = None,
     ) -> None:
         """Confirms an AWD outbound order for a set of shipments that contain items that must be outbound to a destination node. You can confirm the order only if it's in an`ELIGIBLE` state.
@@ -1412,7 +1412,7 @@ class AsyncAwdV20240509Client:
 
         POST /awd/2024-05-09/outboundOrders/{orderId}/confirmation
         """
-        return await self._client.request(
+        return await self._http.request(
             "POST",
             f"/awd/2024-05-09/outboundOrders/{path_segment(order_id)}/confirmation",
             operation="confirmOutbound",
@@ -1444,7 +1444,7 @@ class AsyncAwdV20240509Client:
             "maxResults": max_results,
             "nextToken": next_token,
         }
-        return await self._client.request(
+        return await self._http.request(
             "GET",
             "/awd/2024-05-09/replenishmentOrders",
             operation="listReplenishmentOrders",
@@ -1485,8 +1485,8 @@ class AsyncAwdV20240509Client:
 
     async def create_replenishment_order(
         self,
-        *,
         body: awd_v2024_05_09.ReplenishmentOrderCreationData | Mapping[str, Any],
+        *,
         request_options: RequestOptions | None = None,
     ) -> awd_v2024_05_09.ReplenishmentOrderReference:
         """Creates an AWD replenishment order with given products to replenish.
@@ -1495,7 +1495,7 @@ class AsyncAwdV20240509Client:
 
         POST /awd/2024-05-09/replenishmentOrders
         """
-        return await self._client.request(
+        return await self._http.request(
             "POST",
             "/awd/2024-05-09/replenishmentOrders",
             operation="createReplenishmentOrder",
@@ -1508,15 +1508,15 @@ class AsyncAwdV20240509Client:
 
     async def get_replenishment_order(
         self,
-        *,
         order_id: str,
+        *,
         request_options: RequestOptions | None = None,
     ) -> awd_v2024_05_09.ReplenishmentOrder:
         """Retrieves an AWD Replenishment order with a set of shipments containing items that is/was planned to be replenished into an FBA node.
 
         GET /awd/2024-05-09/replenishmentOrders/{orderId}
         """
-        return await self._client.request(
+        return await self._http.request(
             "GET",
             f"/awd/2024-05-09/replenishmentOrders/{path_segment(order_id)}",
             operation="getReplenishmentOrder",
@@ -1528,8 +1528,8 @@ class AsyncAwdV20240509Client:
 
     async def create_replenishment_order_confirmation(
         self,
-        *,
         order_id: str,
+        *,
         request_options: RequestOptions | None = None,
     ) -> None:
         """Confirms an AWD replenishment order in ELIGIBLE state with a set of shipments containing items that are needed to be replenished to an FBA node.
@@ -1537,7 +1537,7 @@ class AsyncAwdV20240509Client:
 
         POST /awd/2024-05-09/replenishmentOrders/{orderId}/confirmation
         """
-        return await self._client.request(
+        return await self._http.request(
             "POST",
             f"/awd/2024-05-09/replenishmentOrders/{path_segment(order_id)}/confirmation",
             operation="confirmReplenishmentOrder",
@@ -1547,4 +1547,4 @@ class AsyncAwdV20240509Client:
         )
 
 
-__all__ = ["AsyncAwdV20240509Client", "AwdV20240509Client"]
+__all__ = ["AsyncAwdV20240509Resource", "AwdV20240509Resource"]

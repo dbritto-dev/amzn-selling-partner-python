@@ -17,10 +17,14 @@ class ConditionType(str, Enum):
     REFURBISHED = "Refurbished"
     CLUB = "Club"
 
+    __str__ = str.__str__
+
 
 class CustomerType(str, Enum):
     CONSUMER = "Consumer"
     BUSINESS = "Business"
+
+    __str__ = str.__str__
 
 
 class DetailedShippingTimeTypeAvailabilityType(str, Enum):
@@ -28,10 +32,14 @@ class DetailedShippingTimeTypeAvailabilityType(str, Enum):
     FUTURE_WITHOUT_DATE = "FUTURE_WITHOUT_DATE"
     FUTURE_WITH_DATE = "FUTURE_WITH_DATE"
 
+    __str__ = str.__str__
+
 
 class FulfillmentChannelType(str, Enum):
     AMAZON = "Amazon"
     MERCHANT = "Merchant"
+
+    __str__ = str.__str__
 
 
 class HttpMethod(str, Enum):
@@ -41,6 +49,8 @@ class HttpMethod(str, Enum):
     DELETE = "DELETE"
     POST = "POST"
 
+    __str__ = str.__str__
+
 
 class ItemCondition(str, Enum):
     NEW = "New"
@@ -49,15 +59,21 @@ class ItemCondition(str, Enum):
     REFURBISHED = "Refurbished"
     CLUB = "Club"
 
+    __str__ = str.__str__
+
 
 class OfferCustomerType(str, Enum):
     B2_C = "B2C"
     B2_B = "B2B"
 
+    __str__ = str.__str__
+
 
 class ProductPricingV0CustomerType(str, Enum):
     CONSUMER = "Consumer"
     BUSINESS = "Business"
+
+    __str__ = str.__str__
 
 
 class ProductPricingV0ItemCondition(str, Enum):
@@ -67,19 +83,27 @@ class ProductPricingV0ItemCondition(str, Enum):
     REFURBISHED = "Refurbished"
     CLUB = "Club"
 
+    __str__ = str.__str__
+
 
 class ProductPricingV0ItemType(str, Enum):
     ASIN = "Asin"
     SKU = "Sku"
+
+    __str__ = str.__str__
 
 
 class ProductPricingV0OfferType(str, Enum):
     B2_C = "B2C"
     B2_B = "B2B"
 
+    __str__ = str.__str__
+
 
 class QuantityDiscountType(str, Enum):
     QUANTITY_DISCOUNT = "QUANTITY_DISCOUNT"
+
+    __str__ = str.__str__
 
 
 __all__ = [

@@ -10,19 +10,19 @@ from __future__ import annotations
 from collections.abc import AsyncIterator, Iterator, Mapping
 from typing import Any
 
-from ..http_client import AsyncHttpClient, HttpClient, RateLimit, RequestOptions, apaginate, joined, paginate, path_segment
+from .._http import AsyncHttpClient, HttpClient, RateLimit, RequestOptions, apaginate, joined, paginate, path_segment
 from ..models import petstore_v2
 
 SERVICE = "petstore_v2"
 
 
-class PetstoreV2Client:
+class PetstoreV2Resource:
     """Synchronous ``PetstoreV2`` resource."""
 
-    __slots__ = ("_client",)
+    __slots__ = ("_http",)
 
-    def __init__(self, client: HttpClient) -> None:
-        self._client = client
+    def __init__(self, http: HttpClient) -> None:
+        self._http = http
 
     def list_pets(
         self,
@@ -51,7 +51,7 @@ class PetstoreV2Client:
             "Codes": joined(codes, "|"),
             "NextToken": next_token,
         }
-        return self._client.request(
+        return self._http.request(
             "GET",
             "/v2/pets",
             operation="listPets",
@@ -86,12 +86,12 @@ class PetstoreV2Client:
 
     def create_pet(
         self,
-        *,
         body: petstore_v2.NewPet | Mapping[str, Any],
+        *,
         request_options: RequestOptions | None = None,
     ) -> petstore_v2.Pet:
         """POST /v2/pets"""
-        return self._client.request(
+        return self._http.request(
             "POST",
             "/v2/pets",
             operation="createPet",
@@ -104,12 +104,12 @@ class PetstoreV2Client:
 
     def get_pet(
         self,
-        *,
         pet_id: int,
+        *,
         request_options: RequestOptions | None = None,
     ) -> petstore_v2.Pet:
         """GET /v2/pets/{petId}"""
-        return self._client.request(
+        return self._http.request(
             "GET",
             f"/v2/pets/{path_segment(pet_id)}",
             operation="getPet",
@@ -120,12 +120,12 @@ class PetstoreV2Client:
 
     def delete_pet(
         self,
-        *,
         pet_id: int,
+        *,
         request_options: RequestOptions | None = None,
     ) -> None:
         """DELETE /v2/pets/{petId}"""
-        return self._client.request(
+        return self._http.request(
             "DELETE",
             f"/v2/pets/{path_segment(pet_id)}",
             operation="deletePet",
@@ -135,13 +135,13 @@ class PetstoreV2Client:
 
     def create_pet_photo(
         self,
-        *,
         pet_id: int,
         body: Mapping[str, Any],
+        *,
         request_options: RequestOptions | None = None,
     ) -> petstore_v2.Pet:
         """POST /v2/pets/{petId}/photo"""
-        return self._client.request(
+        return self._http.request(
             "POST",
             f"/v2/pets/{path_segment(pet_id)}/photo",
             operation="uploadPhoto",
@@ -153,14 +153,14 @@ class PetstoreV2Client:
 
     def list_orders(
         self,
-        *,
         created_after: str,
+        *,
         next_token: str | None = None,
         request_options: RequestOptions | None = None,
     ) -> petstore_v2.GetOrdersResponse:
         """GET /v2/orders"""
         params: dict[str, Any] = {"NextToken": next_token, "CreatedAfter": created_after}
-        return self._client.request(
+        return self._http.request(
             "GET",
             "/v2/orders",
             operation="getOrders",
@@ -172,8 +172,8 @@ class PetstoreV2Client:
 
     def iter_list_orders(
         self,
-        *,
         created_after: str,
+        *,
         next_token: str | None = None,
         request_options: RequestOptions | None = None,
     ) -> Iterator[petstore_v2.Order]:
@@ -194,7 +194,7 @@ class PetstoreV2Client:
         request_options: RequestOptions | None = None,
     ) -> str:
         """GET /v2/report"""
-        return self._client.request(
+        return self._http.request(
             "GET",
             "/v2/report",
             operation="getReport",
@@ -204,13 +204,13 @@ class PetstoreV2Client:
         )
 
 
-class AsyncPetstoreV2Client:
+class AsyncPetstoreV2Resource:
     """Asynchronous ``PetstoreV2`` resource."""
 
-    __slots__ = ("_client",)
+    __slots__ = ("_http",)
 
-    def __init__(self, client: AsyncHttpClient) -> None:
-        self._client = client
+    def __init__(self, http: AsyncHttpClient) -> None:
+        self._http = http
 
     async def list_pets(
         self,
@@ -239,7 +239,7 @@ class AsyncPetstoreV2Client:
             "Codes": joined(codes, "|"),
             "NextToken": next_token,
         }
-        return await self._client.request(
+        return await self._http.request(
             "GET",
             "/v2/pets",
             operation="listPets",
@@ -274,12 +274,12 @@ class AsyncPetstoreV2Client:
 
     async def create_pet(
         self,
-        *,
         body: petstore_v2.NewPet | Mapping[str, Any],
+        *,
         request_options: RequestOptions | None = None,
     ) -> petstore_v2.Pet:
         """POST /v2/pets"""
-        return await self._client.request(
+        return await self._http.request(
             "POST",
             "/v2/pets",
             operation="createPet",
@@ -292,12 +292,12 @@ class AsyncPetstoreV2Client:
 
     async def get_pet(
         self,
-        *,
         pet_id: int,
+        *,
         request_options: RequestOptions | None = None,
     ) -> petstore_v2.Pet:
         """GET /v2/pets/{petId}"""
-        return await self._client.request(
+        return await self._http.request(
             "GET",
             f"/v2/pets/{path_segment(pet_id)}",
             operation="getPet",
@@ -308,12 +308,12 @@ class AsyncPetstoreV2Client:
 
     async def delete_pet(
         self,
-        *,
         pet_id: int,
+        *,
         request_options: RequestOptions | None = None,
     ) -> None:
         """DELETE /v2/pets/{petId}"""
-        return await self._client.request(
+        return await self._http.request(
             "DELETE",
             f"/v2/pets/{path_segment(pet_id)}",
             operation="deletePet",
@@ -323,13 +323,13 @@ class AsyncPetstoreV2Client:
 
     async def create_pet_photo(
         self,
-        *,
         pet_id: int,
         body: Mapping[str, Any],
+        *,
         request_options: RequestOptions | None = None,
     ) -> petstore_v2.Pet:
         """POST /v2/pets/{petId}/photo"""
-        return await self._client.request(
+        return await self._http.request(
             "POST",
             f"/v2/pets/{path_segment(pet_id)}/photo",
             operation="uploadPhoto",
@@ -341,14 +341,14 @@ class AsyncPetstoreV2Client:
 
     async def list_orders(
         self,
-        *,
         created_after: str,
+        *,
         next_token: str | None = None,
         request_options: RequestOptions | None = None,
     ) -> petstore_v2.GetOrdersResponse:
         """GET /v2/orders"""
         params: dict[str, Any] = {"NextToken": next_token, "CreatedAfter": created_after}
-        return await self._client.request(
+        return await self._http.request(
             "GET",
             "/v2/orders",
             operation="getOrders",
@@ -360,8 +360,8 @@ class AsyncPetstoreV2Client:
 
     def iter_list_orders(
         self,
-        *,
         created_after: str,
+        *,
         next_token: str | None = None,
         request_options: RequestOptions | None = None,
     ) -> AsyncIterator[petstore_v2.Order]:
@@ -382,7 +382,7 @@ class AsyncPetstoreV2Client:
         request_options: RequestOptions | None = None,
     ) -> str:
         """GET /v2/report"""
-        return await self._client.request(
+        return await self._http.request(
             "GET",
             "/v2/report",
             operation="getReport",
@@ -392,4 +392,4 @@ class AsyncPetstoreV2Client:
         )
 
 
-__all__ = ["AsyncPetstoreV2Client", "PetstoreV2Client"]
+__all__ = ["AsyncPetstoreV2Resource", "PetstoreV2Resource"]

@@ -10,24 +10,24 @@ from __future__ import annotations
 from collections.abc import Mapping
 from typing import Any
 
-from ..http_client import AsyncHttpClient, HttpClient, RateLimit, RequestOptions
+from .._http import AsyncHttpClient, HttpClient, RateLimit, RequestOptions
 from ..models import product_pricing_v2022_05_01
 
 SERVICE = "product_pricing_v2022_05_01"
 
 
-class ProductPricingV20220501Client:
+class ProductPricingV20220501Resource:
     """Synchronous ``ProductPricingV20220501`` resource."""
 
-    __slots__ = ("_client",)
+    __slots__ = ("_http",)
 
-    def __init__(self, client: HttpClient) -> None:
-        self._client = client
+    def __init__(self, http: HttpClient) -> None:
+        self._http = http
 
     def create_featured_offer_expected_price(
         self,
-        *,
         body: product_pricing_v2022_05_01.GetFeaturedOfferExpectedPriceBatchRequest | Mapping[str, Any],
+        *,
         request_options: RequestOptions | None = None,
     ) -> product_pricing_v2022_05_01.GetFeaturedOfferExpectedPriceBatchResponse:
         """Returns the set of responses that correspond to the batched list of up to 40 requests defined in the request body. The response for each successful (HTTP status code 200) request in the set includes the computed listing price at or below which a seller can expect to become the featured offer (before applicable promotions). This is called the featured offer expected price (FOEP). Featured offer is not guaranteed because competing offers might change. Other offers might be featured based on factors such as fulfillment capabilities to a specific customer. The response to an unsuccessful request includes the available error text.
@@ -42,7 +42,7 @@ class ProductPricingV20220501Client:
 
         POST /batches/products/pricing/2022-05-01/offer/featuredOfferExpectedPrice
         """
-        return self._client.request(
+        return self._http.request(
             "POST",
             "/batches/products/pricing/2022-05-01/offer/featuredOfferExpectedPrice",
             operation="getFeaturedOfferExpectedPriceBatch",
@@ -56,8 +56,8 @@ class ProductPricingV20220501Client:
 
     def create_competitive_summary(
         self,
-        *,
         body: product_pricing_v2022_05_01.CompetitiveSummaryBatchRequest | Mapping[str, Any],
+        *,
         request_options: RequestOptions | None = None,
     ) -> product_pricing_v2022_05_01.CompetitiveSummaryBatchResponse:
         """Returns the competitive summary response, including featured buying options for the ASIN and `marketplaceId` combination.
@@ -72,7 +72,7 @@ class ProductPricingV20220501Client:
 
         POST /batches/products/pricing/2022-05-01/items/competitiveSummary
         """
-        return self._client.request(
+        return self._http.request(
             "POST",
             "/batches/products/pricing/2022-05-01/items/competitiveSummary",
             operation="getCompetitiveSummary",
@@ -85,18 +85,18 @@ class ProductPricingV20220501Client:
         )
 
 
-class AsyncProductPricingV20220501Client:
+class AsyncProductPricingV20220501Resource:
     """Asynchronous ``ProductPricingV20220501`` resource."""
 
-    __slots__ = ("_client",)
+    __slots__ = ("_http",)
 
-    def __init__(self, client: AsyncHttpClient) -> None:
-        self._client = client
+    def __init__(self, http: AsyncHttpClient) -> None:
+        self._http = http
 
     async def create_featured_offer_expected_price(
         self,
-        *,
         body: product_pricing_v2022_05_01.GetFeaturedOfferExpectedPriceBatchRequest | Mapping[str, Any],
+        *,
         request_options: RequestOptions | None = None,
     ) -> product_pricing_v2022_05_01.GetFeaturedOfferExpectedPriceBatchResponse:
         """Returns the set of responses that correspond to the batched list of up to 40 requests defined in the request body. The response for each successful (HTTP status code 200) request in the set includes the computed listing price at or below which a seller can expect to become the featured offer (before applicable promotions). This is called the featured offer expected price (FOEP). Featured offer is not guaranteed because competing offers might change. Other offers might be featured based on factors such as fulfillment capabilities to a specific customer. The response to an unsuccessful request includes the available error text.
@@ -111,7 +111,7 @@ class AsyncProductPricingV20220501Client:
 
         POST /batches/products/pricing/2022-05-01/offer/featuredOfferExpectedPrice
         """
-        return await self._client.request(
+        return await self._http.request(
             "POST",
             "/batches/products/pricing/2022-05-01/offer/featuredOfferExpectedPrice",
             operation="getFeaturedOfferExpectedPriceBatch",
@@ -125,8 +125,8 @@ class AsyncProductPricingV20220501Client:
 
     async def create_competitive_summary(
         self,
-        *,
         body: product_pricing_v2022_05_01.CompetitiveSummaryBatchRequest | Mapping[str, Any],
+        *,
         request_options: RequestOptions | None = None,
     ) -> product_pricing_v2022_05_01.CompetitiveSummaryBatchResponse:
         """Returns the competitive summary response, including featured buying options for the ASIN and `marketplaceId` combination.
@@ -141,7 +141,7 @@ class AsyncProductPricingV20220501Client:
 
         POST /batches/products/pricing/2022-05-01/items/competitiveSummary
         """
-        return await self._client.request(
+        return await self._http.request(
             "POST",
             "/batches/products/pricing/2022-05-01/items/competitiveSummary",
             operation="getCompetitiveSummary",
@@ -154,4 +154,4 @@ class AsyncProductPricingV20220501Client:
         )
 
 
-__all__ = ["AsyncProductPricingV20220501Client", "ProductPricingV20220501Client"]
+__all__ = ["AsyncProductPricingV20220501Resource", "ProductPricingV20220501Resource"]

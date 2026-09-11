@@ -15,21 +15,29 @@ class IssueExemptionStatus(str, Enum):
     EXEMPT_UNTIL_EXPIRY_DATE = "EXEMPT_UNTIL_EXPIRY_DATE"
     NOT_EXEMPT = "NOT_EXEMPT"
 
+    __str__ = str.__str__
+
 
 class IssueSeverity(str, Enum):
     ERROR = "ERROR"
     WARNING = "WARNING"
     INFO = "INFO"
 
+    __str__ = str.__str__
+
 
 class ItemOfferByMarketplaceOfferType(str, Enum):
     B2_C = "B2C"
     B2_B = "B2B"
 
+    __str__ = str.__str__
+
 
 class ItemRelationshipType(str, Enum):
     VARIATION = "VARIATION"
     PACKAGE_HIERARCHY = "PACKAGE_HIERARCHY"
+
+    __str__ = str.__str__
 
 
 class ItemSummaryByMarketplaceConditionType(str, Enum):
@@ -47,10 +55,14 @@ class ItemSummaryByMarketplaceConditionType(str, Enum):
     COLLECTIBLE_ACCEPTABLE = "collectible_acceptable"
     CLUB_CLUB = "club_club"
 
+    __str__ = str.__str__
+
 
 class ItemSummaryByMarketplaceStatus(str, Enum):
     BUYABLE = "BUYABLE"
     DISCOVERABLE = "DISCOVERABLE"
+
+    __str__ = str.__str__
 
 
 class ListingsItemPutRequestRequirements(str, Enum):
@@ -58,11 +70,15 @@ class ListingsItemPutRequestRequirements(str, Enum):
     LISTING_PRODUCT_ONLY = "LISTING_PRODUCT_ONLY"
     LISTING_OFFER_ONLY = "LISTING_OFFER_ONLY"
 
+    __str__ = str.__str__
+
 
 class ListingsItemSubmissionResponseStatus(str, Enum):
     ACCEPTED = "ACCEPTED"
     INVALID = "INVALID"
     VALID = "VALID"
+
+    __str__ = str.__str__
 
 
 class ListingsItemsV20210801IdentifiersType(str, Enum):
@@ -76,6 +92,8 @@ class ListingsItemsV20210801IdentifiersType(str, Enum):
     SKU = "SKU"
     UPC = "UPC"
 
+    __str__ = str.__str__
+
 
 class ListingsItemsV20210801IncludedData(str, Enum):
     SUMMARIES = "summaries"
@@ -87,31 +105,43 @@ class ListingsItemsV20210801IncludedData(str, Enum):
     RELATIONSHIPS = "relationships"
     PRODUCT_TYPES = "productTypes"
 
+    __str__ = str.__str__
+
 
 class ListingsItemsV20210801SortBy(str, Enum):
     SKU = "sku"
     CREATED_DATE = "createdDate"
     LAST_UPDATED_DATE = "lastUpdatedDate"
 
+    __str__ = str.__str__
+
 
 class ListingsItemsV20210801SortOrder(str, Enum):
     ASC = "ASC"
     DESC = "DESC"
+
+    __str__ = str.__str__
 
 
 class ListingsItemsV20210801WithIssueSeverity(str, Enum):
     WARNING = "WARNING"
     ERROR = "ERROR"
 
+    __str__ = str.__str__
+
 
 class ListingsItemsV20210801WithoutStatus(str, Enum):
     BUYABLE = "BUYABLE"
     DISCOVERABLE = "DISCOVERABLE"
 
+    __str__ = str.__str__
+
 
 class ListingsItemsV20210801WithStatus(str, Enum):
     BUYABLE = "BUYABLE"
     DISCOVERABLE = "DISCOVERABLE"
+
+    __str__ = str.__str__
 
 
 class PatchOperationOp(str, Enum):
@@ -119,6 +149,8 @@ class PatchOperationOp(str, Enum):
     REPLACE = "replace"
     MERGE = "merge"
     DELETE = "delete"
+
+    __str__ = str.__str__
 
 
 __all__ = [

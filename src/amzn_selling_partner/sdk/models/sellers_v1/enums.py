@@ -20,10 +20,14 @@ class AccountBusinessType(str, Enum):
     STATE_OWNED = "STATE_OWNED"
     INDIVIDUAL = "INDIVIDUAL"
 
+    __str__ = str.__str__
+
 
 class AccountSellingPlan(str, Enum):
     PROFESSIONAL = "PROFESSIONAL"
     INDIVIDUAL = "INDIVIDUAL"
+
+    __str__ = str.__str__
 
 
 __all__ = [

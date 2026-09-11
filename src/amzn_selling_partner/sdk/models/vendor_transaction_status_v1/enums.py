@@ -15,6 +15,8 @@ class TransactionStatus_2(str, Enum):
     PROCESSING = "Processing"
     SUCCESS = "Success"
 
+    __str__ = str.__str__
+
 
 __all__ = [
     "TransactionStatus_2",

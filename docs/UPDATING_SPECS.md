@@ -108,30 +108,34 @@ reproduced here:
    ../tests/fixtures/tasks-api.yml --format table` the resolution table
    (operation → method name → service).
 2. **The emitter project.** `src/python/index.ts` assembles the `python`
-   emitter from `types.ts` (IR `TypeRef` → Python type, exhaustive over every
-   kind), `enums.ts`, `models.ts`, `resources.ts`, `client.ts`,
-   `http_client.ts` and `errors.ts`; `src/plugin.ts` registers it;
-   `oagen.config.ts` spreads the plugin and adds the policy barrel
+   emitter from `types.ts` (IR `TypeRef` → Python annotation, exhaustive over
+   every kind), `models.ts` (models + enums), `resources.ts` (one class per
+   service, sync and async) and `client.ts` (root client, `__init__.py`,
+   `errors.py`, `_http.py`); `src/plugin.ts` exports the plugin;
+   `oagen.config.ts` spreads it and adds the policy barrel
    `src/policy/index.ts` (`transformSpec`, `schemaNameTransform`,
    `operationIdTransform`, `operationHints`, `mountRules`) plus
    `emitterOptions.python` with the `sdkBehavior` overrides that end up in
-   `http_client.py`.
+   `_http.py`.
 3. **Generate.** `npm run build`, then `npm run sdk:generate -- --spec
    <spec.yml> --namespace <Client>` (`--output <dir>` for another
-   destination) turns one spec into a standalone package (`client.py`,
-   `http_client.py`, `errors.py`, `models/`, `resources/`); without arguments
+   destination) turns one spec into a standalone package (`__init__.py`,
+   `client.py`, `_http.py`, `errors.py`, `models/`, `resources/`), starting
+   from a clean output directory; without arguments
    it generates the Amazon SDK from `spec/open-api-spec.yaml`, which
    `npm run spec:build` writes from the Swagger 2.0 files (`--petstore` for
    the test fixtures, `spec/petstore.yaml`). `npm run regenerate` is the
    repository's full run: spec build, Amazon into
    `src/amzn_selling_partner/sdk`, the petstore fixtures into
    `tests/petstore_sdk`, then ruff.
-4. **Test the emitter.** `npm test` (vitest: fixture-spec tests over
-   `tasks-api.yml` for models, enums, resources, client, HTTP client and errors,
-   the spec build and helper tests, and the policy checked against the
-   committed spec: every hint names an operation, every mount rule a service);
-   `npm run typecheck`; `npm run build` (tsup) bundles the plugin like the
-   scaffold.
+4. **Test the emitter.** `npm test` (vitest: an inline fixture spec, written
+   to a temp file because `parseSpec` takes a path, covering field ordering,
+   nullable rendering and enum emission; the tutorial's `tasks-api.yml` for
+   resources, client, HTTP layer and errors; the spec build and helper tests;
+   the policy checked against the committed spec); `npm run typecheck`;
+   `npm run build` (tsup); `npm run smoke` proves the output runs (the tasks
+   SDK generated on the fly and the Amazon SDK over `httpx2.MockTransport`,
+   printing the parsed results and the exact requests).
 5. **Diff two spec versions.** `npm run sdk:diff` (last commit → working
    tree; `--old <ref or file> --new <file>` for any other pair).
 

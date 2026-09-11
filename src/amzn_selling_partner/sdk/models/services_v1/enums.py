@@ -15,10 +15,14 @@ class AppointmentAppointmentStatus(str, Enum):
     CANCELLED = "CANCELLED"
     COMPLETED = "COMPLETED"
 
+    __str__ = str.__str__
+
 
 class AppointmentSlotReportSchedulingType(str, Enum):
     REAL_TIME_SCHEDULING = "REAL_TIME_SCHEDULING"
     NON_REAL_TIME_SCHEDULING = "NON_REAL_TIME_SCHEDULING"
+
+    __str__ = str.__str__
 
 
 class AssociatedItemItemStatus(str, Enum):
@@ -27,12 +31,16 @@ class AssociatedItemItemStatus(str, Enum):
     SHIPPED = "SHIPPED"
     DELIVERED = "DELIVERED"
 
+    __str__ = str.__str__
+
 
 class CapacityType(str, Enum):
     SCHEDULED_CAPACITY = "SCHEDULED_CAPACITY"
     AVAILABLE_CAPACITY = "AVAILABLE_CAPACITY"
     ENCUMBERED_CAPACITY = "ENCUMBERED_CAPACITY"
     RESERVED_CAPACITY = "RESERVED_CAPACITY"
+
+    __str__ = str.__str__
 
 
 class DayOfWeek(str, Enum):
@@ -44,10 +52,14 @@ class DayOfWeek(str, Enum):
     SATURDAY = "SATURDAY"
     SUNDAY = "SUNDAY"
 
+    __str__ = str.__str__
+
 
 class ErrorErrorLevel(str, Enum):
     ERROR = "ERROR"
     WARNING = "WARNING"
+
+    __str__ = str.__str__
 
 
 class PoaPoaType(str, Enum):
@@ -56,6 +68,8 @@ class PoaPoaType(str, Enum):
     DUMMY_RECEIPT = "DUMMY_RECEIPT"
     POA_RECEIPT = "POA_RECEIPT"
 
+    __str__ = str.__str__
+
 
 class ReservationType(str, Enum):
     APPOINTMENT = "APPOINTMENT"
@@ -63,6 +77,8 @@ class ReservationType(str, Enum):
     VACATION = "VACATION"
     BREAK = "BREAK"
     TRAINING = "TRAINING"
+
+    __str__ = str.__str__
 
 
 class ServiceJobServiceJobStatus(str, Enum):
@@ -74,11 +90,15 @@ class ServiceJobServiceJobStatus(str, Enum):
     HOLD = "HOLD"
     PAYMENT_DECLINED = "PAYMENT_DECLINED"
 
+    __str__ = str.__str__
+
 
 class ServiceLocationServiceLocationType(str, Enum):
     IN_HOME = "IN_HOME"
     IN_STORE = "IN_STORE"
     ONLINE = "ONLINE"
+
+    __str__ = str.__str__
 
 
 class ServicesV1ServiceJobStatus(str, Enum):
@@ -90,15 +110,21 @@ class ServicesV1ServiceJobStatus(str, Enum):
     HOLD = "HOLD"
     PAYMENT_DECLINED = "PAYMENT_DECLINED"
 
+    __str__ = str.__str__
+
 
 class ServicesV1SortField(str, Enum):
     JOB_DATE = "JOB_DATE"
     JOB_STATUS = "JOB_STATUS"
 
+    __str__ = str.__str__
+
 
 class ServicesV1SortOrder(str, Enum):
     ASC = "ASC"
     DESC = "DESC"
+
+    __str__ = str.__str__
 
 
 class ServiceUploadDocumentContentType(str, Enum):
@@ -108,6 +134,8 @@ class ServiceUploadDocumentContentType(str, Enum):
     JPEG = "JPEG"
     GIF = "GIF"
     PDF = "PDF"
+
+    __str__ = str.__str__
 
 
 __all__ = [

@@ -10,24 +10,24 @@ from __future__ import annotations
 from collections.abc import Mapping
 from typing import Any
 
-from ..http_client import AsyncHttpClient, HttpClient, RateLimit, RequestOptions, path_segment
+from .._http import AsyncHttpClient, HttpClient, RateLimit, RequestOptions, path_segment
 from ..models import shipment_invoicing_v0
 
 SERVICE = "shipment_invoicing_v0"
 
 
-class ShipmentInvoicingV0Client:
+class ShipmentInvoicingV0Resource:
     """Synchronous ``ShipmentInvoicingV0`` resource."""
 
-    __slots__ = ("_client",)
+    __slots__ = ("_http",)
 
-    def __init__(self, client: HttpClient) -> None:
-        self._client = client
+    def __init__(self, http: HttpClient) -> None:
+        self._http = http
 
     def get_shipment(
         self,
-        *,
         shipment_id: str,
+        *,
         request_options: RequestOptions | None = None,
     ) -> shipment_invoicing_v0.GetShipmentDetailsResponse:
         """Returns the shipment details required to issue an invoice for the specified shipment.
@@ -42,7 +42,7 @@ class ShipmentInvoicingV0Client:
 
         GET /fba/outbound/brazil/v0/shipments/{shipmentId}
         """
-        return self._client.request(
+        return self._http.request(
             "GET",
             f"/fba/outbound/brazil/v0/shipments/{path_segment(shipment_id)}",
             operation="getShipmentDetails",
@@ -55,9 +55,9 @@ class ShipmentInvoicingV0Client:
 
     def create_shipment_invoice(
         self,
-        *,
         shipment_id: str,
         body: shipment_invoicing_v0.SubmitInvoiceRequest | Mapping[str, Any],
+        *,
         request_options: RequestOptions | None = None,
     ) -> shipment_invoicing_v0.SubmitInvoiceResponse:
         """Submits a shipment invoice document for a given shipment.
@@ -72,7 +72,7 @@ class ShipmentInvoicingV0Client:
 
         POST /fba/outbound/brazil/v0/shipments/{shipmentId}/invoice
         """
-        return self._client.request(
+        return self._http.request(
             "POST",
             f"/fba/outbound/brazil/v0/shipments/{path_segment(shipment_id)}/invoice",
             operation="submitInvoice",
@@ -86,8 +86,8 @@ class ShipmentInvoicingV0Client:
 
     def list_status(
         self,
-        *,
         shipment_id: str,
+        *,
         request_options: RequestOptions | None = None,
     ) -> shipment_invoicing_v0.GetInvoiceStatusResponse:
         """Returns the invoice status for the shipment you specify.
@@ -102,7 +102,7 @@ class ShipmentInvoicingV0Client:
 
         GET /fba/outbound/brazil/v0/shipments/{shipmentId}/invoice/status
         """
-        return self._client.request(
+        return self._http.request(
             "GET",
             f"/fba/outbound/brazil/v0/shipments/{path_segment(shipment_id)}/invoice/status",
             operation="getInvoiceStatus",
@@ -114,18 +114,18 @@ class ShipmentInvoicingV0Client:
         )
 
 
-class AsyncShipmentInvoicingV0Client:
+class AsyncShipmentInvoicingV0Resource:
     """Asynchronous ``ShipmentInvoicingV0`` resource."""
 
-    __slots__ = ("_client",)
+    __slots__ = ("_http",)
 
-    def __init__(self, client: AsyncHttpClient) -> None:
-        self._client = client
+    def __init__(self, http: AsyncHttpClient) -> None:
+        self._http = http
 
     async def get_shipment(
         self,
-        *,
         shipment_id: str,
+        *,
         request_options: RequestOptions | None = None,
     ) -> shipment_invoicing_v0.GetShipmentDetailsResponse:
         """Returns the shipment details required to issue an invoice for the specified shipment.
@@ -140,7 +140,7 @@ class AsyncShipmentInvoicingV0Client:
 
         GET /fba/outbound/brazil/v0/shipments/{shipmentId}
         """
-        return await self._client.request(
+        return await self._http.request(
             "GET",
             f"/fba/outbound/brazil/v0/shipments/{path_segment(shipment_id)}",
             operation="getShipmentDetails",
@@ -153,9 +153,9 @@ class AsyncShipmentInvoicingV0Client:
 
     async def create_shipment_invoice(
         self,
-        *,
         shipment_id: str,
         body: shipment_invoicing_v0.SubmitInvoiceRequest | Mapping[str, Any],
+        *,
         request_options: RequestOptions | None = None,
     ) -> shipment_invoicing_v0.SubmitInvoiceResponse:
         """Submits a shipment invoice document for a given shipment.
@@ -170,7 +170,7 @@ class AsyncShipmentInvoicingV0Client:
 
         POST /fba/outbound/brazil/v0/shipments/{shipmentId}/invoice
         """
-        return await self._client.request(
+        return await self._http.request(
             "POST",
             f"/fba/outbound/brazil/v0/shipments/{path_segment(shipment_id)}/invoice",
             operation="submitInvoice",
@@ -184,8 +184,8 @@ class AsyncShipmentInvoicingV0Client:
 
     async def list_status(
         self,
-        *,
         shipment_id: str,
+        *,
         request_options: RequestOptions | None = None,
     ) -> shipment_invoicing_v0.GetInvoiceStatusResponse:
         """Returns the invoice status for the shipment you specify.
@@ -200,7 +200,7 @@ class AsyncShipmentInvoicingV0Client:
 
         GET /fba/outbound/brazil/v0/shipments/{shipmentId}/invoice/status
         """
-        return await self._client.request(
+        return await self._http.request(
             "GET",
             f"/fba/outbound/brazil/v0/shipments/{path_segment(shipment_id)}/invoice/status",
             operation="getInvoiceStatus",
@@ -212,4 +212,4 @@ class AsyncShipmentInvoicingV0Client:
         )
 
 
-__all__ = ["AsyncShipmentInvoicingV0Client", "ShipmentInvoicingV0Client"]
+__all__ = ["AsyncShipmentInvoicingV0Resource", "ShipmentInvoicingV0Resource"]

@@ -11,19 +11,19 @@ import datetime
 from collections.abc import AsyncIterator, Iterator
 from typing import Any
 
-from ..http_client import AsyncHttpClient, HttpClient, RateLimit, RequestOptions, apaginate, joined, paginate
+from .._http import AsyncHttpClient, HttpClient, RateLimit, RequestOptions, apaginate, joined, paginate
 from ..models import finances_v2024_06_19
 
 SERVICE = "finances_v2024_06_19"
 
 
-class FinancesV20240619Client:
+class FinancesV20240619Resource:
     """Synchronous ``FinancesV20240619`` resource."""
 
-    __slots__ = ("_client",)
+    __slots__ = ("_http",)
 
-    def __init__(self, client: HttpClient) -> None:
-        self._client = client
+    def __init__(self, http: HttpClient) -> None:
+        self._http = http
 
     def list_transactions(
         self,
@@ -58,7 +58,7 @@ class FinancesV20240619Client:
             "relatedIdentifierValue": related_identifier_value,
             "nextToken": next_token,
         }
-        return self._client.request(
+        return self._http.request(
             "GET",
             "/finances/2024-06-19/transactions",
             operation="listTransactions",
@@ -131,7 +131,7 @@ class FinancesV20240619Client:
             "asOfDate": as_of_date,
             "nextToken": next_token,
         }
-        return self._client.request(
+        return self._http.request(
             "GET",
             "/finances/2024-06-19/balances",
             operation="listBalances",
@@ -204,7 +204,7 @@ class FinancesV20240619Client:
             "periodEnd": period_end,
             "nextToken": next_token,
         }
-        return self._client.request(
+        return self._http.request(
             "GET",
             "/finances/2024-06-19/summary",
             operation="listSummary",
@@ -249,13 +249,13 @@ class FinancesV20240619Client:
         )
 
 
-class AsyncFinancesV20240619Client:
+class AsyncFinancesV20240619Resource:
     """Asynchronous ``FinancesV20240619`` resource."""
 
-    __slots__ = ("_client",)
+    __slots__ = ("_http",)
 
-    def __init__(self, client: AsyncHttpClient) -> None:
-        self._client = client
+    def __init__(self, http: AsyncHttpClient) -> None:
+        self._http = http
 
     async def list_transactions(
         self,
@@ -290,7 +290,7 @@ class AsyncFinancesV20240619Client:
             "relatedIdentifierValue": related_identifier_value,
             "nextToken": next_token,
         }
-        return await self._client.request(
+        return await self._http.request(
             "GET",
             "/finances/2024-06-19/transactions",
             operation="listTransactions",
@@ -363,7 +363,7 @@ class AsyncFinancesV20240619Client:
             "asOfDate": as_of_date,
             "nextToken": next_token,
         }
-        return await self._client.request(
+        return await self._http.request(
             "GET",
             "/finances/2024-06-19/balances",
             operation="listBalances",
@@ -436,7 +436,7 @@ class AsyncFinancesV20240619Client:
             "periodEnd": period_end,
             "nextToken": next_token,
         }
-        return await self._client.request(
+        return await self._http.request(
             "GET",
             "/finances/2024-06-19/summary",
             operation="listSummary",
@@ -481,4 +481,4 @@ class AsyncFinancesV20240619Client:
         )
 
 
-__all__ = ["AsyncFinancesV20240619Client", "FinancesV20240619Client"]
+__all__ = ["AsyncFinancesV20240619Resource", "FinancesV20240619Resource"]

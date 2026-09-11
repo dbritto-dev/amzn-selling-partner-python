@@ -14,17 +14,23 @@ class AggregationTimePeriod(str, Enum):
     FIVE_MINUTES = "FiveMinutes"
     TEN_MINUTES = "TenMinutes"
 
+    __str__ = str.__str__
+
 
 class EventFilterEventFilterType(str, Enum):
     ANY_OFFER_CHANGED = "ANY_OFFER_CHANGED"
     ORDER_CHANGE = "ORDER_CHANGE"
     SHIPMENT_TRACKING_MILESTONE_CHANGED = "SHIPMENT_TRACKING_MILESTONE_CHANGED"
 
+    __str__ = str.__str__
+
 
 class OrderChangeTypeEnum(str, Enum):
     BUYER_REQUESTED_CHANGE = "BuyerRequestedChange"
     DELIVERY_TIP_CHANGE = "DeliveryTipChange"
     ORDER_STATUS_CHANGE = "OrderStatusChange"
+
+    __str__ = str.__str__
 
 
 __all__ = [

@@ -11,8 +11,8 @@ from __future__ import annotations
 import logging
 from typing import Any
 
+from ..sdk._http import RequestOptions
 from ..sdk.client import AsyncClient, Client
-from ..sdk.http_client import RequestOptions
 from ..sdk.resources import OPERATIONS
 from ._amazon.auth import ACCESS_TOKEN_HEADER, AsyncLWAAuth, LWAAuth, LWACredentials, MemoryTokenStore, Token, TokenStore
 from ._amazon.documents import AsyncDocuments, Documents

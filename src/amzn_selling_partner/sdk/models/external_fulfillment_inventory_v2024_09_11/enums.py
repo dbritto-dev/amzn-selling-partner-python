@@ -14,11 +14,15 @@ class HttpMethod(str, Enum):
     GET = "GET"
     POST = "POST"
 
+    __str__ = str.__str__
+
 
 class MarketplaceAttributesChannelName(str, Enum):
     FBA = "FBA"
     MFN = "MFN"
     DF = "DF"
+
+    __str__ = str.__str__
 
 
 __all__ = [

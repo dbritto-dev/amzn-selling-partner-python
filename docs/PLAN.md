@@ -52,9 +52,9 @@ codegen/spec/open-api-spec.yaml        one OpenAPI 3 document (committed): 67 se
         │  oagen generate               oagen.config.ts = plugin + src/policy/: transformSpec (alias inlining,
         ▼                               inline-object hoisting, name protection), operationHints, mountRules
 oagen IR (ApiSpec)                     services, operations, models, enums, sdk behavior
-        │  src/python/ (the emitter)    types.ts, enums.ts, models.ts, resources.ts, client.ts, http_client.ts, errors.ts
+        │  src/python/ (the emitter)    types.ts, models.ts, resources.ts, client.ts, index.ts
         ▼
-src/amzn_selling_partner/sdk/          client.py, http_client.py, errors.py, models/, resources/  (+ .oagen-manifest.json)
+src/amzn_selling_partner/sdk/          __init__.py, client.py, _http.py, errors.py, models/, resources/  (+ .oagen-manifest.json)
 ```
 
 `npm run sdk:generate` runs the tutorial's command (`oagen generate --lang
@@ -105,39 +105,50 @@ Path collisions are an error (none in the pinned models).
 
 ### The emitter (`src/python/`)
 
-* `types.ts` – `TypeRef` → Python type, an exhaustive switch with `assertNever`.
-* `packages.ts` – where models and enums live: the `<package>:` prefix, or for
-  unprefixed names (single-spec runs, enums oagen synthesises for inline
-  parameter enums) the package of the service that uses them.
-* `enums.ts` – `class Status(str, Enum)` per package (`models/<pkg>/enums.py`).
-* `models.ts` – pydantic classes per package (`models/<pkg>/models.py`),
-  required fields first, snake_case attributes with wire aliases, one file per
-  package rather than per model so recursive references resolve inside one
-  module; `models/_base.py` (`SpecModel`), package `__init__` re-exports.
-* `resources.ts` – `resources/<pkg>.py`: `class OrdersV0Client` and
-  `AsyncOrdersV0Client`, one method per resolved operation (from
-  `ctx.resolvedOperations`) that builds `params`/`headers`/path explicitly and
-  calls `self._client.request(...)` with the response model, the error model,
-  the `RateLimit` and the operationId; `iter_<method>` for paginated
-  operations; `resources/__init__.py` with the `SERVICES` / `OPERATIONS`
-  registry.
-* `client.ts` – `client.py`: the `--namespace` class (`Client` /
-  `AsyncClient`) with one lazily created resource per service and a
-  latest-version alias per API.
-* `http_client.ts` – `http_client.py` from `ctx.spec.sdk`: retries, backoff,
-  timeout, per-operation token buckets, the `Auth` hook, request encoding,
-  response decoding, `paginate` / `apaginate`, the optional aiohttp transport.
-* `errors.ts` – `errors.py` from the error policy (`BadRequestError`, ...,
-  `RateLimitExceededError`, `ServerError`).
+Laid out as the reference prompt for an oagen Python emitter prescribes: five
+modules assembled in `index.ts`, plus three small support modules.
 
-The emitter is registered in `src/plugin.ts` (`registerEmitter`) and
-`oagen.config.ts` spreads the plugin, as in the tutorial. `npm run build`
-(tsup), `npm run typecheck` and `npm test` (vitest over
-`tests/fixtures/tasks-api.yml`, the tutorial's spec, and the helper modules)
-work as in the scaffold. Two things the tutorial shows are not in the released
-oagen (0.30.2): `sdkBehavior` as a top-level config key (here it is
-`emitterOptions.python.sdkBehavior`, merged with `mergeSdkBehavior`) and
-`parseSpec({ content })` (the tests parse the fixture file).
+* `types.ts` – `TypeRef` → Python annotation, an exhaustive switch over every
+  `kind` with `assertNever` in the default branch (a new kind breaks the build
+  instead of emitting bad Python); `importsFor` derives the `typing` /
+  `datetime` imports a module needs from its annotations.
+* `models.ts` – models and enums. Package planning (the `<package>:` prefix
+  of the spec build, or for unprefixed names the package of the service that
+  uses them); `models/<pkg>/enums.py` (`class Status(str, Enum)` with
+  `__str__ = str.__str__`, so `str(Status.DONE)` is `"done"` on Python 3.11+
+  and never leaks `Status.DONE` into a query string); `models/<pkg>/__init__.py`
+  with every model of the package in one module (`from __future__ import
+  annotations`, so cross-references never form import cycles), required
+  fields first, optional fields `X | None = None`, snake_case attributes with
+  the wire name as alias; `models/_base.py` (`SpecModel`).
+* `resources.ts` – `resources/<pkg>.py`: `class OrdersV0Resource` and
+  `AsyncOrdersV0Resource`, one method per resolved operation (names from
+  `ctx.resolvedOperations`). Path parameters, the body and required parameters
+  are positional, optional ones keyword-only; each method builds `params` /
+  `headers` explicitly and calls `self._http.request(...)` with the response
+  model, the error model, the `RateLimit` and the operationId; `iter_<method>`
+  for paginated operations; `resources/__init__.py` with the `SERVICES` /
+  `OPERATIONS` registry. Also reads `emitterOptions.python`.
+* `client.ts` – `client.py` (the `--namespace` class `Client` / `AsyncClient`
+  with one lazily created resource per service, a latest-version alias per
+  API and `with_options()`), `__init__.py`, `errors.py` (from the error
+  policy: `BadRequestError`, ..., `RateLimitExceededError`, `ServerError`) and
+  `_http.py` (retries, backoff and timeout constants from the SDK behavior in
+  the IR, per-operation token buckets, the `Auth` hook, request encoding,
+  response decoding, `paginate` / `apaginate`, the optional aiohttp transport).
+* `index.ts` – assembles the `Emitter`; `naming.ts`, `pagination.ts`
+  (token-parameter heuristic + the Amazon override table) and `ratelimits.ts`
+  (usage-plan tables) support the above.
+
+`src/plugin.ts` exports `{ emitters, extractors, smokeRunners }` and
+`oagen.config.ts` spreads it (the CLI bundles its own registry, so
+`registerEmitter()` would not be seen). `npm run generate` produces both SDKs
+from clean output directories, `npm test` (vitest over an inline fixture spec
+written to a temp file, `tests/fixtures/tasks-api.yml` and the helper
+modules), `npm run typecheck`, `npm run build` (tsup) and `npm run smoke`
+(the tutorial's tasks API and the Amazon SDK over `httpx2.MockTransport`) are
+the definition of done. `codegen/README.md` lists the commands and the
+oagen API discrepancies met on the way.
 
 ### Hand-written (never generated)
 

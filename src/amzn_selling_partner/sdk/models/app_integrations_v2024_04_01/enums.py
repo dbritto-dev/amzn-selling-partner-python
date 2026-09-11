@@ -14,6 +14,8 @@ class DeleteNotificationsRequestDeletionReason(str, Enum):
     INCORRECT_CONTENT = "INCORRECT_CONTENT"
     INCORRECT_RECIPIENT = "INCORRECT_RECIPIENT"
 
+    __str__ = str.__str__
+
 
 __all__ = [
     "DeleteNotificationsRequestDeletionReason",

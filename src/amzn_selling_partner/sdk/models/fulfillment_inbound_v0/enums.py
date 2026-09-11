@@ -15,6 +15,8 @@ class BarcodeInstruction(str, Enum):
     CAN_USE_ORIGINAL_BARCODE = "CanUseOriginalBarcode"
     MUST_PROVIDE_SELLER_SKU = "MustProvideSellerSKU"
 
+    __str__ = str.__str__
+
 
 class BoxContentsSource(str, Enum):
     NONE = "NONE"
@@ -22,21 +24,29 @@ class BoxContentsSource(str, Enum):
     V_2_D_BARCODE = "2D_BARCODE"
     INTERACTIVE = "INTERACTIVE"
 
+    __str__ = str.__str__
+
 
 class CurrencyCode(str, Enum):
     USD = "USD"
     GBP = "GBP"
+
+    __str__ = str.__str__
 
 
 class ErrorReason(str, Enum):
     DOES_NOT_EXIST = "DoesNotExist"
     INVALID_ASIN = "InvalidASIN"
 
+    __str__ = str.__str__
+
 
 class FulfillmentInboundV0LabelType(str, Enum):
     BARCODE_2_D = "BARCODE_2D"
     UNIQUE = "UNIQUE"
     PALLET = "PALLET"
+
+    __str__ = str.__str__
 
 
 class FulfillmentInboundV0PageType(str, Enum):
@@ -53,11 +63,15 @@ class FulfillmentInboundV0PageType(str, Enum):
     PACKAGE_LABEL_THERMAL_NON_PCP = "PackageLabel_Thermal_NonPCP"
     PACKAGE_LABEL_THERMAL_NO_CARRIER_ROTATION = "PackageLabel_Thermal_No_Carrier_Rotation"
 
+    __str__ = str.__str__
+
 
 class FulfillmentInboundV0QueryType(str, Enum):
     SHIPMENT = "SHIPMENT"
     DATE_RANGE = "DATE_RANGE"
     NEXT_TOKEN = "NEXT_TOKEN"
+
+    __str__ = str.__str__
 
 
 class FulfillmentInboundV0ShipmentStatusList(str, Enum):
@@ -73,17 +87,23 @@ class FulfillmentInboundV0ShipmentStatusList(str, Enum):
     DELIVERED = "DELIVERED"
     CHECKED_IN = "CHECKED_IN"
 
+    __str__ = str.__str__
+
 
 class LabelPrepType(str, Enum):
     NO_LABEL = "NO_LABEL"
     SELLER_LABEL = "SELLER_LABEL"
     AMAZON_LABEL = "AMAZON_LABEL"
 
+    __str__ = str.__str__
+
 
 class PrepGuidance(str, Enum):
     CONSULT_HELP_DOCUMENTS = "ConsultHelpDocuments"
     NO_ADDITIONAL_PREP_REQUIRED = "NoAdditionalPrepRequired"
     SEE_PREP_INSTRUCTIONS_LIST = "SeePrepInstructionsList"
+
+    __str__ = str.__str__
 
 
 class PrepInstruction(str, Enum):
@@ -104,10 +124,14 @@ class PrepInstruction(str, Enum):
     SHIPS_IN_PRODUCT_PACKAGING = "ShipsInProductPackaging"
     NO_PREP = "NoPrep"
 
+    __str__ = str.__str__
+
 
 class PrepOwner(str, Enum):
     AMAZON = "AMAZON"
     SELLER = "SELLER"
+
+    __str__ = str.__str__
 
 
 class ShipmentStatus(str, Enum):
@@ -121,6 +145,8 @@ class ShipmentStatus(str, Enum):
     IN_TRANSIT = "IN_TRANSIT"
     DELIVERED = "DELIVERED"
     CHECKED_IN = "CHECKED_IN"
+
+    __str__ = str.__str__
 
 
 __all__ = [

@@ -15,9 +15,13 @@ class DeliveryShipmentInvoiceV20220701ProgramType(str, Enum):
     FBA_ON_SITE = "FbaOnSite"
     SELF_SHIP = "SelfShip"
 
+    __str__ = str.__str__
+
 
 class InvoiceType(str, Enum):
     OUTBOUND = "Outbound"
+
+    __str__ = str.__str__
 
 
 class ProgramType(str, Enum):
@@ -25,12 +29,16 @@ class ProgramType(str, Enum):
     FBA_ON_SITE = "FbaOnSite"
     SELF_SHIP = "SelfShip"
 
+    __str__ = str.__str__
+
 
 class ShipmentInvoiceStatus(str, Enum):
     PROCESSING = "Processing"
     ACCEPTED = "Accepted"
     ERRORED = "Errored"
     NOT_FOUND = "NotFound"
+
+    __str__ = str.__str__
 
 
 __all__ = [

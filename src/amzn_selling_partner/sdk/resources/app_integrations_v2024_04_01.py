@@ -10,24 +10,24 @@ from __future__ import annotations
 from collections.abc import Mapping
 from typing import Any
 
-from ..http_client import AsyncHttpClient, HttpClient, RateLimit, RequestOptions, path_segment
+from .._http import AsyncHttpClient, HttpClient, RateLimit, RequestOptions, path_segment
 from ..models import app_integrations_v2024_04_01
 
 SERVICE = "app_integrations_v2024_04_01"
 
 
-class AppIntegrationsV20240401Client:
+class AppIntegrationsV20240401Resource:
     """Synchronous ``AppIntegrationsV20240401`` resource."""
 
-    __slots__ = ("_client",)
+    __slots__ = ("_http",)
 
-    def __init__(self, client: HttpClient) -> None:
-        self._client = client
+    def __init__(self, http: HttpClient) -> None:
+        self._http = http
 
     def create_notification(
         self,
-        *,
         body: app_integrations_v2024_04_01.CreateNotificationRequest | Mapping[str, Any],
+        *,
         request_options: RequestOptions | None = None,
     ) -> app_integrations_v2024_04_01.CreateNotificationResponse:
         """Create a notification for sellers in Seller Central.
@@ -42,7 +42,7 @@ class AppIntegrationsV20240401Client:
 
         POST /appIntegrations/2024-04-01/notifications
         """
-        return self._client.request(
+        return self._http.request(
             "POST",
             "/appIntegrations/2024-04-01/notifications",
             operation="createNotification",
@@ -56,8 +56,8 @@ class AppIntegrationsV20240401Client:
 
     def create_deletion(
         self,
-        *,
         body: app_integrations_v2024_04_01.DeleteNotificationsRequest | Mapping[str, Any],
+        *,
         request_options: RequestOptions | None = None,
     ) -> None:
         """Remove your application's notifications from the Appstore notifications dashboard.
@@ -72,7 +72,7 @@ class AppIntegrationsV20240401Client:
 
         POST /appIntegrations/2024-04-01/notifications/deletion
         """
-        return self._client.request(
+        return self._http.request(
             "POST",
             "/appIntegrations/2024-04-01/notifications/deletion",
             operation="deleteNotifications",
@@ -85,9 +85,9 @@ class AppIntegrationsV20240401Client:
 
     def create_notification_feedback(
         self,
-        *,
         notification_id: str,
         body: app_integrations_v2024_04_01.RecordActionFeedbackRequest | Mapping[str, Any],
+        *,
         request_options: RequestOptions | None = None,
     ) -> None:
         """Records the seller's response to a notification.
@@ -102,7 +102,7 @@ class AppIntegrationsV20240401Client:
 
         POST /appIntegrations/2024-04-01/notifications/{notificationId}/feedback
         """
-        return self._client.request(
+        return self._http.request(
             "POST",
             f"/appIntegrations/2024-04-01/notifications/{path_segment(notification_id)}/feedback",
             operation="recordActionFeedback",
@@ -114,18 +114,18 @@ class AppIntegrationsV20240401Client:
         )
 
 
-class AsyncAppIntegrationsV20240401Client:
+class AsyncAppIntegrationsV20240401Resource:
     """Asynchronous ``AppIntegrationsV20240401`` resource."""
 
-    __slots__ = ("_client",)
+    __slots__ = ("_http",)
 
-    def __init__(self, client: AsyncHttpClient) -> None:
-        self._client = client
+    def __init__(self, http: AsyncHttpClient) -> None:
+        self._http = http
 
     async def create_notification(
         self,
-        *,
         body: app_integrations_v2024_04_01.CreateNotificationRequest | Mapping[str, Any],
+        *,
         request_options: RequestOptions | None = None,
     ) -> app_integrations_v2024_04_01.CreateNotificationResponse:
         """Create a notification for sellers in Seller Central.
@@ -140,7 +140,7 @@ class AsyncAppIntegrationsV20240401Client:
 
         POST /appIntegrations/2024-04-01/notifications
         """
-        return await self._client.request(
+        return await self._http.request(
             "POST",
             "/appIntegrations/2024-04-01/notifications",
             operation="createNotification",
@@ -154,8 +154,8 @@ class AsyncAppIntegrationsV20240401Client:
 
     async def create_deletion(
         self,
-        *,
         body: app_integrations_v2024_04_01.DeleteNotificationsRequest | Mapping[str, Any],
+        *,
         request_options: RequestOptions | None = None,
     ) -> None:
         """Remove your application's notifications from the Appstore notifications dashboard.
@@ -170,7 +170,7 @@ class AsyncAppIntegrationsV20240401Client:
 
         POST /appIntegrations/2024-04-01/notifications/deletion
         """
-        return await self._client.request(
+        return await self._http.request(
             "POST",
             "/appIntegrations/2024-04-01/notifications/deletion",
             operation="deleteNotifications",
@@ -183,9 +183,9 @@ class AsyncAppIntegrationsV20240401Client:
 
     async def create_notification_feedback(
         self,
-        *,
         notification_id: str,
         body: app_integrations_v2024_04_01.RecordActionFeedbackRequest | Mapping[str, Any],
+        *,
         request_options: RequestOptions | None = None,
     ) -> None:
         """Records the seller's response to a notification.
@@ -200,7 +200,7 @@ class AsyncAppIntegrationsV20240401Client:
 
         POST /appIntegrations/2024-04-01/notifications/{notificationId}/feedback
         """
-        return await self._client.request(
+        return await self._http.request(
             "POST",
             f"/appIntegrations/2024-04-01/notifications/{path_segment(notification_id)}/feedback",
             operation="recordActionFeedback",
@@ -212,4 +212,4 @@ class AsyncAppIntegrationsV20240401Client:
         )
 
 
-__all__ = ["AsyncAppIntegrationsV20240401Client", "AppIntegrationsV20240401Client"]
+__all__ = ["AsyncAppIntegrationsV20240401Resource", "AppIntegrationsV20240401Resource"]

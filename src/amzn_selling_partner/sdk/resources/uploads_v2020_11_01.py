@@ -9,26 +9,26 @@ from __future__ import annotations
 
 from typing import Any
 
-from ..http_client import AsyncHttpClient, HttpClient, RateLimit, RequestOptions, joined, path_segment
+from .._http import AsyncHttpClient, HttpClient, RateLimit, RequestOptions, joined, path_segment
 from ..models import uploads_v2020_11_01
 
 SERVICE = "uploads_v2020_11_01"
 
 
-class UploadsV20201101Client:
+class UploadsV20201101Resource:
     """Synchronous ``UploadsV20201101`` resource."""
 
-    __slots__ = ("_client",)
+    __slots__ = ("_http",)
 
-    def __init__(self, client: HttpClient) -> None:
-        self._client = client
+    def __init__(self, http: HttpClient) -> None:
+        self._http = http
 
     def create_upload_destination(
         self,
-        *,
         resource: str,
         marketplace_ids: list[str],
         content_md5: str,
+        *,
         content_type: str | None = None,
         request_options: RequestOptions | None = None,
     ) -> uploads_v2020_11_01.CreateUploadDestinationResponse:
@@ -45,7 +45,7 @@ class UploadsV20201101Client:
         POST /uploads/2020-11-01/uploadDestinations/{resource}
         """
         params: dict[str, Any] = {"marketplaceIds": joined(marketplace_ids, ","), "contentMD5": content_md5, "contentType": content_type}
-        return self._client.request(
+        return self._http.request(
             "POST",
             f"/uploads/2020-11-01/uploadDestinations/{path_segment(resource, greedy=True)}",
             operation="createUploadDestinationForResource",
@@ -58,20 +58,20 @@ class UploadsV20201101Client:
         )
 
 
-class AsyncUploadsV20201101Client:
+class AsyncUploadsV20201101Resource:
     """Asynchronous ``UploadsV20201101`` resource."""
 
-    __slots__ = ("_client",)
+    __slots__ = ("_http",)
 
-    def __init__(self, client: AsyncHttpClient) -> None:
-        self._client = client
+    def __init__(self, http: AsyncHttpClient) -> None:
+        self._http = http
 
     async def create_upload_destination(
         self,
-        *,
         resource: str,
         marketplace_ids: list[str],
         content_md5: str,
+        *,
         content_type: str | None = None,
         request_options: RequestOptions | None = None,
     ) -> uploads_v2020_11_01.CreateUploadDestinationResponse:
@@ -88,7 +88,7 @@ class AsyncUploadsV20201101Client:
         POST /uploads/2020-11-01/uploadDestinations/{resource}
         """
         params: dict[str, Any] = {"marketplaceIds": joined(marketplace_ids, ","), "contentMD5": content_md5, "contentType": content_type}
-        return await self._client.request(
+        return await self._http.request(
             "POST",
             f"/uploads/2020-11-01/uploadDestinations/{path_segment(resource, greedy=True)}",
             operation="createUploadDestinationForResource",
@@ -101,4 +101,4 @@ class AsyncUploadsV20201101Client:
         )
 
 
-__all__ = ["AsyncUploadsV20201101Client", "UploadsV20201101Client"]
+__all__ = ["AsyncUploadsV20201101Resource", "UploadsV20201101Resource"]

@@ -10,24 +10,24 @@ from __future__ import annotations
 from collections.abc import Mapping
 from typing import Any
 
-from ..http_client import AsyncHttpClient, HttpClient, RateLimit, RequestOptions, path_segment
+from .._http import AsyncHttpClient, HttpClient, RateLimit, RequestOptions, path_segment
 from ..models import shipping_v1
 
 SERVICE = "shipping_v1"
 
 
-class ShippingV1Client:
+class ShippingV1Resource:
     """Synchronous ``ShippingV1`` resource."""
 
-    __slots__ = ("_client",)
+    __slots__ = ("_http",)
 
-    def __init__(self, client: HttpClient) -> None:
-        self._client = client
+    def __init__(self, http: HttpClient) -> None:
+        self._http = http
 
     def create_shipment(
         self,
-        *,
         body: shipping_v1.CreateShipmentRequest | Mapping[str, Any],
+        *,
         request_options: RequestOptions | None = None,
     ) -> shipping_v1.CreateShipmentResponse:
         """Create a new shipment.
@@ -42,7 +42,7 @@ class ShippingV1Client:
 
         POST /shipping/v1/shipments
         """
-        return self._client.request(
+        return self._http.request(
             "POST",
             "/shipping/v1/shipments",
             operation="createShipment",
@@ -56,8 +56,8 @@ class ShippingV1Client:
 
     def get_shipment(
         self,
-        *,
         shipment_id: str,
+        *,
         request_options: RequestOptions | None = None,
     ) -> shipping_v1.GetShipmentResponse:
         """Return the entire shipment object for the shipmentId.
@@ -72,7 +72,7 @@ class ShippingV1Client:
 
         GET /shipping/v1/shipments/{shipmentId}
         """
-        return self._client.request(
+        return self._http.request(
             "GET",
             f"/shipping/v1/shipments/{path_segment(shipment_id)}",
             operation="getShipment",
@@ -85,8 +85,8 @@ class ShippingV1Client:
 
     def create_shipment_cancel(
         self,
-        *,
         shipment_id: str,
+        *,
         request_options: RequestOptions | None = None,
     ) -> shipping_v1.CancelShipmentResponse:
         """Cancel a shipment by the given shipmentId.
@@ -101,7 +101,7 @@ class ShippingV1Client:
 
         POST /shipping/v1/shipments/{shipmentId}/cancel
         """
-        return self._client.request(
+        return self._http.request(
             "POST",
             f"/shipping/v1/shipments/{path_segment(shipment_id)}/cancel",
             operation="cancelShipment",
@@ -114,9 +114,9 @@ class ShippingV1Client:
 
     def create_shipment_purchase_label(
         self,
-        *,
         shipment_id: str,
         body: shipping_v1.PurchaseLabelsRequest | Mapping[str, Any],
+        *,
         request_options: RequestOptions | None = None,
     ) -> shipping_v1.PurchaseLabelsResponse:
         """Purchase shipping labels based on a given rate.
@@ -131,7 +131,7 @@ class ShippingV1Client:
 
         POST /shipping/v1/shipments/{shipmentId}/purchaseLabels
         """
-        return self._client.request(
+        return self._http.request(
             "POST",
             f"/shipping/v1/shipments/{path_segment(shipment_id)}/purchaseLabels",
             operation="purchaseLabels",
@@ -145,10 +145,10 @@ class ShippingV1Client:
 
     def create_container_label(
         self,
-        *,
         shipment_id: str,
         tracking_id: str,
         body: shipping_v1.RetrieveShippingLabelRequest | Mapping[str, Any],
+        *,
         request_options: RequestOptions | None = None,
     ) -> shipping_v1.RetrieveShippingLabelResponse:
         """Retrieve shipping label based on the shipment id and tracking id.
@@ -163,7 +163,7 @@ class ShippingV1Client:
 
         POST /shipping/v1/shipments/{shipmentId}/containers/{trackingId}/label
         """
-        return self._client.request(
+        return self._http.request(
             "POST",
             f"/shipping/v1/shipments/{path_segment(shipment_id)}/containers/{path_segment(tracking_id)}/label",
             operation="retrieveShippingLabel",
@@ -177,8 +177,8 @@ class ShippingV1Client:
 
     def create_purchase_shipment(
         self,
-        *,
         body: shipping_v1.PurchaseShipmentRequest | Mapping[str, Any],
+        *,
         request_options: RequestOptions | None = None,
     ) -> shipping_v1.PurchaseShipmentResponse:
         """Purchase shipping labels.
@@ -193,7 +193,7 @@ class ShippingV1Client:
 
         POST /shipping/v1/purchaseShipment
         """
-        return self._client.request(
+        return self._http.request(
             "POST",
             "/shipping/v1/purchaseShipment",
             operation="purchaseShipment",
@@ -207,8 +207,8 @@ class ShippingV1Client:
 
     def create_rate(
         self,
-        *,
         body: shipping_v1.GetRatesRequest | Mapping[str, Any],
+        *,
         request_options: RequestOptions | None = None,
     ) -> shipping_v1.GetRatesResponse:
         """Get service rates.
@@ -223,7 +223,7 @@ class ShippingV1Client:
 
         POST /shipping/v1/rates
         """
-        return self._client.request(
+        return self._http.request(
             "POST",
             "/shipping/v1/rates",
             operation="getRates",
@@ -252,7 +252,7 @@ class ShippingV1Client:
 
         GET /shipping/v1/account
         """
-        return self._client.request(
+        return self._http.request(
             "GET",
             "/shipping/v1/account",
             operation="getAccount",
@@ -265,8 +265,8 @@ class ShippingV1Client:
 
     def get_tracking(
         self,
-        *,
         tracking_id: str,
+        *,
         request_options: RequestOptions | None = None,
     ) -> shipping_v1.GetTrackingInformationResponse:
         """Return the tracking information of a shipment.
@@ -281,7 +281,7 @@ class ShippingV1Client:
 
         GET /shipping/v1/tracking/{trackingId}
         """
-        return self._client.request(
+        return self._http.request(
             "GET",
             f"/shipping/v1/tracking/{path_segment(tracking_id)}",
             operation="getTrackingInformation",
@@ -293,18 +293,18 @@ class ShippingV1Client:
         )
 
 
-class AsyncShippingV1Client:
+class AsyncShippingV1Resource:
     """Asynchronous ``ShippingV1`` resource."""
 
-    __slots__ = ("_client",)
+    __slots__ = ("_http",)
 
-    def __init__(self, client: AsyncHttpClient) -> None:
-        self._client = client
+    def __init__(self, http: AsyncHttpClient) -> None:
+        self._http = http
 
     async def create_shipment(
         self,
-        *,
         body: shipping_v1.CreateShipmentRequest | Mapping[str, Any],
+        *,
         request_options: RequestOptions | None = None,
     ) -> shipping_v1.CreateShipmentResponse:
         """Create a new shipment.
@@ -319,7 +319,7 @@ class AsyncShippingV1Client:
 
         POST /shipping/v1/shipments
         """
-        return await self._client.request(
+        return await self._http.request(
             "POST",
             "/shipping/v1/shipments",
             operation="createShipment",
@@ -333,8 +333,8 @@ class AsyncShippingV1Client:
 
     async def get_shipment(
         self,
-        *,
         shipment_id: str,
+        *,
         request_options: RequestOptions | None = None,
     ) -> shipping_v1.GetShipmentResponse:
         """Return the entire shipment object for the shipmentId.
@@ -349,7 +349,7 @@ class AsyncShippingV1Client:
 
         GET /shipping/v1/shipments/{shipmentId}
         """
-        return await self._client.request(
+        return await self._http.request(
             "GET",
             f"/shipping/v1/shipments/{path_segment(shipment_id)}",
             operation="getShipment",
@@ -362,8 +362,8 @@ class AsyncShippingV1Client:
 
     async def create_shipment_cancel(
         self,
-        *,
         shipment_id: str,
+        *,
         request_options: RequestOptions | None = None,
     ) -> shipping_v1.CancelShipmentResponse:
         """Cancel a shipment by the given shipmentId.
@@ -378,7 +378,7 @@ class AsyncShippingV1Client:
 
         POST /shipping/v1/shipments/{shipmentId}/cancel
         """
-        return await self._client.request(
+        return await self._http.request(
             "POST",
             f"/shipping/v1/shipments/{path_segment(shipment_id)}/cancel",
             operation="cancelShipment",
@@ -391,9 +391,9 @@ class AsyncShippingV1Client:
 
     async def create_shipment_purchase_label(
         self,
-        *,
         shipment_id: str,
         body: shipping_v1.PurchaseLabelsRequest | Mapping[str, Any],
+        *,
         request_options: RequestOptions | None = None,
     ) -> shipping_v1.PurchaseLabelsResponse:
         """Purchase shipping labels based on a given rate.
@@ -408,7 +408,7 @@ class AsyncShippingV1Client:
 
         POST /shipping/v1/shipments/{shipmentId}/purchaseLabels
         """
-        return await self._client.request(
+        return await self._http.request(
             "POST",
             f"/shipping/v1/shipments/{path_segment(shipment_id)}/purchaseLabels",
             operation="purchaseLabels",
@@ -422,10 +422,10 @@ class AsyncShippingV1Client:
 
     async def create_container_label(
         self,
-        *,
         shipment_id: str,
         tracking_id: str,
         body: shipping_v1.RetrieveShippingLabelRequest | Mapping[str, Any],
+        *,
         request_options: RequestOptions | None = None,
     ) -> shipping_v1.RetrieveShippingLabelResponse:
         """Retrieve shipping label based on the shipment id and tracking id.
@@ -440,7 +440,7 @@ class AsyncShippingV1Client:
 
         POST /shipping/v1/shipments/{shipmentId}/containers/{trackingId}/label
         """
-        return await self._client.request(
+        return await self._http.request(
             "POST",
             f"/shipping/v1/shipments/{path_segment(shipment_id)}/containers/{path_segment(tracking_id)}/label",
             operation="retrieveShippingLabel",
@@ -454,8 +454,8 @@ class AsyncShippingV1Client:
 
     async def create_purchase_shipment(
         self,
-        *,
         body: shipping_v1.PurchaseShipmentRequest | Mapping[str, Any],
+        *,
         request_options: RequestOptions | None = None,
     ) -> shipping_v1.PurchaseShipmentResponse:
         """Purchase shipping labels.
@@ -470,7 +470,7 @@ class AsyncShippingV1Client:
 
         POST /shipping/v1/purchaseShipment
         """
-        return await self._client.request(
+        return await self._http.request(
             "POST",
             "/shipping/v1/purchaseShipment",
             operation="purchaseShipment",
@@ -484,8 +484,8 @@ class AsyncShippingV1Client:
 
     async def create_rate(
         self,
-        *,
         body: shipping_v1.GetRatesRequest | Mapping[str, Any],
+        *,
         request_options: RequestOptions | None = None,
     ) -> shipping_v1.GetRatesResponse:
         """Get service rates.
@@ -500,7 +500,7 @@ class AsyncShippingV1Client:
 
         POST /shipping/v1/rates
         """
-        return await self._client.request(
+        return await self._http.request(
             "POST",
             "/shipping/v1/rates",
             operation="getRates",
@@ -529,7 +529,7 @@ class AsyncShippingV1Client:
 
         GET /shipping/v1/account
         """
-        return await self._client.request(
+        return await self._http.request(
             "GET",
             "/shipping/v1/account",
             operation="getAccount",
@@ -542,8 +542,8 @@ class AsyncShippingV1Client:
 
     async def get_tracking(
         self,
-        *,
         tracking_id: str,
+        *,
         request_options: RequestOptions | None = None,
     ) -> shipping_v1.GetTrackingInformationResponse:
         """Return the tracking information of a shipment.
@@ -558,7 +558,7 @@ class AsyncShippingV1Client:
 
         GET /shipping/v1/tracking/{trackingId}
         """
-        return await self._client.request(
+        return await self._http.request(
             "GET",
             f"/shipping/v1/tracking/{path_segment(tracking_id)}",
             operation="getTrackingInformation",
@@ -570,4 +570,4 @@ class AsyncShippingV1Client:
         )
 
 
-__all__ = ["AsyncShippingV1Client", "ShippingV1Client"]
+__all__ = ["AsyncShippingV1Resource", "ShippingV1Resource"]

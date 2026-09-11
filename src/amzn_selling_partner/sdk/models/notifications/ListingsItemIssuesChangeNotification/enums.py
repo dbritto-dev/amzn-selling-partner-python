@@ -15,6 +15,8 @@ class ListingsItemIssuesChangeNotificationPayloadSeverities(str, Enum):
     ERROR = "ERROR"
     WARNING = "WARNING"
 
+    __str__ = str.__str__
+
 
 __all__ = [
     "ListingsItemIssuesChangeNotificationPayloadSeverities",

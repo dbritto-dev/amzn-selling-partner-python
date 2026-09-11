@@ -16,7 +16,9 @@
     "sdk:diff": "bash scripts/sdk-diff.sh",
     "sdk:check": "npx oagen resolve --spec spec/open-api-spec.yaml --format json > /dev/null && echo 'Config loaded successfully'",
     "regenerate": "npm run spec:build && npm run sdk:generate && npm run spec:build -- --petstore && npm run sdk:generate -- --spec spec/petstore.yaml --output ../tests/petstore_sdk && npm run format",
-    "format": "tsx src/format.ts ../src/amzn_selling_partner/sdk ../tests/petstore_sdk"
+    "format": "tsx src/format.ts ../src/amzn_selling_partner/sdk ../tests/petstore_sdk",
+    "generate": "npm run regenerate",
+    "smoke": "bash scripts/smoke.sh"
   },
   "dependencies": {
     "@workos/oagen": "0.30.2",

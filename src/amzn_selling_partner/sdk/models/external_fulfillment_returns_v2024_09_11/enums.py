@@ -27,10 +27,14 @@ class ExternalFulfillmentReturnsV20240911Status(str, Enum):
     REJECTED = "REJECTED"
     CANCELLED = "CANCELLED"
 
+    __str__ = str.__str__
+
 
 class ReturnPackageDeliveryMode(str, Enum):
     WITH_OTP = "WITH_OTP"
     WITHOUT_OTP = "WITHOUT_OTP"
+
+    __str__ = str.__str__
 
 
 class ReturnReturnSubType(str, Enum):
@@ -38,10 +42,14 @@ class ReturnReturnSubType(str, Enum):
     REPLACEMENT = "REPLACEMENT"
     EXCHANGE = "EXCHANGE"
 
+    __str__ = str.__str__
+
 
 class ReturnReturnType(str, Enum):
     CUSTOMER = "CUSTOMER"
     REJECT = "REJECT"
+
+    __str__ = str.__str__
 
 
 class ReturnStatus(str, Enum):
@@ -60,6 +68,8 @@ class ReturnStatus(str, Enum):
     PROCESSED = "PROCESSED"
     REJECTED = "REJECTED"
     CANCELLED = "CANCELLED"
+
+    __str__ = str.__str__
 
 
 __all__ = [

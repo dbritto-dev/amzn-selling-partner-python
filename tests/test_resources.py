@@ -10,13 +10,13 @@ from typing import Any
 import httpx2
 import pytest
 from petstore_sdk import errors
+from petstore_sdk._http import scalar
 from petstore_sdk.client import AsyncClient, Client
-from petstore_sdk.http_client import scalar
 from petstore_sdk.models import petstore_v2 as sw2
 from petstore_sdk.models import petstore_v3 as models
 from petstore_sdk.resources import OPERATIONS, SERVICES
-from petstore_sdk.resources.petstore_v2 import AsyncPetstoreV2Client, PetstoreV2Client
-from petstore_sdk.resources.petstore_v3 import AsyncPetstoreV3Client, PetstoreV3Client
+from petstore_sdk.resources.petstore_v2 import AsyncPetstoreV2Resource, PetstoreV2Resource
+from petstore_sdk.resources.petstore_v3 import AsyncPetstoreV3Resource, PetstoreV3Resource
 
 BASE = "https://h"
 
@@ -26,7 +26,7 @@ def _methods(cls: type) -> set[str]:
 
 
 def test_method_and_param_names() -> None:
-    assert _methods(PetstoreV3Client) == {
+    assert _methods(PetstoreV3Resource) == {
         "list_pets",
         "iter_list_pets",
         "create_pet",
@@ -56,32 +56,32 @@ def test_method_and_param_names() -> None:
     }
     assert OPERATIONS["petstore_v3.listPets"] == ("list_pets", "GET", "/v3/pets", True, True)
     assert OPERATIONS["petstore_v2.getReport"][:3] == ("list_report", "GET", "/v2/report")
-    assert SERVICES["petstore_v3"] == ("PetstoreV3Client", "AsyncPetstoreV3Client")
+    assert SERVICES["petstore_v3"] == ("PetstoreV3Resource", "AsyncPetstoreV3Resource")
 
 
 def test_signature() -> None:
-    sig = inspect.signature(PetstoreV3Client.list_pets)
+    sig = inspect.signature(PetstoreV3Resource.list_pets)
     params = [p for p in sig.parameters.values() if p.name != "self"]
     assert all(p.kind is inspect.Parameter.KEYWORD_ONLY for p in params)
     assert [p.name for p in params] == ["limit", "tags", "status", "next_token", "x_request_id", "request_options"]
     assert sig.parameters["limit"].default is None and sig.parameters["limit"].annotation == "int | None"
     assert sig.parameters["status"].annotation == "petstore_v3.Status | str | None"
     assert sig.return_annotation == "petstore_v3.PetList"
-    assert inspect.signature(PetstoreV3Client.iter_list_pets).return_annotation == "Iterator[petstore_v3.Pet]"
-    assert inspect.signature(AsyncPetstoreV3Client.iter_list_pets).return_annotation == "AsyncIterator[petstore_v3.Pet]"
-    gp = inspect.signature(PetstoreV3Client.get_pet)
+    assert inspect.signature(PetstoreV3Resource.iter_list_pets).return_annotation == "Iterator[petstore_v3.Pet]"
+    assert inspect.signature(AsyncPetstoreV3Resource.iter_list_pets).return_annotation == "AsyncIterator[petstore_v3.Pet]"
+    gp = inspect.signature(PetstoreV3Resource.get_pet)
     assert gp.parameters["pet_id"].default is inspect.Parameter.empty and gp.parameters["pet_id"].annotation == "int"
     assert gp.return_annotation == "petstore_v3.Pet"
-    assert inspect.signature(PetstoreV3Client.delete_pet).return_annotation == "None"
-    cp = inspect.signature(PetstoreV3Client.create_pet)
+    assert inspect.signature(PetstoreV3Resource.delete_pet).return_annotation == "None"
+    cp = inspect.signature(PetstoreV3Resource.create_pet)
     assert list(cp.parameters)[1] == "body" and cp.parameters["body"].default is inspect.Parameter.empty
     assert cp.parameters["body"].annotation == "petstore_v3.NewPet | Mapping[str, Any]"
-    assert inspect.signature(PetstoreV3Client.update_pet_photo).parameters["body"].annotation == "bytes"
-    assert inspect.signature(PetstoreV2Client.list_report).return_annotation == "str"
+    assert inspect.signature(PetstoreV3Resource.update_pet_photo).parameters["body"].annotation == "bytes"
+    assert inspect.signature(PetstoreV2Resource.list_report).return_annotation == "str"
 
 
 def test_sync_async_same_methods_and_signatures() -> None:
-    for sync_cls, async_cls in ((PetstoreV3Client, AsyncPetstoreV3Client), (PetstoreV2Client, AsyncPetstoreV2Client)):
+    for sync_cls, async_cls in ((PetstoreV3Resource, AsyncPetstoreV3Resource), (PetstoreV2Resource, AsyncPetstoreV2Resource)):
         assert _methods(sync_cls) == _methods(async_cls)
         for name in _methods(sync_cls):
             s, a = getattr(sync_cls, name), getattr(async_cls, name)
@@ -169,10 +169,10 @@ def test_bool_and_datetime_serialization() -> None:
 def test_unexpected_and_missing_arguments(client: Client) -> None:
     with pytest.raises(TypeError, match="unexpected keyword argument"):
         client.petstore_v3.get_pet(pet_id=1, bogus=2)  # type: ignore[call-arg]
-    with pytest.raises(TypeError, match="missing 1 required keyword-only argument: 'pet_id'"):
+    with pytest.raises(TypeError, match="missing 1 required positional argument: 'pet_id'"):
         client.petstore_v3.get_pet()  # type: ignore[call-arg]
     with pytest.raises(TypeError):
-        client.petstore_v3.get_pet(1)  # type: ignore[misc]  # keyword-only
+        client.petstore_v3.list_pets(10)  # type: ignore[misc]  # optional parameters are keyword-only
 
 
 def test_body_encoding(client: Client, cap: _Capture) -> None:
@@ -184,7 +184,7 @@ def test_body_encoding(client: Client, cap: _Capture) -> None:
     assert cap.last.content == b"\x00\x01" and cap.last.headers["content-type"] == "application/octet-stream"
     client.petstore_v2.create_pet_photo(pet_id=1, body={"file": ("p.png", b"img")})
     assert cap.last.headers["content-type"].startswith("multipart/form-data") and b"img" in cap.last.read()
-    with pytest.raises(TypeError, match="missing 1 required keyword-only argument: 'body'"):
+    with pytest.raises(TypeError, match="missing 1 required positional argument: 'body'"):
         client.petstore_v3.create_pet()  # type: ignore[call-arg]
 
 
@@ -210,9 +210,9 @@ def test_error_schema_decoding() -> None:
 def test_pagination_flags() -> None:
     paginated = {k for k, v in OPERATIONS.items() if v[3]}
     assert paginated == {"petstore_v3.listPets", "petstore_v2.listPets", "petstore_v2.getOrders"}
-    assert not hasattr(PetstoreV3Client, "iter_list_audit")  # two arrays -> ambiguous, left unpaginated
-    assert hasattr(PetstoreV2Client, "iter_list_orders")
-    assert not hasattr(PetstoreV3Client, "iter_get_pet")
+    assert not hasattr(PetstoreV3Resource, "iter_list_audit")  # two arrays -> ambiguous, left unpaginated
+    assert hasattr(PetstoreV2Resource, "iter_list_orders")
+    assert not hasattr(PetstoreV3Resource, "iter_get_pet")
 
 
 def test_async_client_parity() -> None:

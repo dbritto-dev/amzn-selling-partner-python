@@ -86,6 +86,8 @@ class TrackingMilestoneStatusCode(str, Enum):
     SORTED = "SORTED"
     TRAILER_UNLOADED = "TRAILER_UNLOADED"
 
+    __str__ = str.__str__
+
 
 class TrackingMilestoneStatusSubCode(str, Enum):
     ACCIDENT = "ACCIDENT"
@@ -329,6 +331,8 @@ class TrackingMilestoneStatusSubCode(str, Enum):
     WRONG_DELIVERY_ROUTE = "WRONG_DELIVERY_ROUTE"
     WRONG_PHONE_NUMBER = "WRONG_PHONE_NUMBER"
     POSTAL_CODE = "POSTAL_CODE"
+
+    __str__ = str.__str__
 
 
 __all__ = [
