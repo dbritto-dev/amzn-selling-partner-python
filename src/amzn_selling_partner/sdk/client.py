@@ -131,7 +131,7 @@ if TYPE_CHECKING:
 
 
 class Client:
-    """Synchronous client of Selling Partner API ref: refs/he.
+    """Synchronous client of Selling Partner API 3659f96867bf.
 
     Every resource is created on first access (``client.awd_v2024_05_09``); keyword arguments configure the HTTP client (see ``http_client.HttpClient``).
     """
@@ -899,7 +899,7 @@ class Client:
 
 
 class AsyncClient:
-    """Asynchronous client of Selling Partner API ref: refs/he.
+    """Asynchronous client of Selling Partner API 3659f96867bf.
 
     Every resource is created on first access (``client.awd_v2024_05_09``); keyword arguments configure the HTTP client (see ``http_client.AsyncHttpClient``).
     """

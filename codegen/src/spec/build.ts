@@ -14,6 +14,7 @@
  *   npm run spec:build -- --petstore  # tests/fixtures/petstore_*.json      -> .build/petstore.json
  *   npm run spec:build -- --only orders
  */
+import { execFileSync } from 'node:child_process';
 import fs from 'node:fs';
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
@@ -171,10 +172,10 @@ export async function buildAmazon(only?: string): Promise<BuildResult> {
   return { document, warnings, services };
 }
 
+/** The pinned submodule commit (short sha), the same on every checkout; `0` when git is unavailable. */
 function pinnedVersion(): string {
   try {
-    const head = fs.readFileSync(path.join(ROOT, '.git', 'modules', 'spec', 'selling-partner-api-models', 'HEAD'), 'utf8').trim();
-    return head.slice(0, 12);
+    return execFileSync('git', ['-C', path.join(ROOT, 'spec', 'selling-partner-api-models'), 'rev-parse', 'HEAD'], { encoding: 'utf8' }).trim().slice(0, 12);
   } catch {
     return '0';
   }
