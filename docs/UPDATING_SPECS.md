@@ -86,7 +86,7 @@ Look at:
 
 ```sh
 uv run ruff check src tests benchmarks && uv run ruff format --check src tests benchmarks
-uv run pyright
+uv run ty check
 uv run pytest
 uvx nox -s security_test                              # bandit over the package (generated code included) + safety
 uv run python -m amzn_selling_partner.sandbox_tests   # every operation against its embedded examples

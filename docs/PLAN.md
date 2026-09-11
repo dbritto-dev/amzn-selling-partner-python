@@ -179,5 +179,5 @@ operationId of two methods on one path (`OPERATIONS` keys the second one
 | `import amzn_selling_partner` + `SellingPartner()` | 177 ms |
 | generated method vs hand-written httpx2 call (`pytest benchmarks`, best of rounds) | 0.91 sync / 0.95 async |
 | wheel | 551 KB, 347 Python files |
-| pyright strict (hand-written + generated + tests/petstore_sdk) | 0 errors |
+| ty strict (hand-written + generated + tests/petstore_sdk) | 0 errors |
 | tests | 116 pytest + 28 vitest; sandbox runner 1964 / 2034 examples |

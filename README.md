@@ -262,7 +262,7 @@ OpenAPI 3 document the generator runs against, `codegen/spec/open-api-spec.yaml`
 git clone --recurse-submodules https://github.com/dbritto-dev/amzn-selling-partner-python
 uv sync --extra dev --extra aiohttp
 uv run pytest
-uv run pyright
+uv run ty check
 uv run pytest benchmarks
 uvx nox -s security_test
 uv run python -m amzn_selling_partner.sandbox_tests
@@ -271,7 +271,12 @@ cd codegen && npm ci --ignore-scripts && npm run generate
 cd codegen && npm test && npm run typecheck
 ```
 
-pyright runs strict over the generated code too; the benchmarks assert the
+ruff is the only linter and formatter, ty the only type checker. Every push
+to `main` releases a minor version; a merge commit marked breaking (`feat!:`,
+`refactor!:` or a `BREAKING CHANGE` line) releases a major one, and the
+Release workflow can be run by hand with the component to bump.
+
+ty type-checks the generated code too; the benchmarks assert the
 generated method stays within 10 % of hand-written `httpx2` code; the security
 session runs bandit and safety as in CI; the sandbox runner sends every
 operation its embedded examples. The last two lines regenerate the SDK after a

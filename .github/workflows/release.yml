@@ -3,6 +3,13 @@ name: Release
 on:
   push:
     branches: [main]
+  workflow_dispatch:
+    inputs:
+      bump:
+        description: "Version component to bump"
+        type: choice
+        options: [major, minor, patch]
+        default: minor
 
 jobs:
   release:
@@ -26,11 +33,22 @@ jobs:
       - name: Set up uv
         uses: astral-sh/setup-uv@v7
 
-      - name: Bump patch version
+      # A manual run picks the component; a push bumps minor, or major when the
+      # head commit is marked breaking (`feat!:` / `refactor!:` or a
+      # "BREAKING CHANGE" line, the conventional-commits markers).
+      - name: Bump version
         id: bump
+        env:
+          INPUT_BUMP: ${{ github.event.inputs.bump }}
+          HEAD_MESSAGE: ${{ github.event.head_commit.message }}
         run: |
           set -euo pipefail
-          uv version --bump patch --no-sync
+          bump="${INPUT_BUMP:-minor}"
+          if [ -z "$INPUT_BUMP" ] && printf '%s' "$HEAD_MESSAGE" | grep -Eq '^[a-z]+(\(.+\))?!:|BREAKING CHANGE'; then
+            bump=major
+          fi
+          echo "bumping $bump"
+          uv version --bump "$bump" --no-sync
           echo "version=$(uv version --short)" >> "$GITHUB_OUTPUT"
 
       - name: Commit version bump

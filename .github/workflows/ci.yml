@@ -82,8 +82,8 @@ jobs:
           uv run ruff check src tests benchmarks
           uv run ruff format --check src tests benchmarks
 
-      - name: Type check (pyright --strict, generated code included)
-        run: uv run pyright
+      - name: Type check (ty, generated code included)
+        run: uv run ty check
 
       - name: Tests
         run: uv run pytest -q

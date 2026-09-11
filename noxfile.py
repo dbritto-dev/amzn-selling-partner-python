@@ -22,7 +22,7 @@ def lint(session: nox.Session) -> None:
 @nox.session
 def type_check(session: nox.Session) -> None:
     session.install("-e", ".[dev,aiohttp]")
-    session.run("pyright")
+    session.run("ty", "check")
 
 
 @nox.session

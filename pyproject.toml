@@ -31,7 +31,7 @@ requires-python = ">=3.10"
 aiohttp = ["aiohttp[speedups]>=3.10", "httpx-aiohttp[httpx2]>=0.2"]
 dev = [
   "pytest>=8",
-  "pyright>=1.1.400",
+  "ty>=0.0.80",
   "hypothesis>=6.100",
   "ruff>=0.16",
   "pytest-benchmark>=5",
@@ -61,14 +61,13 @@ ignore = ["E501", "B904", "B008"]
 quote-style = "double"
 indent-style = "space"
 
-[tool.pyright]
+[tool.ty.environment]
+python = ".venv"
+python-version = "3.10"
+root = ["src", "tests"]
+
+[tool.ty.src]
 include = ["src/amzn_selling_partner", "tests/petstore_sdk"]
-venvPath = "."
-venv = ".venv"
-exclude = ["**/__pycache__"]
-pythonVersion = "3.10"
-typeCheckingMode = "strict"
-reportMissingModuleSource = false
 
 [tool.pytest.ini_options]
 minversion = "8.0"

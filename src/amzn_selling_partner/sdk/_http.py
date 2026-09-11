@@ -172,8 +172,8 @@ class RateLimit:
             raise ValueError("rate and burst must be positive")
 
 
-class TokenBucket:
-    """Blocking token bucket; ``acquire`` sleeps until a token is available."""
+class _TokenBucketState:
+    """Token bucket bookkeeping shared by the blocking and the awaiting bucket."""
 
     __slots__ = ("_burst", "_lock", "_penalty_until", "_rate", "_tokens", "_updated")
 
@@ -202,12 +202,6 @@ class TokenBucket:
                 wait = max(wait, -self._tokens / self._rate)
             return wait
 
-    def acquire(self) -> float:
-        wait = self._reserve()
-        if wait > 0.0:
-            time.sleep(wait)
-        return wait
-
     def penalize(self, seconds: float, *, jitter: float = 0.25) -> None:
         """Pause the bucket after a 429 for ``seconds`` (+ up to ``jitter`` x seconds)."""
         with self._lock:
@@ -220,12 +214,24 @@ class TokenBucket:
                 self._rate = rate
 
 
-class AsyncTokenBucket(TokenBucket):
+class TokenBucket(_TokenBucketState):
+    """Blocking token bucket; ``acquire`` sleeps until a token is available."""
+
+    __slots__ = ()
+
+    def acquire(self) -> float:
+        wait = self._reserve()
+        if wait > 0.0:
+            time.sleep(wait)
+        return wait
+
+
+class AsyncTokenBucket(_TokenBucketState):
     """Same bucket, awaiting instead of sleeping (one event loop)."""
 
     __slots__ = ()
 
-    async def acquire(self) -> float:  # type: ignore[override]
+    async def acquire(self) -> float:
         wait = self._reserve()
         if wait > 0.0:
             await asyncio.sleep(wait)
@@ -237,13 +243,13 @@ class Throttler:
 
     __slots__ = ("_buckets", "_default", "_factory", "_lock")
 
-    def __init__(self, *, default: RateLimit | None = None, factory: type[TokenBucket] = TokenBucket) -> None:
-        self._buckets: dict[str, TokenBucket] = {}
+    def __init__(self, *, default: RateLimit | None = None, factory: type[_TokenBucketState] = TokenBucket) -> None:
+        self._buckets: dict[str, _TokenBucketState] = {}
         self._default = default
         self._lock = threading.Lock()
         self._factory = factory
 
-    def bucket(self, key: str, limit: RateLimit | None) -> TokenBucket | None:
+    def bucket(self, key: str, limit: RateLimit | None) -> _TokenBucketState | None:
         b = self._buckets.get(key)
         if b is not None:
             return b
@@ -306,8 +312,15 @@ class StaticHeaderAuth:
         return self._headers
 
 
-class AsyncStaticHeaderAuth(StaticHeaderAuth):
-    async def before_request(self, ctx: RequestContext, request: httpx2.Request) -> Mapping[str, str]:  # type: ignore[override]
+class AsyncStaticHeaderAuth:
+    """``StaticHeaderAuth`` for the async client."""
+
+    __slots__ = ("_headers",)
+
+    def __init__(self, headers: Mapping[str, str]) -> None:
+        self._headers = dict(headers)
+
+    async def before_request(self, ctx: RequestContext, request: httpx2.Request) -> Mapping[str, str]:
         return self._headers
 
 
@@ -498,7 +511,7 @@ class _BaseHttpClient:
         delay = min(MAX_DELAY, INITIAL_DELAY * (BACKOFF_MULTIPLIER**attempt))
         return delay * (1.0 + random.random() * JITTER_FACTOR)  # noqa: S311  # nosec B311
 
-    def _retry_delay(self, attempt: int, response: httpx2.Response, bucket: TokenBucket | None) -> float:
+    def _retry_delay(self, attempt: int, response: httpx2.Response, bucket: _TokenBucketState | None) -> float:
         retry_after = _parse_retry_after(response.headers.get("retry-after"))
         if retry_after is None and self._rate_hint_header:
             hint = response.headers.get(self._rate_hint_header)
@@ -519,7 +532,7 @@ class _BaseHttpClient:
             bucket.penalize(delay)
         return delay
 
-    def _bucket(self, key: str, rate_limit: RateLimit | None) -> TokenBucket | None:
+    def _bucket(self, key: str, rate_limit: RateLimit | None) -> _TokenBucketState | None:
         throttler = self._throttler
         if throttler is None:
             return None
@@ -675,7 +688,7 @@ class HttpClient(_BaseHttpClient):
         attempt = 0
         while True:
             if bucket is not None:
-                bucket.acquire()
+                cast(TokenBucket, bucket).acquire()
             if auth is not None:
                 extra = auth.before_request(ctx, request)
                 if extra:
