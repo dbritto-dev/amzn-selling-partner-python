@@ -1,16 +1,20 @@
 /**
- * Pre-IR overlay (oagen `transformSpec`) that keeps oagen's parser from losing
- * information present in the Amazon files (docs/PLAN.md §14.1):
+ * Spec transforms of the resolution policy: `OagenConfig.transformSpec`,
+ * `schemaNameTransform` and `operationIdTransform`.
+ *
+ * `transformSpec` is the pre-IR overlay that keeps oagen's parser from losing
+ * information present in the Amazon files (docs/PLAN.md):
  *
  * 1. Named schemas that are not objects (`OrderList: array of Order`,
- *    `MarketplaceId: string`) are inlined at every reference site; oagen would
- *    otherwise turn them into empty models.
- * 2. Every component schema name is prefixed with `NAME_GUARD` so that oagen's
- *    `cleanSchemaName` (which singularises the first word: `OrdersList` ->
- *    `OrderList`, `StatusUpdate` -> `StatuUpdate`) leaves it alone; the
- *    matching `schemaNameTransform` strips the prefix again.
+ *    `MarketplaceId: string`, bare `oneOf` unions) are inlined at every
+ *    reference site; oagen would otherwise turn them into empty models.
+ * 2. Inline object schemas are hoisted to named components (`<Parent><Field>`).
+ * 3. Every component schema name is replaced by a guard token (`X17`) so that
+ *    oagen's `cleanSchemaName` (which singularises the first word and re-cases
+ *    acronyms: `OrdersList` -> `OrderList`, `ASINIdentifier` -> `AsinIdentifier`)
+ *    leaves it alone; `schemaNameTransform` maps the token back.
  */
-import type { JsonObject } from './convert.js';
+import type { JsonObject } from '../convert.js';
 
 export const NAME_GUARD = 'X';
 
@@ -177,4 +181,13 @@ export function transformSpec(doc: JsonObject, report?: TransformReport): JsonOb
 /** Restore the original component name behind a guard token (see `NAME_MAP`). */
 export function schemaNameTransform(name: string): string {
   return NAME_MAP.get(name) ?? name;
+}
+
+/**
+ * Keep operationIds verbatim (oagen would camelCase `getFeatureSKU`): they key
+ * Amazon's documentation, the RDT tables, the `OPERATIONS` registry and the
+ * sandbox examples.
+ */
+export function operationIdTransform(id: string): string {
+  return id;
 }

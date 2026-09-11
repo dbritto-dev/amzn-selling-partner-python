@@ -1,6 +1,6 @@
 import assert from 'node:assert/strict';
 import { test } from 'vitest';
-import { isAliasSchema, liftInlineObjects, NAME_GUARD, schemaNameTransform, transformSpec } from '../src/transform.js';
+import { isAliasSchema, liftInlineObjects, NAME_GUARD, schemaNameTransform, transformSpec } from '../src/policy/transforms.js';
 
 const doc = {
   openapi: '3.0.3',

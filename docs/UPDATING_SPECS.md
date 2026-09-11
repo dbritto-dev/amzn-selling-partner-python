@@ -18,35 +18,35 @@ git -C spec/selling-partner-api-models checkout <new commit or origin/main>
 
 ## 2. Review what changed in the specs
 
-Build the merged OpenAPI 3 document before and after the bump and diff them:
+Rebuild the merged OpenAPI 3 document (`spec/open-api-spec.yaml`, committed)
+and diff it against the last committed version:
 
 ```sh
-cp .build/openapi.yml .build/openapi.previous.yml   # from the previous generation (or build it on the old commit)
-npm run spec:build                                  # -> .build/openapi.yml (+ openapi.report.json: services, warnings)
-npm run sdk:diff -- --old .build/openapi.previous.yml --new .build/openapi.yml
+npm run spec:build      # -> spec/open-api-spec.yaml (+ .build/open-api-spec.report.json: services, warnings)
+npm run sdk:diff        # oagen diff: last committed spec -> working tree (--old <ref|file> --new <file> to pick others)
 ```
 
 `oagen diff` lists added/removed operations and parameter and schema changes.
 Then check the method names oagen derives for the new operations:
 
 ```sh
-npm run sdk:resolve -- --spec .build/openapi.yml --format table
+npm run sdk:resolve -- --format table
 ```
 
-Two operations of one API version that resolve to the same name need an
-`operationHints` entry in `oagen.config.ts` (the generator also reports them
-as "collides" notes and suffixes the second one). A service that oagen splits
-because its paths start with different segments (pricing v0) needs a
-`mountRules` entry. `npm run sdk:parse -- --spec .build/openapi.yml` prints
-the IR when something looks off.
+Two operations of one API version that resolve to the same name need an entry
+in `src/policy/operation-hints.ts` (the generator also reports them as
+"collides" notes and suffixes the second one). A service that oagen splits
+because its paths start with different segments (pricing v0) needs an entry in
+`src/policy/mount-rules.ts`. `npm run sdk:parse` prints the IR when something
+looks off; `npm run sdk:check` only loads the config and the spec.
 
 ## 3. Regenerate and review the generated code
 
 ```sh
-npm run build                                                        # the emitter (tsup), as in the tutorial
-npm run sdk:generate -- --spec .build/openapi.yml --namespace Client   # oagen generate -> ../src/amzn_selling_partner/sdk
-npm run regenerate                                                   # or: spec build + the line above + the petstore fixtures + ruff
-git diff --stat -- ../src ../tests/petstore_sdk
+npm run build          # the emitter (tsup), as in the tutorial
+npm run sdk:generate   # oagen generate --lang python --spec spec/open-api-spec.yaml --namespace Client --output ../src/amzn_selling_partner/sdk
+npm run regenerate     # or: spec build + sdk:generate + the petstore fixtures (spec/petstore.yaml -> tests/petstore_sdk) + ruff
+git diff --stat -- spec ../src ../tests/petstore_sdk
 ```
 
 Look at:
@@ -92,10 +92,15 @@ from the submodule and fails on any drift.
 ## The generator
 
 `codegen/` is an oagen emitter project laid out like `oagen init --lang
-python` and built the way the WorkOS tutorial
+python`, built the way the WorkOS tutorial
 ([How to build a custom SDK generator with oagen](https://workos.com/blog/build-a-custom-sdk-generator-with-oagen))
-describes; the tutorial's own spec is checked in as
-`tests/fixtures/tasks-api.yml`, so every step can be reproduced here:
+describes and organised like
+[workos/openapi-spec](https://github.com/workos/openapi-spec): the spec in
+`spec/`, the resolution policy in `src/policy/` (operation hints, mount rules,
+transforms, consumed by a thin `oagen.config.ts`), the `sdk:*` scripts wrapping
+the `oagen` CLI (`scripts/`), the emitter in `src/python/`. The tutorial's own
+spec is checked in as `tests/fixtures/tasks-api.yml`, so every step can be
+reproduced here:
 
 1. **Inspect the IR.** `npm run sdk:parse -- --spec ../tests/fixtures/tasks-api.yml`
    prints oagen's intermediate representation, `npm run sdk:resolve -- --spec
@@ -105,24 +110,29 @@ describes; the tutorial's own spec is checked in as
    emitter from `types.ts` (IR `TypeRef` → Python type, exhaustive over every
    kind), `enums.ts`, `models.ts`, `resources.ts`, `client.ts`,
    `http_client.ts` and `errors.ts`; `src/plugin.ts` registers it;
-   `oagen.config.ts` spreads the plugin and adds this repository's spec policy
-   (`transformSpec`, `schemaNameTransform`, `operationIdTransform`,
-   `operationHints`, `mountRules`, `emitterOptions.python` with the
-   `sdkBehavior` overrides that end up in `http_client.py`).
+   `oagen.config.ts` spreads the plugin and adds the policy barrel
+   `src/policy/index.ts` (`transformSpec`, `schemaNameTransform`,
+   `operationIdTransform`, `operationHints`, `mountRules`) plus
+   `emitterOptions.python` with the `sdkBehavior` overrides that end up in
+   `http_client.py`.
 3. **Generate.** `npm run build`, then `npm run sdk:generate -- --spec
    <spec.yml> --namespace <Client>` (`--output <dir>` for another
    destination) turns one spec into a standalone package (`client.py`,
-   `http_client.py`, `errors.py`, `models/`, `resources/`). Amazon's Swagger
-   2.0 files go through `npm run spec:build` first, which writes
-   `.build/openapi.yml` (`--petstore` for the test fixtures).
-   `npm run regenerate` is the repository's full run: spec build, Amazon into
+   `http_client.py`, `errors.py`, `models/`, `resources/`); without arguments
+   it generates the Amazon SDK from `spec/open-api-spec.yaml`, which
+   `npm run spec:build` writes from the Swagger 2.0 files (`--petstore` for
+   the test fixtures, `spec/petstore.yaml`). `npm run regenerate` is the
+   repository's full run: spec build, Amazon into
    `src/amzn_selling_partner/sdk`, the petstore fixtures into
    `tests/petstore_sdk`, then ruff.
 4. **Test the emitter.** `npm test` (vitest: fixture-spec tests over
    `tasks-api.yml` for models, enums, resources, client, HTTP client and errors,
-   plus the spec build and helper tests); `npm run typecheck`; `npm run build`
-   (tsup) bundles the plugin like the scaffold.
-5. **Diff two spec versions.** `npm run sdk:diff -- --old <previous> --new <current>`.
+   the spec build and helper tests, and the policy checked against the
+   committed spec: every hint names an operation, every mount rule a service);
+   `npm run typecheck`; `npm run build` (tsup) bundles the plugin like the
+   scaffold.
+5. **Diff two spec versions.** `npm run sdk:diff` (last commit → working
+   tree; `--old <ref or file> --new <file>` for any other pair).
 
 Facts the emitter needs that oagen's IR does not carry are handled before the
 IR (the spec build and `transformSpec`) or by configuration, never by reading

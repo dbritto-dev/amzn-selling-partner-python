@@ -48,18 +48,24 @@ in `../MIGRATION.md`.
 spec/selling-partner-api-models        67 Swagger 2.0 files + 23 notification JSON Schemas (submodule)
         │  npm run spec:build           convert.ts (swagger2openapi, #ref/dangling-ref repairs), namespace components
         ▼                               as <package>:<Name>, tag every operation with its API version, merge
-codegen/.build/openapi.yml             one OpenAPI 3 document: 67 services, 373 operations, 2032 schemas
-        │  oagen generate               oagen.config.ts: transformSpec (alias inlining, inline-object hoisting,
-        ▼                               name protection), operationHints, mountRules, emitterOptions.python
+codegen/spec/open-api-spec.yaml        one OpenAPI 3 document (committed): 67 services, 373 operations, 2032 schemas
+        │  oagen generate               oagen.config.ts = plugin + src/policy/: transformSpec (alias inlining,
+        ▼                               inline-object hoisting, name protection), operationHints, mountRules
 oagen IR (ApiSpec)                     services, operations, models, enums, sdk behavior
         │  src/python/ (the emitter)    types.ts, enums.ts, models.ts, resources.ts, client.ts, http_client.ts, errors.ts
         ▼
 src/amzn_selling_partner/sdk/          client.py, http_client.py, errors.py, models/, resources/  (+ .oagen-manifest.json)
 ```
 
-`npm run sdk:generate -- --spec .build/openapi.yml --namespace Client` is the
-tutorial's command; `npm run regenerate` runs the whole thing (spec build,
-Amazon into `sdk/`, the petstore fixtures into `tests/petstore_sdk`, ruff).
+`npm run sdk:generate` runs the tutorial's command (`oagen generate --lang
+python --spec spec/open-api-spec.yaml --namespace Client --output
+../src/amzn_selling_partner/sdk`); `npm run regenerate` runs the whole thing
+(spec build, Amazon into `sdk/`, the petstore fixtures into
+`tests/petstore_sdk`, ruff). The layout follows
+[workos/openapi-spec](https://github.com/workos/openapi-spec): the committed
+spec in `spec/`, the resolution policy in `src/policy/` behind a thin
+`oagen.config.ts`, `sdk:resolve` / `sdk:generate` / `sdk:diff` / `sdk:check`
+scripts wrapping the `oagen` CLI.
 
 ### Step 0: the spec build (`src/spec/build.ts`)
 
@@ -73,9 +79,9 @@ everything. Notification JSON Schemas are wrapped into components under
 `notifications.<file stem>:<Name>`; `x-root-schemas` remembers their roots.
 Path collisions are an error (none in the pinned models).
 
-### The config (`oagen.config.ts`)
+### The policy (`src/policy/`, consumed by `oagen.config.ts`)
 
-* `transformSpec`: the pre-IR fixes oagen needs for these files. Named
+* `transformSpec` (`transforms.ts`): the pre-IR fixes oagen needs for these files. Named
   non-object schemas (`OrderList: array`, `MarketplaceId: string`, bare
   `oneOf` unions) would become empty models: they are inlined at every `$ref`
   site. Inline objects are hoisted to named components (`<Parent><Field>`).
@@ -83,13 +89,15 @@ Path collisions are an error (none in the pinned models).
   `cleanSchemaName` singularises and re-cases names (`OrdersList` →
   `OrderList`, `ASINIdentifier` → `AsinIdentifier`); `schemaNameTransform`
   maps the token back.
-* `operationIdTransform`: identity (oagen would camelCase `getFeatureSKU`).
-* `operationHints`: the colliding derived names (`npm run sdk:resolve` shows
-  the table).
-* `mountRules`: oagen splits a service whose paths start with different
+* `operationIdTransform` (`transforms.ts`): identity (oagen would camelCase `getFeatureSKU`).
+* `operationHints` (`operation-hints.ts`): the colliding derived names
+  (`npm run sdk:resolve -- --format table` shows the table); the vitest suite
+  fails on a hint that no longer names an operation of the committed spec.
+* `mountRules` (`mount-rules.ts`): oagen splits a service whose paths start with different
   segments (`/products/...` and `/batches/...` of pricing v0); the rule mounts
   both back on `ProductPricingV0`.
-* `emitterOptions.python`: `sdkBehavior` (retry on 408/429/5xx, 2 retries,
+* `emitterOptions.python` (in `oagen.config.ts`, language-specific like the
+  example's `emitterOptions.node`): `sdkBehavior` (retry on 408/429/5xx, 2 retries,
   0.5 s initial delay, ×2, 8 s cap, 50 % jitter, 30 s timeout overridable with
   `AMZN_SELLING_PARTNER_TIMEOUT`), `requestIdHeader`, `rateHintHeader`,
   `greedyPathParams` (`resource` of the Uploads API), `serviceAliases`

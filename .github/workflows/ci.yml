@@ -47,14 +47,15 @@ jobs:
           npm run build
           npm run typecheck
           npm test
+          npm run sdk:check
 
       - name: Regenerate (spec build + oagen generate + ruff)
         run: cd codegen && npm run regenerate
 
-      - name: No drift between the pinned specs and the committed code
+      - name: No drift between the pinned specs, the committed spec and the generated code
         run: |
           git status --porcelain
-          git diff --stat --exit-code -- src tests/petstore_sdk
+          git diff --stat --exit-code -- src tests/petstore_sdk codegen/spec
 
   test:
     name: Test (Python ${{ matrix.python-version }})

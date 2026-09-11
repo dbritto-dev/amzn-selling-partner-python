@@ -199,8 +199,11 @@ cd codegen && npm ci --ignore-scripts
 npm run sdk:generate -- --spec ../tests/fixtures/tasks-api.yml --namespace TasksClient --output ../tasks_sdk
 ```
 
-`tasks_sdk/client.py` then has `TasksClient` / `AsyncTasksClient`; Swagger 2.0
-files go through `npm run spec:build` first. See
+`tasks_sdk/client.py` then has `TasksClient` / `AsyncTasksClient`. Amazon's
+Swagger 2.0 files go through `npm run spec:build` first, which writes the one
+OpenAPI 3 document the generator runs against, `codegen/spec/open-api-spec.yaml`
+(committed, like `spec/open-api-spec.yaml` in
+[workos/openapi-spec](https://github.com/workos/openapi-spec)). See
 [docs/UPDATING_SPECS.md](docs/UPDATING_SPECS.md) for the generator.
 
 ## Development
@@ -217,6 +220,8 @@ cd codegen && npm ci --ignore-scripts && npm run regenerate      # regenerate af
 cd codegen && npm test && npm run typecheck                      # the generator's own tests (vitest) and types
 ```
 
-`src/amzn_selling_partner/sdk` and `tests/petstore_sdk` are generated; edit
-the generator (`codegen/`) instead and commit the regenerated files (CI fails
-on drift). See [docs/UPDATING_SPECS.md](docs/UPDATING_SPECS.md).
+`codegen/spec/*.yaml`, `src/amzn_selling_partner/sdk` and `tests/petstore_sdk`
+are generated; edit the generator (`codegen/src/python`), the policy
+(`codegen/src/policy`) or the spec build (`codegen/src/spec`) instead and commit
+the regenerated files (CI fails on drift). See
+[docs/UPDATING_SPECS.md](docs/UPDATING_SPECS.md).

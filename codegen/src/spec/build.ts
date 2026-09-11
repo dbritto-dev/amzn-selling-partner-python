@@ -8,11 +8,14 @@
  * components as `<package>:<Name>` (`orders_v0:Order`) so equally named
  * schemas of different API versions never collide, tags every operation with
  * its API version (`OrdersV0`, the oagen service = the SDK resource class) and
- * merges everything into `.build/openapi.yml`.
+ * merges everything into `spec/open-api-spec.yaml`, the committed document
+ * every `oagen` command runs against (as in workos/openapi-spec).
  *
- *   npm run spec:build                # Amazon models + notification schemas -> .build/openapi.yml
- *   npm run spec:build -- --petstore  # tests/fixtures/petstore_*.json      -> .build/petstore.yml
+ *   npm run spec:build                # Amazon models + notification schemas -> spec/open-api-spec.yaml
+ *   npm run spec:build -- --petstore  # tests/fixtures/petstore_*.json      -> spec/petstore.yaml
  *   npm run spec:build -- --only orders
+ *
+ * The build report (services, conversion warnings) goes to `.build/<name>.report.json`.
  */
 import { execFileSync } from 'node:child_process';
 import fs from 'node:fs';
@@ -25,6 +28,7 @@ import { identifier, pascalCase } from '../python/naming.js';
 
 const HERE = path.dirname(fileURLToPath(import.meta.url));
 const ROOT = path.resolve(HERE, '..', '..', '..');
+const SPEC_DIR = path.resolve(HERE, '..', '..', 'spec');
 const BUILD = path.resolve(HERE, '..', '..', '.build');
 const MODELS = path.join(ROOT, 'spec', 'selling-partner-api-models', 'models');
 const SCHEMAS = path.join(ROOT, 'spec', 'selling-partner-api-models', 'schemas', 'notifications');
@@ -85,6 +89,22 @@ export interface MergeInput {
 
 const METHODS = ['get', 'put', 'post', 'delete', 'options', 'head', 'patch', 'trace'];
 
+/**
+ * Amazon's examples contain sample pre-signed S3 URLs whose `X-Amz-Credential`
+ * carries a (sample) AWS access key ID; GitHub's push protection rejects any
+ * commit that contains one. The examples only document the wire format, so the
+ * key IDs are redacted in the committed spec (the sandbox runner reads the
+ * examples from the submodule, not from here).
+ */
+export function redactSampleCredentials(node: unknown): unknown {
+  if (typeof node === 'string') return node.replace(/AKIA[0-9A-Z]{16}/g, 'AKIAEXAMPLE');
+  if (Array.isArray(node)) return node.map(redactSampleCredentials);
+  if (!isObject(node)) return node;
+  const out: JsonObject = {};
+  for (const [k, v] of Object.entries(node)) out[k] = redactSampleCredentials(v);
+  return out;
+}
+
 /** Merge namespaced documents into one; every operation is tagged with its service. */
 export function mergeDocuments(inputs: MergeInput[], info: JsonObject, servers: JsonObject[]): JsonObject {
   const paths: JsonObject = {};
@@ -112,7 +132,7 @@ export function mergeDocuments(inputs: MergeInput[], info: JsonObject, servers: 
   }
   const out: JsonObject = { openapi: '3.0.3', info, servers, tags: inputs.map((i) => ({ name: i.service })), paths, components };
   if (roots.length) out['x-root-schemas'] = roots;
-  return out;
+  return redactSampleCredentials(out) as JsonObject;
 }
 
 export interface BuildResult {
@@ -207,10 +227,12 @@ async function main(): Promise<void> {
   const only = args.includes('--only') ? args[args.indexOf('--only') + 1] : undefined;
   const petstore = args.includes('--petstore');
   const result = petstore ? await buildPetstore() : await buildAmazon(only);
-  const out = path.join(BUILD, petstore ? 'petstore.yml' : 'openapi.yml');
+  const name = petstore ? 'petstore' : 'open-api-spec';
+  const out = path.join(SPEC_DIR, `${name}.yaml`);
+  fs.mkdirSync(SPEC_DIR, { recursive: true });
   fs.mkdirSync(BUILD, { recursive: true });
   fs.writeFileSync(out, YAML.stringify(result.document, { lineWidth: 0, aliasDuplicateObjects: false }));
-  fs.writeFileSync(out.replace(/\.yml$/, '.report.json'), JSON.stringify({ services: result.services, warnings: result.warnings }, null, 2));
+  fs.writeFileSync(path.join(BUILD, `${name}.report.json`), JSON.stringify({ services: result.services, warnings: result.warnings }, null, 2));
   const ops = result.services.reduce((n, s) => n + s.operations, 0);
   process.stdout.write(`${path.relative(process.cwd(), out)}: ${result.services.length} services, ${ops} operations, ${result.warnings.length} warnings\n`);
 }

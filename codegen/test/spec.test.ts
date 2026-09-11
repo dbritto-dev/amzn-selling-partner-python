@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { mergeDocuments, namespaceComponents, serviceName } from '../src/spec/build.js';
+import { mergeDocuments, namespaceComponents, redactSampleCredentials, serviceName } from '../src/spec/build.js';
 
 const doc = (title: string) => ({
   openapi: '3.0.3',
@@ -36,5 +36,16 @@ describe('spec build', () => {
     expect(Object.keys(merged.components.schemas)).toEqual(['a_v1:Thing', 'b_v1:Thing']);
     expect(merged['x-root-schemas']).toEqual(['b_v1:Thing']);
     expect(() => mergeDocuments([{ document: doc('A'), pkg: 'a', service: 'A' }, { document: doc('B'), pkg: 'b', service: 'B' }], { title: 'x', version: '1' }, [])).toThrow(/defined by both/);
+  });
+});
+
+describe('redactSampleCredentials', () => {
+  it('replaces AWS access key IDs inside example strings, nothing else', () => {
+    const doc = { example: { url: 'https://s3.amazonaws.com/x?X-Amz-Credential=AKIAW5VUA47ENEOYT7RC%2F20200101' }, n: 1, keep: ['AKIA', 'AKIAEXAMPLE'] };
+    expect(redactSampleCredentials(doc)).toEqual({
+      example: { url: 'https://s3.amazonaws.com/x?X-Amz-Credential=AKIAEXAMPLE%2F20200101' },
+      n: 1,
+      keep: ['AKIA', 'AKIAEXAMPLE'],
+    });
   });
 });
