@@ -1,9 +1,9 @@
-"""nox sessions: ``uv run nox -s lint|type_check|test|stubs|bench``."""
+"""nox sessions: ``uv run nox -s lint|type_check|test|codegen|bench``."""
 
 import nox
 
 nox.options.default_venv_backend = "uv"
-nox.options.sessions = ["lint", "type_check", "test", "stubs"]
+nox.options.sessions = ["lint", "type_check", "test"]
 
 
 @nox.session
@@ -15,8 +15,8 @@ def test(session: nox.Session) -> None:
 @nox.session
 def lint(session: nox.Session) -> None:
     session.install("ruff")
-    session.run("ruff", "check", "src", "tests", "benchmarks", "scripts")
-    session.run("ruff", "format", "--check", "src", "tests", "benchmarks", "scripts")
+    session.run("ruff", "check", "src", "tests", "benchmarks")
+    session.run("ruff", "format", "--check", "src", "tests", "benchmarks")
 
 
 @nox.session
@@ -26,9 +26,12 @@ def type_check(session: nox.Session) -> None:
 
 
 @nox.session
-def stubs(session: nox.Session) -> None:
+def codegen(session: nox.Session) -> None:
+    """Regenerate src/amzn_selling_partner/{models,resources,apis.py} and tests/petstore_sdk (needs Node 22)."""
     session.install("-e", ".[dev]")
-    session.run("python", "-m", "amzn_selling_partner.stubgen", "--check")
+    session.chdir("codegen")
+    session.run("npm", "ci", "--ignore-scripts", external=True, silent=True)
+    session.run("npm", "run", "generate", external=True)
 
 
 @nox.session

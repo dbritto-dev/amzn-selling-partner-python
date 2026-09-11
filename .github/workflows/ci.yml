@@ -15,6 +15,46 @@ permissions:
   contents: read
 
 jobs:
+  codegen:
+    name: Generated code is up to date (oagen)
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          submodules: true
+
+      - name: Set up Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: "22"
+          cache: npm
+          cache-dependency-path: codegen/package-lock.json
+
+      - name: Set up uv (ruff formats the generated files)
+        uses: astral-sh/setup-uv@v7
+        with:
+          python-version: "3.12"
+          enable-cache: true
+
+      - name: Install
+        run: |
+          uv sync --extra dev
+          cd codegen && npm ci --ignore-scripts
+
+      - name: Type-check and test the generator
+        run: |
+          cd codegen
+          npm run check
+          npm test
+
+      - name: Regenerate
+        run: cd codegen && npm run generate
+
+      - name: No drift between the pinned specs and the committed code
+        run: |
+          git status --porcelain
+          git diff --stat --exit-code -- src tests/petstore_sdk
+
   test:
     name: Test (Python ${{ matrix.python-version }})
     runs-on: ubuntu-latest
@@ -38,23 +78,19 @@ jobs:
 
       - name: Lint
         run: |
-          uv run ruff check src tests benchmarks scripts
-          uv run ruff format --check src tests benchmarks scripts
+          uv run ruff check src tests benchmarks
+          uv run ruff format --check src tests benchmarks
 
-      - name: Type check (pyright --strict on hand-written code)
+      - name: Type check (pyright --strict, generated code included)
         run: uv run pyright
 
       - name: Tests
         run: uv run pytest -q
 
-      - name: Stubs are up to date
-        run: uv run python -m amzn_selling_partner.stubgen --check
-
-      - name: Smoke benchmark (dynamic op within 10% of hand-written)
+      - name: Smoke benchmark (generated op within 10% of hand-written)
         run: uv run python benchmarks/bench.py --iterations 100
 
-      - name: Wheel contains the vendored specs
+      - name: Wheel contains the generated APIs
         run: |
-          uv run python scripts/sync_specs.py
           uv build --wheel
-          uv run python -c "import glob, zipfile; n = [x for x in zipfile.ZipFile(glob.glob('dist/*.whl')[0]).namelist() if x.endswith('.json')]; assert len(n) > 60, n; print(len(n), 'spec files in wheel')"
+          uv run python -c "import glob, zipfile; n = [x for x in zipfile.ZipFile(glob.glob('dist/*.whl')[0]).namelist() if x.startswith('amzn_selling_partner/resources/') and x.endswith('.py')]; assert len(n) > 60, n; print(len(n), 'resource modules in wheel')"

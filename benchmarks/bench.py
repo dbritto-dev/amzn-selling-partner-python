@@ -3,11 +3,11 @@
 Scenarios (sync and async, async with and without the aiohttp transport):
 
   (a) transport only            httpx2 client GET
-  (b) transport + BaseClient    compiled op, raw=True (JSON parse, no models)
-  (c) full client               compiled op with model decoding
-  (d) dynamic vs hand-written   compiled op vs an equivalent hand-written
+  (b) transport + BaseClient    generated op, raw=True (JSON parse, no models)
+  (c) full client               generated op with model decoding
+  (d) generated vs hand-written generated method vs an equivalent hand-written
                                 function using the same httpx2 client and
-                                model class; the dynamic path must be within
+                                model class; the generated path must be within
                                 10 % (the ratio is printed and checked)
 
 Decode-only timings for 100 KB / 1 MB / 5 MB responses in model and raw mode.
@@ -36,10 +36,11 @@ import httpx2
 from pydantic_core import from_json
 
 ROOT = pathlib.Path(__file__).resolve().parents[1]
-SPEC = ROOT / "tests" / "fixtures" / "petstore_oas31.json"
 sys.path.insert(0, str(ROOT / "src"))
+sys.path.insert(0, str(ROOT / "tests"))  # the generated petstore package (codegen/)
 
-from amzn_selling_partner._client import AsyncClient, Client  # noqa: E402
+from petstore_sdk.client import AsyncClient, Client  # noqa: E402
+
 from amzn_selling_partner.runtime._transports import aiohttp_available  # noqa: E402
 
 
@@ -104,8 +105,8 @@ async def atimeit(fn: Callable[[], Any], iterations: int, *, repeats: int = 3) -
 def sync_scenarios(base_url: str, iterations: int) -> dict[str, float]:
     results: dict[str, float] = {}
     http = httpx2.Client(base_url=base_url, timeout=10.0)
-    client = Client(SPEC, base_url=base_url, http_client=http, throttle=False)
-    api = client.petstore_oas31.latest
+    client = Client(base_url=base_url, http_client=http, throttle=False)
+    api = client.petstore.v3
     Pet = api.models.Pet
     url = f"{base_url}/pets/1"
 
@@ -129,8 +130,8 @@ def sync_scenarios(base_url: str, iterations: int) -> dict[str, float]:
 async def async_scenarios(base_url: str, iterations: int, *, prefer_aiohttp: bool) -> dict[str, float]:
     label = "async_aiohttp" if prefer_aiohttp else "async"
     results: dict[str, float] = {}
-    client = AsyncClient(SPEC, base_url=base_url, throttle=False, prefer_aiohttp=prefer_aiohttp)
-    api = client.petstore_oas31.latest
+    client = AsyncClient(base_url=base_url, throttle=False, prefer_aiohttp=prefer_aiohttp)
+    api = client.petstore.v3
     Pet = api.models.Pet
     http = client.http_client
     url = f"{base_url}/pets/1"
@@ -157,8 +158,8 @@ async def async_scenarios(base_url: str, iterations: int, *, prefer_aiohttp: boo
 def decode_scenarios(base_url: str) -> dict[str, float]:
     from echo_app import pet_list
 
-    client = Client(SPEC, base_url=base_url, throttle=False)
-    api = client.petstore_oas31.latest
+    client = Client(base_url=base_url, throttle=False)
+    api = client.petstore.v3
     adapter = api.operation("listPets").default_decoder.adapter
     results: dict[str, float] = {}
     for label, size in (("100KB", 100_000), ("1MB", 1_000_000), ("5MB", 5_000_000)):

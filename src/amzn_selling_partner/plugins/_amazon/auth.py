@@ -21,19 +21,18 @@ import threading
 import time
 from collections.abc import Mapping
 from dataclasses import dataclass
-from typing import TYPE_CHECKING, Any, Protocol
+from typing import TYPE_CHECKING, Any, Protocol, cast
 from urllib.parse import urlencode
 
 import httpx2
 from pydantic_core import from_json, to_json
 
 from ...runtime._errors import APIConnectionError, AuthenticationError
-from ...spec._jsonutil import as_object
-from .rdt import RestrictedOperation
+from .rdt import GRANTLESS, RestrictedOperation, restricted_for
 from .regions import LWA_TOKEN_URL
 
 if TYPE_CHECKING:
-    from ...compile.operations import CompiledOp
+    from ...runtime._op import Op
 
 log = logging.getLogger("amzn_selling_partner.plugins.amazon.auth")
 
@@ -131,7 +130,7 @@ class _LWABase:
     # -- classification --------------------------------------------------------------
 
     @staticmethod
-    def classify(op: CompiledOp, request: httpx2.Request) -> tuple[str, tuple[str, ...]]:
+    def classify(op: Op, request: httpx2.Request) -> tuple[str, tuple[str, ...]]:
         """Return ``("rdt", data_elements)``, ``("grantless", scopes)`` or ``("lwa", ())``.
 
         Operations marked as always-restricted get an RDT unconditionally.
@@ -139,11 +138,12 @@ class _LWABase:
         get one when the call opted in through ``RequestOptions(auth={"rdt":
         True | [elements]})`` (see ``with_rdt``).
         """
-        scopes = op.annotations.get("grantless_scopes")
+        scopes = op.annotations.get("grantless_scopes") or GRANTLESS.get((op.api, op.operation_id))
         if scopes:
             return "grantless", tuple(scopes)
-        rdt = op.annotations.get("rdt")
-        hints = as_object(request.extensions.get("auth_hints")) or {}
+        rdt = op.annotations.get("rdt", restricted_for(op.api, op.version, op.operation_id))
+        raw_hints = request.extensions.get("auth_hints")
+        hints: Mapping[str, Any] = cast(Mapping[str, Any], raw_hints) if isinstance(raw_hints, Mapping) else {}
         wanted: Any = hints.get("rdt")
         if isinstance(rdt, RestrictedOperation):
             if rdt.data_elements is None:
@@ -206,7 +206,7 @@ class _LWABase:
             data = from_json(response.content) if response.content else {}
         except ValueError:
             data = response.text
-        payload = as_object(data)
+        payload: Mapping[str, Any] | None = cast(Mapping[str, Any], data) if isinstance(data, Mapping) else None
         if response.status_code >= 400 or payload is None:
             raise AuthenticationError(f"{what} request failed with HTTP {response.status_code}", response=response, body=data)
         token: Any = payload.get("access_token") or payload.get("restrictedDataToken")
@@ -278,7 +278,7 @@ class LWAAuth(_LWABase):
             self.store.set(key, token)
             return token.access_token
 
-    def before_request(self, op: CompiledOp, request: httpx2.Request) -> Mapping[str, str] | None:
+    def before_request(self, op: Op, request: httpx2.Request) -> Mapping[str, str] | None:
         if ACCESS_TOKEN_HEADER in request.headers:
             return None
         kind, extra = self.classify(op, request)
@@ -350,7 +350,7 @@ class AsyncLWAAuth(_LWABase):
             self.store.set(key, token)
             return token.access_token
 
-    async def before_request(self, op: CompiledOp, request: httpx2.Request) -> Mapping[str, str] | None:
+    async def before_request(self, op: Op, request: httpx2.Request) -> Mapping[str, str] | None:
         if ACCESS_TOKEN_HEADER in request.headers:
             return None
         kind, extra = self.classify(op, request)

@@ -6,8 +6,6 @@ from __future__ import annotations
 import enum
 from typing import Any
 
-from ...plugins.amazon_spapi import default_spec_dir
-
 
 class PurchaseOrderType(str, enum.Enum):
     REGULAR_ORDER = "RegularOrder"
@@ -108,26 +106,18 @@ class ItemReceiveStatus(str, enum.Enum):
     RECEIVED = "RECEIVED"
 
 
-_namespace_cache: Any = None
-
-
 def namespace() -> Any:
-    """The spec-generated model namespace for ``vendor_orders.v1``."""
-    global _namespace_cache
-    if _namespace_cache is None:
-        from amzn_selling_partner.compile.models import build_models
-        from amzn_selling_partner.spec.loader import load_document
+    """The generated models module for ``vendor_orders``."""
+    import importlib
 
-        path = default_spec_dir() / "vendor-orders-api-model" / "vendorOrders.json"
-        _namespace_cache = build_models(load_document(path), key="vendor_orders.v1")
-    return _namespace_cache
+    return importlib.import_module("amzn_selling_partner.models.vendor_orders.v1")
 
 
 def model(name: str) -> Any:
     ns = namespace()
-    if name not in ns:
+    if name not in ns.__all__:
         raise AttributeError(f"module 'amzn_selling_partner.vendor.orders' has no attribute {name!r}")
-    return ns.get(name)
+    return getattr(ns, name)
 
 
 def __getattr__(name: str) -> Any:

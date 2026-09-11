@@ -37,9 +37,6 @@ dev = [
   "uvicorn>=0.30",
 ]
 
-[project.scripts]
-amzn_selling_partner-stubgen = "amzn_selling_partner.stubgen:main"
-
 [build-system]
 requires = ["uv_build>=0.8,<0.13"]
 build-backend = "uv_build"
@@ -50,7 +47,7 @@ module-name = "amzn_selling_partner"
 [tool.ruff]
 line-length = 140
 target-version = "py310"
-exclude = ["build", ".venv", ".nox", "spec", "stubs", "*.pyi"]
+exclude = ["build", ".venv", ".nox", "spec", "codegen"]
 
 [tool.ruff.lint]
 select = ["B", "C4", "E", "W", "F", "I", "Q", "UP"]
@@ -64,10 +61,9 @@ quote-style = "double"
 indent-style = "space"
 
 [tool.pyright]
-include = ["src/amzn_selling_partner", "stubs"]
+include = ["src/amzn_selling_partner", "tests/petstore_sdk"]
 venvPath = "."
 venv = ".venv"
-stubPath = "stubs"
 exclude = ["**/__pycache__"]
 pythonVersion = "3.10"
 typeCheckingMode = "strict"

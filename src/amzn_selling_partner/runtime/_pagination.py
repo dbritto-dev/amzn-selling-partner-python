@@ -10,15 +10,16 @@ non-path argument.
 
 from __future__ import annotations
 
-from collections.abc import AsyncIterator, Callable, Iterator
+from collections.abc import AsyncIterator, Callable, Iterable, Iterator
 from dataclasses import dataclass, field
 from typing import TYPE_CHECKING, Any, Generic, TypeVar, cast
 
+from ._naming import field_name
 from ._types import NOT_GIVEN, NotGiven
 
 if TYPE_CHECKING:
-    from ..compile.operations import CompiledOp
     from ._base_client import AsyncAPIClient, SyncAPIClient
+    from ._op import Op, Param
     from ._types import RequestOptions
 
 
@@ -105,7 +106,7 @@ class _PageBase(Generic[T]):
     def __init__(
         self,
         client: Any,
-        op: CompiledOp,
+        op: Op,
         kwargs: dict[str, Any],
         options: RequestOptions,
         spec: CompiledPagination,
@@ -165,7 +166,7 @@ class SyncPage(_PageBase[T]):
         kwargs = self._next_kwargs()
         if kwargs is None:
             return None
-        return self._client._call(self._op, kwargs, self._options)  # type: ignore[return-value]
+        return self._client.call(self._op, kwargs, options=self._options)  # type: ignore[return-value]
 
     def pages(self) -> Iterator[SyncPage[T]]:
         page: SyncPage[T] | None = self
@@ -190,7 +191,7 @@ class AsyncPage(_PageBase[T]):
         kwargs = self._next_kwargs()
         if kwargs is None:
             return None
-        return await self._client._call(self._op, kwargs, self._options)  # type: ignore[return-value]
+        return await self._client.call(self._op, kwargs, options=self._options)  # type: ignore[return-value]
 
     async def pages(self) -> AsyncIterator[AsyncPage[T]]:
         page: AsyncPage[T] | None = self
@@ -207,8 +208,33 @@ class AsyncPage(_PageBase[T]):
         return [item async for item in self]
 
 
+def compile_pagination(
+    desc: Pagination,
+    query_specs: Iterable[Param],
+    path_specs: Iterable[Param],
+    header_specs: Iterable[Param],
+) -> CompiledPagination:
+    """Turn a descriptor (wire names) into per-operation getters and keyword names."""
+    wire_to_py = {s.wire_name: s.py_name for s in [*query_specs, *header_specs]}
+    token_kw = wire_to_py.get(desc.next_token_param)
+    if token_kw is None:
+        raise ValueError(f"pagination: next_token_param {desc.next_token_param!r} is not a query/header parameter")
+    keep = {s.py_name for s in path_specs} | {wire_to_py[w] for w in desc.keep_params if w in wire_to_py}
+    return CompiledPagination(
+        descriptor=desc,
+        token_kw=token_kw,
+        keep_kws=frozenset(keep),
+        items_model=make_getter(desc.items_path, python_names=field_name),
+        token_model=make_getter(desc.next_token_path, python_names=field_name),
+        prev_model=make_getter(desc.prev_token_path, python_names=field_name) if desc.prev_token_path else None,
+        items_raw=make_getter(desc.items_path),
+        token_raw=make_getter(desc.next_token_path),
+        prev_raw=make_getter(desc.prev_token_path) if desc.prev_token_path else None,
+    )
+
+
 def paginate_option(value: Pagination | None | NotGiven) -> Pagination | None | NotGiven:
     return NOT_GIVEN if value is NOT_GIVEN else value
 
 
-__all__ = ["AsyncPage", "CompiledPagination", "Pagination", "SyncPage", "make_getter"]
+__all__ = ["AsyncPage", "CompiledPagination", "Pagination", "SyncPage", "compile_pagination", "make_getter"]

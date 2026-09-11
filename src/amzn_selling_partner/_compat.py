@@ -6,7 +6,7 @@ from typing import Any
 
 from pydantic import BaseModel
 
-from .compile.naming import param_name
+from .runtime._naming import param_name
 
 
 def query_kwargs(query: BaseModel | dict[str, Any] | None) -> dict[str, Any]:

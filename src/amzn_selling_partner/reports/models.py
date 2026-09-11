@@ -6,8 +6,6 @@ from __future__ import annotations
 import enum
 from typing import Any
 
-from ..plugins.amazon_spapi import default_spec_dir
-
 
 class ReportType(str, enum.Enum):
     VENDOR_REAL_TIME_INVENTORY_REPORT = "GET_VENDOR_REAL_TIME_INVENTORY_REPORT"
@@ -96,26 +94,18 @@ class SellingProgram(str, enum.Enum):
     FRESH = "FRESH"
 
 
-_namespace_cache: Any = None
-
-
 def namespace() -> Any:
-    """The spec-generated model namespace for ``reports.v2021_06_30``."""
-    global _namespace_cache
-    if _namespace_cache is None:
-        from amzn_selling_partner.compile.models import build_models
-        from amzn_selling_partner.spec.loader import load_document
+    """The generated models module for ``reports``."""
+    import importlib
 
-        path = default_spec_dir() / "reports-api-model" / "reports_2021-06-30.json"
-        _namespace_cache = build_models(load_document(path), key="reports.v2021_06_30")
-    return _namespace_cache
+    return importlib.import_module("amzn_selling_partner.models.reports.v2021_06_30")
 
 
 def model(name: str) -> Any:
     ns = namespace()
-    if name not in ns:
+    if name not in ns.__all__:
         raise AttributeError(f"module 'amzn_selling_partner.reports' has no attribute {name!r}")
-    return ns.get(name)
+    return getattr(ns, name)
 
 
 def __getattr__(name: str) -> Any:

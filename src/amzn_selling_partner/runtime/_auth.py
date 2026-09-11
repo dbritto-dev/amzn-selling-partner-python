@@ -14,17 +14,17 @@ from typing import TYPE_CHECKING, Protocol, runtime_checkable
 if TYPE_CHECKING:
     import httpx2
 
-    from ..compile.operations import CompiledOp
+    from ._op import Op
 
 
 @runtime_checkable
 class AuthHook(Protocol):
-    def before_request(self, op: CompiledOp, request: httpx2.Request) -> Mapping[str, str] | None: ...
+    def before_request(self, op: Op, request: httpx2.Request) -> Mapping[str, str] | None: ...
 
 
 @runtime_checkable
 class AsyncAuthHook(Protocol):
-    def before_request(self, op: CompiledOp, request: httpx2.Request) -> Awaitable[Mapping[str, str] | None]: ...
+    def before_request(self, op: Op, request: httpx2.Request) -> Awaitable[Mapping[str, str] | None]: ...
 
 
 class NoAuth:
@@ -32,14 +32,14 @@ class NoAuth:
 
     __slots__ = ()
 
-    def before_request(self, op: CompiledOp, request: httpx2.Request) -> None:
+    def before_request(self, op: Op, request: httpx2.Request) -> None:
         return None
 
 
 class AsyncNoAuth:
     __slots__ = ()
 
-    async def before_request(self, op: CompiledOp, request: httpx2.Request) -> None:
+    async def before_request(self, op: Op, request: httpx2.Request) -> None:
         return None
 
 
@@ -51,12 +51,12 @@ class StaticHeaderAuth:
     def __init__(self, headers: Mapping[str, str]) -> None:
         self._headers = dict(headers)
 
-    def before_request(self, op: CompiledOp, request: httpx2.Request) -> Mapping[str, str]:
+    def before_request(self, op: Op, request: httpx2.Request) -> Mapping[str, str]:
         return self._headers
 
 
 class AsyncStaticHeaderAuth(StaticHeaderAuth):
-    async def before_request(self, op: CompiledOp, request: httpx2.Request) -> Mapping[str, str]:  # type: ignore[override]
+    async def before_request(self, op: Op, request: httpx2.Request) -> Mapping[str, str]:  # type: ignore[override]
         return self._headers
 
 

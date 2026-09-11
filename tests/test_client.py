@@ -1,3 +1,5 @@
+"""Runtime client behaviour over the generated petstore package (tests/petstore_sdk)."""
+
 from __future__ import annotations
 
 import asyncio
@@ -8,79 +10,91 @@ from typing import Any
 
 import httpx2
 import pytest
+from petstore_sdk.client import AsyncClient, Client
+from petstore_sdk.resources.petstore.v2 import PetstoreV2
+from petstore_sdk.resources.petstore.v3 import PetstoreV3
 
 from amzn_selling_partner import APIConnectionError, APIStatusError, APITimeoutError, NotFoundError, RateLimitError, RequestOptions
-from amzn_selling_partner._client import AsyncClient, Client
 from amzn_selling_partner._examples import example_from_schema
-from amzn_selling_partner.compile._serializers import scalar
 from amzn_selling_partner.runtime import NOT_GIVEN, Pagination, RateLimit
+from amzn_selling_partner.runtime._op import Op
+from amzn_selling_partner.runtime._serializers import scalar
 from amzn_selling_partner.runtime._stream import AsyncStream, Stream
-from amzn_selling_partner.spec import load_document
+from amzn_selling_partner.sandbox_tests import raw_operations
 
 from .conftest import OAS31, SWAGGER2, maybe_await
 
-SPECS = [OAS31, SWAGGER2]
+BASE = "https://api.example.com/v1"
+DOCS = {"v3": json.loads(OAS31.read_text()), "v2": json.loads(SWAGGER2.read_text())}
+RESOURCES = {"v3": PetstoreV3, "v2": PetstoreV2}
 
 
 def _all_ops() -> list[tuple[str, str]]:
-    out: list[tuple[str, str]] = []
-    for spec in SPECS:
-        for op in load_document(spec).operations:
-            out.append((spec.name, op.operation_id))
-    return out
+    return [(version, op.operation_id) for version, cls in RESOURCES.items() for op in cls._ops.values()]
 
 
-def _example_kwargs(doc: Any, op: Any) -> dict[str, Any]:
+def _raw_op(version: str, operation_id: str) -> dict[str, Any]:
+    return raw_operations(DOCS[version])[operation_id]
+
+
+def _example_kwargs(version: str, op: Op) -> dict[str, Any]:
+    doc = DOCS[version]
+    raw = _raw_op(version, op.operation_id)
+    params = {p["name"]: p for p in raw["parameters"]}
     kwargs: dict[str, Any] = {}
-    from amzn_selling_partner.compile.naming import param_name
-
-    for p in op.parameters:
-        if p.required or p.location == "path":
-            kwargs[param_name(p.name)] = example_from_schema(doc, p.schema)
-    if op.request_body is not None and op.request_body.required:
-        media, schema = next(iter(op.request_body.content.items()))
-        if "json" in media:
+    for p in op.params:
+        if p.required:
+            spec = params[p.wire_name]
+            schema = spec.get("schema") or {k: v for k, v in spec.items() if k in ("type", "items", "format", "enum")}
+            kwargs[p.py_name] = example_from_schema(doc, schema)
+    if op.body is not None and op.body.required:
+        if op.body.kind == "json":
+            body_param = next((p for p in raw["parameters"] if p.get("in") == "body"), None)
+            schema = body_param["schema"] if body_param else raw["requestBody"]["content"]["application/json"]["schema"]
             kwargs["body"] = example_from_schema(doc, schema)
-        elif media.startswith("multipart") or media.startswith("application/x-www"):
+        elif op.body.kind in ("multipart", "form"):
             kwargs["body"] = b"raw"
         else:
             kwargs["body"] = b"\x00\x01"
     return kwargs
 
 
-def _success_response(doc: Any, op: Any) -> httpx2.Response:
-    for code, resp in op.responses.items():
+def _success_response(version: str, op: Op) -> httpx2.Response:
+    doc = DOCS[version]
+    raw = _raw_op(version, op.operation_id)
+    for code, resp in raw["responses"].items():
         if code.startswith("2"):
             status = int(code)
-            js = resp.json_schema
-            if js is not None:
-                return httpx2.Response(status, json=example_from_schema(doc, js, all_fields=True))
-            if not resp.content:
-                return httpx2.Response(status)
-            media = next(iter(resp.content))
+            content = resp.get("content") or {}
+            schema = resp.get("schema") or next((m.get("schema") for m in content.values() if m.get("schema")), None)
+            media = next(iter(content), None) or (raw.get("produces") or doc.get("produces") or ["application/json"])[0]
             if media == "text/event-stream":
                 return httpx2.Response(status, content=b'event: ping\ndata: {"a":1}\n\n', headers={"content-type": media})
-            return httpx2.Response(status, content=b"plain text", headers={"content-type": media})
+            if schema is not None:
+                return httpx2.Response(status, json=example_from_schema(doc, schema, all_fields=True))
+            if not content and "produces" not in raw and status == 204:
+                return httpx2.Response(status)
+            if media.startswith("text/"):
+                return httpx2.Response(status, content=b"plain text", headers={"content-type": media})
+            return httpx2.Response(status)
     raise AssertionError("no success response")
 
 
-@pytest.mark.parametrize(("spec_name", "operation_id"), _all_ops())
+@pytest.mark.parametrize(("version", "operation_id"), _all_ops())
 @pytest.mark.parametrize("mode", ["sync", "async"])
-def test_every_operation(spec_name: str, operation_id: str, mode: str) -> None:
-    spec = next(s for s in SPECS if s.name == spec_name)
-    doc = load_document(spec)
-    op = doc.operation(operation_id)
+def test_every_operation(version: str, operation_id: str, mode: str) -> None:
+    op = next(o for o in RESOURCES[version]._ops.values() if o.operation_id == operation_id)
     seen: list[httpx2.Request] = []
 
     def handler(request: httpx2.Request) -> httpx2.Response:
         seen.append(request)
-        return _success_response(doc, op)
+        return _success_response(version, op)
 
     cls = Client if mode == "sync" else AsyncClient
-    client = cls(spec, transport=httpx2.MockTransport(handler), max_retries=0)
-    api = getattr(client, spec.stem).latest
-    method = getattr(api, api.operation(operation_id).name)
-    kwargs = _example_kwargs(doc, op)
+    client = cls(base_url=BASE, transport=httpx2.MockTransport(handler), max_retries=0)
+    api = client.petstore.version(version)
+    method = getattr(api, op.name)
+    kwargs = _example_kwargs(version, op)
 
     async def go() -> Any:
         result = await maybe_await(method(**kwargs))
@@ -93,47 +107,29 @@ def test_every_operation(spec_name: str, operation_id: str, mode: str) -> None:
 
     result, raw = asyncio.run(go())
     request = seen[0]
-    assert request.method == op.method.upper()
+    assert request.method == op.method
     assert request.url.path.startswith("/v1")
-    for p in op.parameters:
-        if p.location == "path":
-            assert scalar(kwargs[__import__("amzn_selling_partner.compile.naming", fromlist=["x"]).param_name(p.name)]) in request.url.path
-    if op.request_body is not None and op.request_body.required:
+    for p in op.path_params:
+        assert scalar(kwargs[p.py_name]) in request.url.path
+    if op.body is not None and op.body.required:
         assert request.content
-    success = next(r for c, r in op.responses.items() if c.startswith("2"))
-    if success.json_schema is not None:
-        compiled = api.operation(operation_id)
-        if compiled.pagination is not None:
+    if op.default_decoder.kind == "json":
+        if op.compiled_pagination is not None:
             assert hasattr(result, "items")
             assert isinstance(raw.raw, dict)
         else:
             assert result is not None
             assert isinstance(raw, (dict, list))
-    elif not success.content:
+    elif op.default_decoder.kind == "none" and not op.stream_default:
         assert result is None and raw is None
     asyncio.run(maybe_await(client.aclose() if mode == "async" else client.close()))
 
 
-def _petstore(handler: Any, **kw: Any) -> Any:
-    return Client(OAS31, transport=httpx2.MockTransport(handler), backoff_initial=0.0001, **kw).petstore_oas31.latest
+def _petstore(handler: Any, **kw: Any) -> PetstoreV3:
+    return Client(base_url=BASE, transport=httpx2.MockTransport(handler), backoff_initial=0.0001, **kw).petstore.latest
 
 
-def test_sync_async_same_methods_and_signatures() -> None:
-    for spec in SPECS:
-        sync_api = getattr(Client(spec, transport=httpx2.MockTransport(lambda r: httpx2.Response(500))), spec.stem).latest
-        async_api = getattr(AsyncClient(spec, transport=httpx2.MockTransport(lambda r: httpx2.Response(500))), spec.stem).latest
-        sync_methods = {n for n in dir(sync_api) if not n.startswith("_") and callable(getattr(sync_api, n))}
-        async_methods = {n for n in dir(async_api) if not n.startswith("_") and callable(getattr(async_api, n))}
-        assert sync_methods == async_methods
-        for name in sync_api.operations:
-            s, a = getattr(sync_api, name), getattr(async_api, name)
-            assert inspect.signature(s) == inspect.signature(a)
-            assert s.__doc__ == a.__doc__ and s.__name__ == a.__name__ == name
-            assert inspect.iscoroutinefunction(a) and not inspect.iscoroutinefunction(s)
-            assert "self" not in inspect.signature(s).parameters
-
-
-def test_default_headers_and_base_url_from_spec() -> None:
+def test_default_headers_and_base_url() -> None:
     seen: list[httpx2.Request] = []
 
     def handler(r: httpx2.Request) -> httpx2.Response:
@@ -212,7 +208,6 @@ def test_retry_on_429_and_5xx_with_retry_after(monkeypatch: pytest.MonkeyPatch) 
     assert 2.0 <= sleeps[0] <= 2.5  # honoured Retry-After (with jitter)
     assert sleeps[1] < 1.0  # exponential backoff
 
-    attempts["n"] = -10  # always 429
     with pytest.raises(RateLimitError) as ei:
         _petstore(lambda r: httpx2.Response(429, headers={"Retry-After": "1"}), max_retries=1).get_pet(pet_id=1)
     assert ei.value.retry_after == 1.0
@@ -230,16 +225,24 @@ def test_rate_hint_header_updates_bucket(monkeypatch: pytest.MonkeyPatch) -> Non
         return httpx2.Response(200, json={"id": 1, "name": "n"})
 
     client = Client(
-        OAS31,
+        base_url=BASE,
         transport=httpx2.MockTransport(handler),
         rate_hint_header="x-amzn-RateLimit-Limit",
         default_rate_limit=RateLimit(rate=100, burst=100),
     )
-    api = client.petstore_oas31.latest
-    api.get_pet(pet_id=1)
+    client.petstore.latest.get_pet(pet_id=1)
     assert 2.0 <= sleeps[0] <= 2.5
-    bucket = client._throttler.bucket("petstore_oas31.v1_0_0.getPet", None)
+    assert client._throttler is not None
+    bucket = client._throttler.bucket("petstore.v3.getPet", None)
     assert bucket is not None and bucket.rate == 0.5
+
+
+def test_generated_rate_limit_feeds_the_throttler() -> None:
+    client = Client(base_url=BASE, transport=httpx2.MockTransport(lambda r: httpx2.Response(200, json={"items": []})))
+    op = client.petstore.v3.operation("listPets")
+    assert op.rate_limit is None  # rate-limit tables are an Amazon policy; the generic emitter leaves them out
+    client.petstore.v3.list_pets()
+    assert client._throttler is not None and client._throttler.bucket(op.key, op.rate_limit) is None
 
 
 def test_timeout_and_connection_errors(monkeypatch: pytest.MonkeyPatch) -> None:
@@ -293,14 +296,14 @@ def test_pagination_walk_sync_and_async() -> None:
     assert [p.id for p in page] == [1, 2, 3]
     assert [len(p.items) for p in page.pages()] == [1, 1, 1]
     assert [p.id for p in page.all()] == [1, 2, 3]
-    assert page.next_page().next_page().next_page() is None
-    raw = api.list_pets(limit=1, raw=True)
+    assert page.next_page().next_page().next_page() is None  # type: ignore[union-attr]
+    raw: Any = api.list_pets(limit=1, raw=True)
     assert raw.items == [{"id": 1, "name": "a"}] and [i["id"] for i in raw] == [1, 2, 3]
-    plain = api.list_pets(limit=1, paginate=None)
+    plain: Any = api.list_pets(limit=1, paginate=None)
     assert plain.items[0].id == 1 and not hasattr(plain, "next_page")
 
     async def go() -> list[int]:
-        aapi = AsyncClient(OAS31, transport=httpx2.MockTransport(handler)).petstore_oas31.latest
+        aapi = AsyncClient(base_url=BASE, transport=httpx2.MockTransport(handler)).petstore.latest
         p = await aapi.list_pets(limit=1)
         ids = [x.id async for x in p]
         pages = [len(pg.items) async for pg in p.pages()]
@@ -321,8 +324,8 @@ def test_pagination_override_per_call_and_drop_params() -> None:
         return httpx2.Response(200, json={"events": ["b"], "warnings": []})
 
     api = _petstore(handler)
-    assert isinstance(api.list_audit(), dict) is False  # model, not page (ambiguous detection)
-    page = api.list_audit(
+    assert not hasattr(api.list_audit(), "next_page")  # model, not page (ambiguous detection)
+    page: Any = api.list_audit(
         paginate=Pagination(items_path="events", next_token_path="nextToken", next_token_param="nextToken", drop_params_on_next=True)
     )
     assert list(page) == ["a", "b"]
@@ -335,8 +338,8 @@ def test_async_cancellation_propagates() -> None:
         return httpx2.Response(200, json={})
 
     async def go() -> None:
-        client = AsyncClient(OAS31, transport=httpx2.MockTransport(slow_handler))
-        api = client.petstore_oas31.latest
+        client = AsyncClient(base_url=BASE, transport=httpx2.MockTransport(slow_handler))
+        api = client.petstore.latest
         task = asyncio.create_task(api.get_pet(pet_id=1))
         await asyncio.sleep(0.05)
         task.cancel()
@@ -354,9 +357,9 @@ def test_async_total_timeout_maps_to_api_timeout() -> None:
         return httpx2.Response(200, json={})
 
     async def go() -> None:
-        client = AsyncClient(OAS31, transport=httpx2.MockTransport(slow_handler), total_timeout=0.05, max_retries=0)
+        client = AsyncClient(base_url=BASE, transport=httpx2.MockTransport(slow_handler), total_timeout=0.05, max_retries=0)
         with pytest.raises(APITimeoutError):
-            await client.petstore_oas31.latest.get_pet(pet_id=1)
+            await client.petstore.latest.get_pet(pet_id=1)
         await client.aclose()
 
     asyncio.run(go())
@@ -378,24 +381,24 @@ def test_close_releases_pool() -> None:
             await super().aclose()
 
     t = Recording(lambda r: httpx2.Response(200, json={"id": 1, "name": "n"}))
-    with Client(OAS31, transport=t) as client:
+    with Client(base_url=BASE, transport=t) as client:
         assert client._client is None  # lazy creation
-        client.petstore_oas31.latest.get_pet(pet_id=1)
+        client.petstore.latest.get_pet(pet_id=1)
         assert client._client is not None
     assert t.closed and client.is_closed
 
     at = ARecording(lambda r: httpx2.Response(200, json={"id": 1, "name": "n"}))
 
     async def go() -> None:
-        async with AsyncClient(OAS31, transport=at) as client:
-            await client.petstore_oas31.latest.get_pet(pet_id=1)
+        async with AsyncClient(base_url=BASE, transport=at) as client:
+            await client.petstore.latest.get_pet(pet_id=1)
         assert at.closed and client.is_closed
 
     asyncio.run(go())
 
     injected = httpx2.Client(transport=httpx2.MockTransport(lambda r: httpx2.Response(200, json={"id": 1, "name": "n"})))
-    c = Client(OAS31, http_client=injected)
-    c.petstore_oas31.latest.get_pet(pet_id=1)
+    c = Client(base_url=BASE, http_client=injected)
+    c.petstore.latest.get_pet(pet_id=1)
     c.close()
     assert not injected.is_closed  # injected clients are not closed by us
 
@@ -411,7 +414,7 @@ def test_streaming_sse_and_bytes() -> None:
         assert b"".join(stream.iter_bytes()) == body
 
     async def go() -> None:
-        aapi = AsyncClient(OAS31, transport=httpx2.MockTransport(lambda r: httpx2.Response(200, content=body))).petstore_oas31.latest
+        aapi = AsyncClient(base_url=BASE, transport=httpx2.MockTransport(lambda r: httpx2.Response(200, content=body))).petstore.latest
         async with await aapi.stream_events() as stream:
             evs = [e.data async for e in stream.iter_events()]
         assert evs == ["one", '{"x": 2}', "three\nmore"]
@@ -427,33 +430,32 @@ def test_stream_error_raises_status_error() -> None:
 
 
 def test_dir_and_introspection() -> None:
-    client = Client(OAS31, transport=httpx2.MockTransport(lambda r: httpx2.Response(500)))
-    assert "petstore_oas31" in dir(client)
-    versions = client.petstore_oas31
-    assert versions.versions == ["v1_0_0"] and "latest" in dir(versions)
+    client = Client(base_url=BASE, transport=httpx2.MockTransport(lambda r: httpx2.Response(500)))
+    assert "petstore" in dir(client) and client.apis == ["petstore"] and client.aliases == {"pets": "petstore"}
+    versions = client.petstore
+    assert versions.versions == ["v2", "v3"] and "latest" in dir(versions) and versions.api == "petstore"
+    assert client.pets is versions and client.api("pets") is versions and versions.latest is versions.v3
     api = versions.latest
-    assert "list_pets" in dir(api) and "models" in dir(api)
+    assert "list_pets" in dir(api) and api.models.__name__ == "petstore_sdk.models.petstore.v3"
     assert api.operation("listPets").name == "list_pets" and api.operation("list_pets").operation_id == "listPets"
     assert api.list_pets.__doc__ and "GET /pets" in api.list_pets.__doc__
+    assert list(api) == list(api.operations) and repr(api).startswith("<PetstoreV3 petstore.v3: ")
     with pytest.raises(AttributeError, match="no API named"):
-        _ = client.nope
+        client.api("nope")
     with pytest.raises(AttributeError, match="no version"):
         _ = versions.v9
+    with pytest.raises(KeyError):
+        api.operation("nope")
 
 
 def test_preload_reports_times() -> None:
-    client = Client([OAS31, SWAGGER2], transport=httpx2.MockTransport(lambda r: httpx2.Response(500)))
+    client = Client(base_url=BASE, transport=httpx2.MockTransport(lambda r: httpx2.Response(500)))
     times = client.preload()
-    assert set(times) == {"petstore_oas31.v1_0_0", "petstore_swagger2.v1"}
+    assert set(times) == {"petstore.v2", "petstore.v3"}
     assert all(t >= 0 for t in times.values())
-
-
-def test_group_by_tag() -> None:
-    client = Client(OAS31, transport=httpx2.MockTransport(lambda r: httpx2.Response(200, json={"id": 1, "name": "n"})), group_by="tag")
-    v = client.petstore_oas31.latest
-    assert sorted(dir(v)) == ["animals", "misc", "models", "pets"]
-    assert v.pets.get_pet(pet_id=1).id == 1
+    assert client.api_versions() == {"petstore": ["v2", "v3"]}
 
 
 def test_not_given_import_and_repr() -> None:
     assert repr(NOT_GIVEN) == "NOT_GIVEN" and not NOT_GIVEN
+    assert inspect.signature(PetstoreV3.list_pets).parameters["limit"].default is NOT_GIVEN

@@ -1,13 +1,15 @@
-"""Run every operation of a client against its embedded examples.
+"""Run every operation of the Amazon clients against the examples embedded in
+the pinned model files.
 
-Sources of examples, in order: ``annotations["sandbox_examples"]`` (Amazon
-``x-amzn-api-sandbox`` static blocks, normalised by the plugin), OpenAPI
-``examples``/``example`` on the success response, and finally a synthetic
-example derived from the schema. Each example becomes an
+Sources of examples, in order: Amazon ``x-amzn-api-sandbox`` static blocks,
+Swagger ``x-examples``/``example`` on the success response, and finally a
+synthetic example derived from the schema. Each example becomes an
 ``httpx2.MockTransport`` request/response pair; the operation is called on the
 sync and async clients and the decoded result is checked.
 
-Usage (CLI)::
+The raw model files are read from the git submodule (or
+``AMZN_SELLING_PARTNER_MODELS``); the generated resource modules provide the
+operations. Usage (CLI)::
 
     python -m amzn_selling_partner.sandbox_tests orders listings_items   # or no args = all APIs
 """
@@ -17,24 +19,28 @@ from __future__ import annotations
 import argparse
 import asyncio
 import inspect
+import json
 import logging
+import pathlib
 import sys
-from collections.abc import Callable, Iterable
+from collections.abc import Callable, Iterable, Mapping
 from dataclasses import dataclass, field
 from typing import Any, cast
 
 import httpx2
 from pydantic import ValidationError
 
-from ._examples import example_from_schema
-from .compile.naming import param_name
-from .compile.operations import CompiledOp
+from ._examples import example_from_schema, resolve
+from .plugins._amazon.sandbox import sandbox_examples
+from .plugins._amazon.specs import api_naming, default_spec_dir, spec_files
+from .runtime._naming import param_name
+from .runtime._op import Op
 from .runtime._pagination import AsyncPage, SyncPage
 from .runtime._stream import AsyncStream, Stream
-from .spec._jsonutil import as_object
-from .spec.ir import Document
 
 log = logging.getLogger("amzn_selling_partner.sandbox_tests")
+
+_METHODS = ("get", "put", "post", "delete", "patch", "head", "options")
 
 
 @dataclass(slots=True, kw_only=True)
@@ -58,10 +64,41 @@ class Outcome:
     result: Any = field(default=None, repr=False)
 
 
-def cases_for(op: CompiledOp, document: Document, api: str, version: str) -> list[Case]:
+def _obj(value: Any) -> dict[str, Any]:
+    return cast(dict[str, Any], value) if isinstance(value, Mapping) else {}
+
+
+def raw_operations(document: Mapping[str, Any]) -> dict[str, dict[str, Any]]:
+    """``operationId -> raw operation object`` (path-level parameters merged in,
+    ``$ref`` parameters resolved)."""
+    out: dict[str, dict[str, Any]] = {}
+    for item in _obj(document.get("paths")).values():
+        item_obj = _obj(item)
+        shared: list[Any] = item_obj["parameters"] if isinstance(item_obj.get("parameters"), list) else []
+        for method in _METHODS:
+            op = _obj(item_obj.get(method))
+            if not op or not isinstance(op.get("operationId"), str):
+                continue
+            own: list[Any] = op["parameters"] if isinstance(op.get("parameters"), list) else []
+            out[str(op["operationId"])] = {**op, "parameters": [resolve(document, _obj(p)) for p in [*shared, *own]]}
+    return out
+
+
+def load_documents(root: pathlib.Path | None = None) -> dict[tuple[str, str], dict[str, Any]]:
+    """``(api, version) -> raw document`` for every pinned model file."""
+    docs: dict[tuple[str, str], dict[str, Any]] = {}
+    for path in spec_files(root or default_spec_dir()):
+        named = api_naming(path)
+        if named is None:
+            continue
+        docs[named] = json.loads(path.read_text())
+    return docs
+
+
+def cases_for(op: Op, raw_op: Mapping[str, Any], document: Mapping[str, Any], api: str, version: str) -> list[Case]:
     cases: list[Case] = []
-    wire_to_py = {p.wire_name: p.py_name for p in [*op.path_params, *op.query_params, *op.header_params]}
-    for ex in op.annotations.get("sandbox_examples", ()):
+    wire_to_py = {p.wire_name: p.py_name for p in op.params}
+    for ex in sandbox_examples(raw_op):
         kwargs: dict[str, Any] = {}
         for wire, value in ex.parameters.items():
             py = wire_to_py.get(wire)
@@ -76,7 +113,7 @@ def cases_for(op: CompiledOp, document: Document, api: str, version: str) -> lis
                 log.warning("%s.%s.%s: sandbox example carries a body but the operation has none; ignored", api, version, op.operation_id)
             else:
                 kwargs["body"] = ex.body
-        _fill_required(op, document, kwargs)
+        _fill_required(op, raw_op, document, kwargs)
         cases.append(
             Case(
                 api=api,
@@ -91,25 +128,26 @@ def cases_for(op: CompiledOp, document: Document, api: str, version: str) -> lis
         )
     if cases:
         return cases
-    # OpenAPI examples / synthetic
-    for code, resp in op.ir.responses.items():
+    # Swagger examples / synthetic
+    for code, resp in _obj(raw_op.get("responses")).items():
         if not code.startswith("2"):
             continue
         status = int(code.replace("X", "0"))
         kwargs = {}
-        _fill_required(op, document, kwargs)
+        _fill_required(op, raw_op, document, kwargs)
+        resp_obj = _obj(resp)
         body: Any = None
         has_response = False
-        js = resp.json_schema
-        examples = as_object(resp.extensions.get("x-examples")) or {}
+        schema = _obj(resp_obj.get("schema")) or _obj(_obj(_obj(_obj(resp_obj.get("content")).get("application/json")).get("schema")))
+        examples = _obj(resp_obj.get("x-examples")) or _obj(resp_obj.get("examples"))
         if examples:
             body, has_response = next(iter(examples.values())), True
-        elif js is not None:
-            resolved = document.resolve(js)
-            if resolved.example is not None:
-                body, has_response = resolved.example, True
+        elif schema:
+            resolved = resolve(document, schema)
+            if resolved.get("example") is not None:
+                body, has_response = resolved["example"], True
             else:
-                body, has_response = example_from_schema(document, js, all_fields=True), True
+                body, has_response = example_from_schema(document, schema, all_fields=True), True
         cases.append(
             Case(
                 api=api,
@@ -126,23 +164,33 @@ def cases_for(op: CompiledOp, document: Document, api: str, version: str) -> lis
     return cases
 
 
-def _fill_required(op: CompiledOp, document: Document, kwargs: dict[str, Any]) -> None:
-    ir_params = {param_name(p.name): p for p in op.ir.parameters}
+def _fill_required(op: Op, raw_op: Mapping[str, Any], document: Mapping[str, Any], kwargs: dict[str, Any]) -> None:
+    raw_params = {str(_obj(p).get("name")): _obj(p) for p in cast(list[Any], raw_op.get("parameters") or [])}
+    py_to_wire = {p.py_name: p.wire_name for p in op.params}
     for name in op.required:
         if name in kwargs:
             continue
         if name == "body":
-            rb = op.ir.request_body
-            if rb is not None and rb.json_schema is not None:
-                kwargs["body"] = example_from_schema(document, rb.json_schema)
-            else:
-                kwargs["body"] = b"example"
+            body_param = next((p for p in raw_params.values() if p.get("in") == "body"), None)
+            schema = (
+                _obj(body_param.get("schema"))
+                if body_param
+                else _obj(_obj(_obj(_obj(raw_op.get("requestBody")).get("content")).get("application/json")).get("schema"))
+            )
+            kwargs["body"] = example_from_schema(document, schema) if schema else b"example"
         else:
-            p = ir_params.get(name)
-            kwargs[name] = example_from_schema(document, p.schema) if p is not None else "example"
+            p = raw_params.get(py_to_wire.get(name, ""))
+            if p is None:
+                kwargs[name] = "example"
+            elif "schema" in p:
+                kwargs[name] = example_from_schema(document, _obj(p["schema"]))
+            else:
+                kwargs[name] = example_from_schema(
+                    document, {k: v for k, v in p.items() if k not in ("name", "in", "required", "description")}
+                )
 
 
-def make_transport(case: Case, op: CompiledOp) -> httpx2.MockTransport:
+def make_transport(case: Case, op: Op) -> httpx2.MockTransport:
     def handler(request: httpx2.Request) -> httpx2.Response:
         if request.method != op.method:
             return httpx2.Response(405, json={"errors": [{"code": "MethodNotAllowed", "message": request.method}]})
@@ -155,11 +203,9 @@ def make_transport(case: Case, op: CompiledOp) -> httpx2.MockTransport:
     return httpx2.MockTransport(handler)
 
 
-def run_case(client_factory: Callable[[httpx2.MockTransport], Any], case: Case, *, mode: str) -> Outcome:
-    client = client_factory(None)  # type: ignore[arg-type]
-    api = getattr(client, case.api)
-    version = getattr(api, case.version)
-    op = version.operation(case.operation_id)
+def run_case(client_factory: Callable[[httpx2.MockTransport | None], Any], case: Case, *, mode: str) -> Outcome:
+    client = client_factory(None)
+    op = getattr(getattr(client, case.api), case.version).operation(case.operation_id)
     transport = make_transport(case, op)
     client = client_factory(transport)
     method = getattr(getattr(getattr(client, case.api), case.version), op.name)
@@ -200,19 +246,31 @@ def run_case(client_factory: Callable[[httpx2.MockTransport], Any], case: Case, 
 
 
 def run(
-    sync_factory: Callable[[httpx2.MockTransport], Any],
-    async_factory: Callable[[httpx2.MockTransport], Any],
+    sync_factory: Callable[[httpx2.MockTransport | None], Any],
+    async_factory: Callable[[httpx2.MockTransport | None], Any],
     apis: Iterable[str] | None = None,
+    *,
+    models_dir: pathlib.Path | None = None,
 ) -> list[Outcome]:
-    probe = sync_factory(None)  # type: ignore[arg-type]
+    probe = sync_factory(None)
     names = list(apis) if apis else probe.apis
+    documents = load_documents(models_dir)
     outcomes: list[Outcome] = []
     for api_name in names:
         container = probe.api(api_name)
         for version in container.versions:
-            av = container.version(version)
-            for op in av.operations:
-                for case in cases_for(op, av.document, api_name, version):
+            document = documents.get((container.api, version))
+            if document is None:
+                log.warning("%s.%s: no model file found; skipped", container.api, version)
+                continue
+            raw_ops = raw_operations(document)
+            resource = container.version(version)
+            for op in resource.operations.values():
+                raw_op = raw_ops.get(op.operation_id)
+                if raw_op is None:
+                    log.warning("%s.%s.%s: not in the model file; skipped", container.api, version, op.operation_id)
+                    continue
+                for case in cases_for(op, raw_op, document, container.api, version):
                     outcomes.append(run_case(sync_factory, case, mode="sync"))
                     outcomes.append(run_case(async_factory, case, mode="async"))
     return outcomes

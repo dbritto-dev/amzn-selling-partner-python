@@ -1,0 +1,21 @@
+{
+  "name": "amzn-selling-partner-codegen",
+  "version": "0.0.0",
+  "private": true,
+  "description": "oagen-based generator for the amzn_selling_partner Python package",
+  "type": "module",
+  "scripts": {
+    "generate": "tsx src/generate.ts",
+    "check": "tsc --noEmit",
+    "test": "tsx --test test/*.test.ts"
+  },
+  "dependencies": {
+    "@workos/oagen": "0.30.2",
+    "swagger2openapi": "7.0.8",
+    "tsx": "^4.20.0",
+    "typescript": "^5.9.0"
+  },
+  "devDependencies": {
+    "@types/node": "^22.20.2"
+  }
+}

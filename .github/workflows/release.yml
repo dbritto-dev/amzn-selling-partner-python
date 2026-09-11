@@ -67,9 +67,6 @@ jobs:
         with:
           python-version: "3.12"
 
-      - name: Vendor the pinned specs into the package
-        run: uv run --no-project python scripts/sync_specs.py
-
       - name: Build package
         run: uv build --no-sources
 

@@ -1,15 +1,15 @@
 """Amazon Selling Partner API for Python.
 
-A spec-driven client: the bundled Swagger models are loaded at runtime and
-every operation becomes a typed method on ``SellingPartner`` (sync) and
-``AsyncSellingPartner`` (async). Importing this package builds no models; APIs
-are loaded and compiled lazily on first attribute access
-(``client.orders.v0``).
+A spec-generated client: ``codegen/`` (built on oagen) turns the pinned Amazon
+Swagger models into typed pydantic models and resource classes, and every
+operation is a method on ``SellingPartner`` (sync) and ``AsyncSellingPartner``
+(async). Importing this package builds no schemas; an API's modules are
+imported on first attribute access (``client.orders.v0``).
 
-The generic core (``spec``, ``compile``, ``runtime``, ``Client`` /
-``AsyncClient``) is API-agnostic; everything Amazon-specific lives in
-``plugins.amazon_spapi``. The ``client``, ``reports``, ``vendor`` and ``utils``
-subpackages keep the 0.1.x entry points working (see ``MIGRATION.md``).
+The generic core (``runtime``, ``Client`` / ``AsyncClient``) is API-agnostic;
+everything Amazon-specific lives in ``plugins.amazon_spapi``. The ``client``,
+``reports``, ``vendor`` and ``utils`` subpackages keep the 0.1.x entry points
+working (see ``MIGRATION.md``).
 """
 
 from __future__ import annotations

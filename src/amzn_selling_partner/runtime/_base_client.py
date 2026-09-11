@@ -1,8 +1,8 @@
 """``BaseClient`` (all non-I/O logic) and the two thin I/O layers
 ``SyncAPIClient`` / ``AsyncAPIClient``.
 
-Per-call path: ``method(**kwargs)`` -> ``_call`` -> ``_build_request`` (uses
-the precomputed builders on ``CompiledOp``) -> send/retry loop -> ``_finish``
+Per-call path: ``method(**kwargs)`` -> ``call`` -> ``_build_request`` (uses
+the precomputed builders on ``Op``) -> send/retry loop -> ``_finish``
 (prebuilt ``TypeAdapter.validate_json`` on the body bytes, page wrapping).
 Nothing in this path touches the spec, merges header dicts or constructs
 pydantic models for options.
@@ -33,22 +33,21 @@ from ._errors import (
     RateLimitError,
     status_error_class,
 )
-from ._pagination import AsyncPage, CompiledPagination, Pagination, SyncPage
+from ._op import Op
+from ._pagination import AsyncPage, CompiledPagination, Pagination, SyncPage, compile_pagination
 from ._stream import AsyncStream, Stream
 from ._throttle import AsyncThrottler, RateLimit, Throttler, TokenBucket
 from ._transports import DEFAULT_LIMITS, DEFAULT_TIMEOUT, async_transport, sync_transport
-from ._types import DEFAULT_OPTIONS, NOT_GIVEN, HeaderPairs, RequestOptions
+from ._types import DEFAULT_OPTIONS, NOT_GIVEN, HeaderPairs, NotGiven, RequestOptions
 
 if TYPE_CHECKING:
     from typing_extensions import Self
 
-    from ..compile.operations import CompiledOp
     from ._auth import AsyncAuthHook, AuthHook
 
 log = logging.getLogger("amzn_selling_partner.runtime.client")
 
 DEFAULT_RETRY_STATUSES = frozenset({408, 429, 500, 502, 503, 504})
-_RESERVED_KWARGS = frozenset({"raw", "paginate", "request_options"})
 
 
 def _user_agent() -> str:
@@ -160,23 +159,20 @@ class BaseClient:
 
     # -- request building ----------------------------------------------------------
 
-    def _prepare(self, op: CompiledOp, kwargs: dict[str, Any]) -> RequestOptions:
-        options = DEFAULT_OPTIONS
-        if kwargs.keys() & _RESERVED_KWARGS:
-            ro = kwargs.pop("request_options", None)
-            raw = kwargs.pop("raw", False)
-            paginate = kwargs.pop("paginate", NOT_GIVEN)
-            options = ro if ro is not None else DEFAULT_OPTIONS
-            if raw or paginate is not NOT_GIVEN:
-                options = replace(
-                    options,
-                    raw=bool(raw) or options.raw,
-                    paginate=paginate if paginate is not NOT_GIVEN else options.paginate,
-                )
+    @staticmethod
+    def _prepare(
+        op: Op, kwargs: dict[str, Any], raw: bool, paginate: Pagination | None | NotGiven, request_options: RequestOptions | None
+    ) -> RequestOptions:
+        """Drop ``NOT_GIVEN`` arguments, validate the rest and merge the per-call options."""
+        for k in [k for k, v in kwargs.items() if v is NOT_GIVEN]:
+            del kwargs[k]
         op.check_kwargs(kwargs)
+        options = request_options if request_options is not None else DEFAULT_OPTIONS
+        if raw or paginate is not NOT_GIVEN:
+            options = replace(options, raw=bool(raw) or options.raw, paginate=paginate if paginate is not NOT_GIVEN else options.paginate)
         return options
 
-    def _build_request(self, op: CompiledOp, kwargs: dict[str, Any], options: RequestOptions) -> httpx2.Request:
+    def _build_request(self, op: Op, kwargs: dict[str, Any], options: RequestOptions) -> httpx2.Request:
         url = op.build_url(self._base_url, kwargs)
         if options.extra_query:
             extra = "&".join(f"{quote(str(k), safe='')}={quote(str(v), safe='')}" for k, v in options.extra_query.items())
@@ -228,7 +224,7 @@ class BaseClient:
             bucket.penalize(delay)
         return delay
 
-    def _bucket(self, op: CompiledOp) -> TokenBucket | None:
+    def _bucket(self, op: Op) -> TokenBucket | None:
         throttler = self._throttler
         if throttler is None:
             return None
@@ -236,7 +232,7 @@ class BaseClient:
 
     # -- response handling -----------------------------------------------------------
 
-    def _finish(self, op: CompiledOp, kwargs: dict[str, Any], options: RequestOptions, response: httpx2.Response) -> Any:
+    def _finish(self, op: Op, kwargs: dict[str, Any], options: RequestOptions, response: httpx2.Response) -> Any:
         body = response.content
         if options.raw:
             if not body:
@@ -260,18 +256,15 @@ class BaseClient:
     _page_class: Any = SyncPage
 
     @staticmethod
-    def _pagination_for(op: CompiledOp, options: RequestOptions) -> CompiledPagination | None:
+    def _pagination_for(op: Op, options: RequestOptions) -> CompiledPagination | None:
         override = options.paginate
         if override is NOT_GIVEN:
-            return op.pagination
+            return op.compiled_pagination
         if override is None:
             return None
-        from ..compile.operations import compile_pagination
-
-        assert isinstance(override, Pagination)
         return compile_pagination(override, op.query_params, op.path_params, op.header_params)
 
-    def _make_error(self, op: CompiledOp, response: httpx2.Response) -> APIStatusError:
+    def _make_error(self, op: Op, response: httpx2.Response) -> APIStatusError:
         status = response.status_code
         body = response.content
         parsed: Any = None
@@ -369,21 +362,31 @@ class SyncAPIClient(BaseClient):
 
     # -- hot path --------------------------------------------------------------------
 
-    def _call(self, op: CompiledOp, kwargs: dict[str, Any], options: RequestOptions | None = None) -> Any:
+    def call(
+        self,
+        op: Op,
+        kwargs: dict[str, Any],
+        raw: bool = False,
+        paginate: Pagination | None | NotGiven = NOT_GIVEN,
+        request_options: RequestOptions | None = None,
+        *,
+        options: RequestOptions | None = None,
+    ) -> Any:
+        """Execute ``op`` with python keyword arguments (what every generated method does)."""
         if options is None:
-            options = self._prepare(op, kwargs)
+            options = self._prepare(op, kwargs, raw, paginate, request_options)
         request = self._build_request(op, kwargs, options)
         if op.stream_default:
             return Stream(self._send(op, request, options, stream=True))
         response = self._send(op, request, options)
         return self._finish(op, kwargs, options, response)
 
-    def stream(self, op: CompiledOp, **kwargs: Any) -> Stream:
-        options = self._prepare(op, kwargs)
+    def stream(self, op: Op, request_options: RequestOptions | None = None, **kwargs: Any) -> Stream:
+        options = self._prepare(op, kwargs, False, NOT_GIVEN, request_options)
         request = self._build_request(op, kwargs, options)
         return Stream(self._send(op, request, options, stream=True))
 
-    def _send(self, op: CompiledOp, request: httpx2.Request, options: RequestOptions, *, stream: bool = False) -> httpx2.Response:
+    def _send(self, op: Op, request: httpx2.Request, options: RequestOptions, *, stream: bool = False) -> httpx2.Response:
         client = self._http()
         retries = self._max_retries if options.max_retries is None else options.max_retries
         bucket = self._bucket(op)
@@ -466,21 +469,30 @@ class AsyncAPIClient(BaseClient):
     async def __aexit__(self, exc_type: type[BaseException] | None, exc: BaseException | None, tb: TracebackType | None) -> None:
         await self.aclose()
 
-    async def _call(self, op: CompiledOp, kwargs: dict[str, Any], options: RequestOptions | None = None) -> Any:
+    async def call(
+        self,
+        op: Op,
+        kwargs: dict[str, Any],
+        raw: bool = False,
+        paginate: Pagination | None | NotGiven = NOT_GIVEN,
+        request_options: RequestOptions | None = None,
+        *,
+        options: RequestOptions | None = None,
+    ) -> Any:
         if options is None:
-            options = self._prepare(op, kwargs)
+            options = self._prepare(op, kwargs, raw, paginate, request_options)
         request = self._build_request(op, kwargs, options)
         if op.stream_default:
             return AsyncStream(await self._send(op, request, options, stream=True))
         response = await self._send(op, request, options)
         return self._finish(op, kwargs, options, response)
 
-    async def stream(self, op: CompiledOp, **kwargs: Any) -> AsyncStream:
-        options = self._prepare(op, kwargs)
+    async def stream(self, op: Op, request_options: RequestOptions | None = None, **kwargs: Any) -> AsyncStream:
+        options = self._prepare(op, kwargs, False, NOT_GIVEN, request_options)
         request = self._build_request(op, kwargs, options)
         return AsyncStream(await self._send(op, request, options, stream=True))
 
-    async def _send(self, op: CompiledOp, request: httpx2.Request, options: RequestOptions, *, stream: bool = False) -> httpx2.Response:
+    async def _send(self, op: Op, request: httpx2.Request, options: RequestOptions, *, stream: bool = False) -> httpx2.Response:
         client = self._http()
         retries = self._max_retries if options.max_retries is None else options.max_retries
         bucket = self._bucket(op)

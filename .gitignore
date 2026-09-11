@@ -158,7 +158,6 @@ cython_debug/
 #  and can be added to the global gitignore or merged into this file.  For a more nuclear
 #  option (not recommended) you can uncomment the following to ignore the entire idea folder.
 #.idea/
-# packaged copies of the Amazon specs (scripts/sync_specs.py); the source of truth is the submodule
-src/amzn_selling_partner/plugins/_amazon/models/
-src/amzn_selling_partner/plugins/_amazon/schemas/
-src/amzn_selling_partner/plugins/_amazon/PINNED_COMMIT
+# generator scratch space (codegen/.build) and its node_modules
+codegen/node_modules/
+codegen/.build/

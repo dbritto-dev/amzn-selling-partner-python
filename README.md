@@ -1,13 +1,17 @@
 # Amazon Selling Partner API for Python
 
-A spec-driven client for the [Amazon Selling Partner API](https://developer-docs.amazon.com/sp-api).
-The bundled Swagger models are parsed and validated with pydantic v2 at runtime
-and every operation becomes a typed method on a sync client and an async client; there is no code-generation
-step (optional `.pyi` stubs are provided for editors and type checkers).
+A spec-generated client for the [Amazon Selling Partner API](https://developer-docs.amazon.com/sp-api).
+The pinned Amazon Swagger models are turned into pydantic v2 models and typed
+resource classes by a generator built on [oagen](https://github.com/workos/oagen)
+(`codegen/`); every operation is a method on a sync client and an async client,
+with real signatures for editors and type checkers. The generated code is
+committed, so installing the package pulls in no generator.
 
-The core (`amzn_selling_partner.spec`, `amzn_selling_partner.compile`, `amzn_selling_partner.runtime`) is API-agnostic: it
-loads any OpenAPI 3.x or Swagger 2.0 document. Everything Amazon-specific lives
-in `amzn_selling_partner.plugins.amazon_spapi`.
+The runtime (`amzn_selling_partner.runtime`) is API-agnostic and so is the
+generator: pointed at any OpenAPI 3.x or Swagger 2.0 document it produces the
+same kind of package (the test-suite generates one from a petstore spec).
+Everything Amazon-specific lives in `amzn_selling_partner.plugins.amazon_spapi`
+and in the generator's Amazon policy (`codegen/src/amazon.ts`).
 
 - **Bug reports:** https://github.com/dbritto-dev/amzn-selling-partner-python/issues
 - **Migration from 0.1.x:** [MIGRATION.md](MIGRATION.md)
@@ -175,15 +179,12 @@ Connection limits: `SellingPartner(limits=httpx2.Limits(max_connections=100, max
 
 ## Using other APIs
 
-```python
-from amzn_selling_partner import Client
-
-client = Client("path/to/specs/", base_url="https://api.example.com")
-client.petstore.latest.list_pets(limit=10)
-```
-
-Plugins (`plugins=[...]`) supply API-specific knowledge through an
-`annotate(document) -> document` hook; see `amzn_selling_partner.plugins`.
+`amzn_selling_partner.Client` / `AsyncClient` is the runtime with the generated
+Amazon APIs attached and no Amazon auth (`Client(base_url=...)`). To target a
+different API, run the generator over its spec: `codegen/src/generate.ts` shows
+the whole pipeline (Swagger 2.0 conversion, the pre-IR fixes oagen needs, the
+Python emitter) and `tests/petstore_sdk` is the package it generates from
+`tests/fixtures/petstore_oas31.json`.
 
 ## Development
 
@@ -191,12 +192,13 @@ Plugins (`plugins=[...]`) supply API-specific knowledge through an
 git clone --recurse-submodules https://github.com/dbritto-dev/amzn-selling-partner-python
 uv sync --extra dev --extra aiohttp
 uv run pytest
-uv run pyright
-uv run python -m amzn_selling_partner.stubgen --check     # stubs/ in sync with the specs
+uv run pyright                            # strict, generated code included
 uv run python benchmarks/bench.py         # needs uvicorn (dev extra)
-uv run python scripts/report_load_times.py
+uv run python -m amzn_selling_partner.sandbox_tests   # every operation against its embedded examples
+
+cd codegen && npm ci --ignore-scripts && npm run generate   # regenerate after a spec bump (Node 22)
 ```
 
-Type stubs live in `stubs/`; point your checker at them (`stubPath = "stubs"`
-for pyright, `mypy_path = stubs` for mypy) to get typed `client.orders.v0.get_orders(...)`
-signatures and models.
+`src/amzn_selling_partner/{models,resources,apis.py}` and `tests/petstore_sdk`
+are generated; edit the generator (`codegen/`) instead and commit the
+regenerated files (CI fails on drift). See [docs/UPDATING_SPECS.md](docs/UPDATING_SPECS.md).
