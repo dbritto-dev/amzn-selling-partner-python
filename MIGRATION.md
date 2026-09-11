@@ -45,16 +45,17 @@ are derived by oagen from the operation (`list_orders`, `get_order`,
 operationIds to them.
 
 ```python
-from amzn_selling_partner import SellingPartner
+from amzn_selling_partner import AsyncSellingPartner
 
-client = SellingPartner(region=Region.NA)
-for order in client.vendor_orders_v1.iter_list_purchase_orders(created_after="2024-01-01T00:00:00Z"):
-    ...                                    # pages are followed automatically
-report = client.reports.get_report(report_id="...")
-content = client.documents.download_report(report.report_document_id)
+async with AsyncSellingPartner(region=Region.NA) as client:
+    async for order in client.vendor_orders_v1.iter_list_purchase_orders(created_after="2024-01-01T00:00:00Z"):
+        ...                                # pages are followed automatically
+    report = await client.reports.get_report("...")
+    content = await client.documents.download_report(report.report_document_id)
 ```
 
-See the README for auth, pagination, raw mode and async usage.
+`SellingPartner` is the synchronous client with the same surface (no `await`,
+plain iterators). See the README for auth, pagination and raw mode.
 
 ## Testing: `respx` and `pytest-httpx` do not support `httpx2`
 

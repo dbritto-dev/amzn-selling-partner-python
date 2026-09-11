@@ -122,7 +122,7 @@ export function renderInitModule(spec: ApiSpec, ctx: EmitterContext, opts: Emitt
   return [
     `"""${spec.name} ${spec.version} SDK.`,
     '',
-    `\`\`${name}\`\` / \`\`Async${name}\`\` expose one resource per service; \`\`models\`\` holds the`,
+    `\`\`Async${name}\`\` (and its synchronous twin \`\`${name}\`\`) expose one resource per service; \`\`models\`\` holds the`,
     'pydantic models, ``errors`` the exceptions and ``_http`` the HTTP layer.',
     '',
     HEADER_DOC,
