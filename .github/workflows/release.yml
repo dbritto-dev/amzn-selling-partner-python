@@ -33,9 +33,11 @@ jobs:
       - name: Set up uv
         uses: astral-sh/setup-uv@v7
 
-      # A manual run picks the component; a push bumps minor, or major when the
-      # head commit is marked breaking (`feat!:` / `refactor!:` or a
-      # "BREAKING CHANGE" line, the conventional-commits markers).
+      # A manual run picks the component. A push bumps minor unless the branch
+      # committed `.github/release-bump` (major, minor or patch; consumed by the
+      # release commit) or the head commit is marked breaking (`feat!:` /
+      # `refactor!:` or a "BREAKING CHANGE" line, the conventional-commits
+      # markers).
       - name: Bump version
         id: bump
         env:
@@ -44,15 +46,19 @@ jobs:
         run: |
           set -euo pipefail
           bump="${INPUT_BUMP:-minor}"
-          if [ -z "$INPUT_BUMP" ] && printf '%s' "$HEAD_MESSAGE" | grep -Eq '^[a-z]+(\(.+\))?!:|BREAKING CHANGE'; then
+          if [ -z "$INPUT_BUMP" ] && [ -s .github/release-bump ]; then
+            bump="$(tr -d '[:space:]' < .github/release-bump)"
+          elif [ -z "$INPUT_BUMP" ] && printf '%s' "$HEAD_MESSAGE" | grep -Eq '^[a-z]+(\(.+\))?!:|BREAKING CHANGE'; then
             bump=major
           fi
+          case "$bump" in major|minor|patch) ;; *) echo "invalid bump: $bump" >&2; exit 1 ;; esac
           echo "bumping $bump"
           uv version --bump "$bump" --no-sync
           echo "version=$(uv version --short)" >> "$GITHUB_OUTPUT"
 
       - name: Commit version bump
         run: |
+          git rm -q --ignore-unmatch .github/release-bump
           git add pyproject.toml uv.lock
           git commit -m "chore(release): v${{ steps.bump.outputs.version }} [skip ci]"
           git push origin HEAD:main
