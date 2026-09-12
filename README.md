@@ -284,11 +284,9 @@ cd codegen && npm test && npm run typecheck
 ```
 
 ruff is the only linter and formatter, ty the only type checker. Every push
-to `main` releases a minor version. A branch that must release a major (or a
-patch) commits the component to `.github/release-bump`; the release commit
-removes the file again. A merge commit marked breaking (`feat!:`, `refactor!:`
-or a `BREAKING CHANGE` line) also releases a major, and the Release workflow
-can be run by hand with the component to bump.
+to `main` releases a minor version unless the branch committed `major`,
+`minor` or `patch` to `.github/release-bump`; the release commit removes the
+file again.
 
 ty type-checks the generated code too; the benchmarks assert the
 generated method stays within 15 % of an equivalent hand-written `httpx2` call; the security
