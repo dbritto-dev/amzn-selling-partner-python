@@ -1,0 +1,446 @@
+{
+ "swagger": "2.0",
+ "info": {
+  "title": "Petstore (Swagger 2.0)",
+  "version": "v1",
+  "description": "Fixture exercising Swagger 2.0 constructs."
+ },
+ "host": "api.example.com",
+ "basePath": "/v1/",
+ "schemes": [
+  "https"
+ ],
+ "produces": [
+  "application/json"
+ ],
+ "consumes": [
+  "application/json"
+ ],
+ "paths": {
+  "/pets": {
+   "get": {
+    "operationId": "listPets",
+    "tags": [
+     "pets"
+    ],
+    "description": "List pets.\n\n**Usage Plan:**\n\n| Rate (requests per second) | Burst |\n| ---- | ---- |\n| 0.5 | 5 |\n",
+    "parameters": [
+     {
+      "name": "limit",
+      "in": "query",
+      "type": "integer",
+      "format": "int32"
+     },
+     {
+      "name": "Tags",
+      "in": "query",
+      "type": "array",
+      "items": {
+       "type": "string"
+      },
+      "collectionFormat": "csv"
+     },
+     {
+      "name": "Ids",
+      "in": "query",
+      "type": "array",
+      "items": {
+       "type": "integer"
+      },
+      "collectionFormat": "multi"
+     },
+     {
+      "name": "Codes",
+      "in": "query",
+      "type": "array",
+      "items": {
+       "type": "string"
+      },
+      "collectionFormat": "pipes"
+     },
+     {
+      "name": "NextToken",
+      "in": "query",
+      "type": "string"
+     }
+    ],
+    "responses": {
+     "200": {
+      "description": "ok",
+      "schema": {
+       "$ref": "#/definitions/GetPetsResponse"
+      },
+      "headers": {
+       "x-request-id": {
+        "type": "string"
+       }
+      }
+     },
+     "400": {
+      "description": "bad",
+      "schema": {
+       "$ref": "#/definitions/ErrorList"
+      }
+     }
+    }
+   },
+   "post": {
+    "operationId": "createPet",
+    "tags": [
+     "pets"
+    ],
+    "parameters": [
+     {
+      "name": "body",
+      "in": "body",
+      "required": true,
+      "schema": {
+       "$ref": "#/definitions/NewPet"
+      }
+     }
+    ],
+    "responses": {
+     "201": {
+      "description": "created",
+      "schema": {
+       "$ref": "#/definitions/Pet"
+      }
+     },
+     "400": {
+      "description": "bad",
+      "schema": {
+       "$ref": "#/definitions/ErrorList"
+      }
+     }
+    }
+   }
+  },
+  "/pets/{petId}": {
+   "get": {
+    "operationId": "getPet",
+    "tags": [
+     "pets"
+    ],
+    "parameters": [
+     {
+      "$ref": "#/parameters/petId"
+     }
+    ],
+    "responses": {
+     "200": {
+      "description": "ok",
+      "schema": {
+       "$ref": "#/definitions/Pet"
+      }
+     },
+     "404": {
+      "$ref": "#/responses/NotFound"
+     }
+    }
+   },
+   "delete": {
+    "operationId": "deletePet",
+    "tags": [
+     "pets"
+    ],
+    "parameters": [
+     {
+      "$ref": "#/parameters/petId"
+     }
+    ],
+    "responses": {
+     "204": {
+      "description": "gone"
+     }
+    }
+   }
+  },
+  "/pets/{petId}/photo": {
+   "post": {
+    "operationId": "uploadPhoto",
+    "tags": [
+     "pets"
+    ],
+    "consumes": [
+     "multipart/form-data"
+    ],
+    "parameters": [
+     {
+      "$ref": "#/parameters/petId"
+     },
+     {
+      "name": "file",
+      "in": "formData",
+      "type": "file",
+      "required": true
+     },
+     {
+      "name": "caption",
+      "in": "formData",
+      "type": "string"
+     }
+    ],
+    "responses": {
+     "200": {
+      "description": "ok",
+      "schema": {
+       "$ref": "#/definitions/Pet"
+      }
+     }
+    }
+   }
+  },
+  "/orders": {
+   "get": {
+    "operationId": "getOrders",
+    "tags": [
+     "orders"
+    ],
+    "parameters": [
+     {
+      "name": "NextToken",
+      "in": "query",
+      "type": "string"
+     },
+     {
+      "name": "CreatedAfter",
+      "in": "query",
+      "type": "string",
+      "required": true
+     }
+    ],
+    "responses": {
+     "200": {
+      "description": "ok",
+      "schema": {
+       "$ref": "#/definitions/GetOrdersResponse"
+      }
+     }
+    }
+   }
+  },
+  "/report": {
+   "get": {
+    "operationId": "getReport",
+    "tags": [
+     "misc"
+    ],
+    "produces": [
+     "text/plain"
+    ],
+    "responses": {
+     "200": {
+      "description": "text",
+      "schema": {
+       "type": "string"
+      }
+     }
+    }
+   }
+  }
+ },
+ "parameters": {
+  "petId": {
+   "name": "petId",
+   "in": "path",
+   "required": true,
+   "type": "integer",
+   "format": "int64"
+  }
+ },
+ "responses": {
+  "NotFound": {
+   "description": "missing",
+   "schema": {
+    "$ref": "#/definitions/ErrorList"
+   }
+  }
+ },
+ "definitions": {
+  "Pet": {
+   "type": "object",
+   "required": [
+    "Id",
+    "Name"
+   ],
+   "properties": {
+    "Id": {
+     "type": "integer",
+     "format": "int64"
+    },
+    "Name": {
+     "type": "string"
+    },
+    "Tag": {
+     "type": "string",
+     "x-nullable": true
+    },
+    "Status": {
+     "type": "string",
+     "enum": [
+      "available",
+      "pending",
+      "sold"
+     ]
+    },
+    "CreatedAt": {
+     "type": "string",
+     "format": "date-time"
+    },
+    "Price": {
+     "$ref": "#/definitions/Decimal"
+    },
+    "Parent": {
+     "$ref": "#/definitions/Pet"
+    },
+    "Attributes": {
+     "type": "object",
+     "additionalProperties": true
+    },
+    "Photo": {
+     "type": "string",
+     "format": "byte"
+    }
+   }
+  },
+  "Decimal": {
+   "type": "string",
+   "description": "A decimal as string"
+  },
+  "NewPet": {
+   "type": "object",
+   "required": [
+    "Name"
+   ],
+   "properties": {
+    "Name": {
+     "type": "string"
+    },
+    "Tag": {
+     "type": "string"
+    }
+   }
+  },
+  "PetList": {
+   "type": "array",
+   "items": {
+    "$ref": "#/definitions/Pet"
+   }
+  },
+  "GetPetsResponse": {
+   "type": "object",
+   "properties": {
+    "payload": {
+     "$ref": "#/definitions/PetsPayload"
+    },
+    "errors": {
+     "$ref": "#/definitions/ErrorList"
+    }
+   }
+  },
+  "PetsPayload": {
+   "type": "object",
+   "required": [
+    "Pets"
+   ],
+   "properties": {
+    "Pets": {
+     "$ref": "#/definitions/PetList"
+    },
+    "NextToken": {
+     "type": "string"
+    }
+   }
+  },
+  "GetOrdersResponse": {
+   "type": "object",
+   "properties": {
+    "payload": {
+     "$ref": "#/definitions/OrdersPayload"
+    },
+    "errors": {
+     "$ref": "#/definitions/ErrorList"
+    }
+   }
+  },
+  "OrdersPayload": {
+   "type": "object",
+   "properties": {
+    "pagination": {
+     "$ref": "#/definitions/Pagination"
+    },
+    "orders": {
+     "type": "array",
+     "items": {
+      "$ref": "#/definitions/Order"
+     }
+    }
+   }
+  },
+  "Pagination": {
+   "type": "object",
+   "properties": {
+    "nextToken": {
+     "type": "string"
+    }
+   }
+  },
+  "Order": {
+   "type": "object",
+   "required": [
+    "orderId"
+   ],
+   "properties": {
+    "orderId": {
+     "type": "string"
+    },
+    "total": {
+     "$ref": "#/definitions/Money"
+    }
+   }
+  },
+  "Money": {
+   "type": "object",
+   "properties": {
+    "currencyCode": {
+     "type": "string"
+    },
+    "amount": {
+     "$ref": "#/definitions/Decimal"
+    }
+   }
+  },
+  "Error": {
+   "type": "object",
+   "required": [
+    "code",
+    "message"
+   ],
+   "properties": {
+    "code": {
+     "type": "string"
+    },
+    "message": {
+     "type": "string"
+    },
+    "details": {
+     "type": "string"
+    }
+   }
+  },
+  "ErrorList": {
+   "type": "object",
+   "required": [
+    "errors"
+   ],
+   "properties": {
+    "errors": {
+     "type": "array",
+     "items": {
+      "$ref": "#/definitions/Error"
+     }
+    }
+   }
+  }
+ }
+}

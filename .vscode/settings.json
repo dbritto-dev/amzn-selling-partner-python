@@ -14,17 +14,18 @@
   },
   "editor.foldingHighlight": true,
   "editor.folding": true,
-  // Formatting
+  // Linting, formatting and type checking: ruff and ty (the tools CI runs)
   "editor.formatOnSave": true,
-  "python.formatting.provider": "none",
   "[python]": {
-    "editor.defaultFormatter": "charliermarsh.ruff"
+    "editor.defaultFormatter": "charliermarsh.ruff",
+    "editor.codeActionsOnSave": {
+      "source.fixAll.ruff": "explicit",
+      "source.organizeImports.ruff": "explicit"
+    }
   },
-  // Linting
-  "python.linting.enabled": true,
-  "python.linting.pylintEnabled": false,
-  "python.linting.flake8Enabled": false,
-  "python.analysis.typeCheckingMode": "basic",
+  "ruff.lint.enable": true,
+  "ruff.configuration": "pyproject.toml",
+  "python.analysis.typeCheckingMode": "off",
   // Testing
   "python.testing.unittestEnabled": false,
   "python.testing.pytestEnabled": true

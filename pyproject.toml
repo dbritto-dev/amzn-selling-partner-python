@@ -1,108 +1,76 @@
 [project]
 name = "amzn-selling-partner"
-version = "0.1.10"
-description = "Amazon Selling Partner API for Python"
+version = "0.2.0"
+description = "Spec-driven Python client for the Amazon Selling Partner API"
 authors = [
   { name = "Danilo Britto", email = "dbritto.dev@gmail.com" },
 ]
 classifiers = [
+  "Intended Audience :: Developers",
   "Intended Audience :: Information Technology",
-  "Intended Audience :: System Administrators",
+  "License :: OSI Approved :: MIT License",
   "Operating System :: OS Independent",
   "Programming Language :: Python :: 3",
-  "Programming Language :: Python",
-  "Topic :: Internet",
-  "Topic :: Software Development :: Libraries :: Python Modules",
-  "Topic :: Software Development :: Libraries",
-  "Topic :: Software Development",
-  "Typing :: Typed",
-  "Intended Audience :: Developers",
-  "License :: OSI Approved :: MIT License",
   "Programming Language :: Python :: 3 :: Only",
   "Programming Language :: Python :: 3.10",
   "Programming Language :: Python :: 3.11",
   "Programming Language :: Python :: 3.12",
   "Programming Language :: Python :: 3.13",
   "Topic :: Internet :: WWW/HTTP",
-  "Topic :: Security",
+  "Topic :: Software Development :: Libraries :: Python Modules",
+  "Typing :: Typed",
 ]
 dependencies = [
-  "requests==2.34.2", "requests_aws4auth==1.2.2", "boto3==1.43.86",
-  "pydantic==1.10.13"
+  "httpx2>=2,<3",
+  "pydantic>=2.9",
 ]
 readme = "README.md"
 requires-python = ">=3.10"
 
 [project.optional-dependencies]
+aiohttp = ["aiohttp[speedups]>=3.10", "httpx-aiohttp[httpx2]>=0.2"]
 dev = [
-  "ruff==0.16.5", "pytest==9.1.1", "coverage==7.10.6",
-  "pytest-cov==7.1.0", "nox>=2024.4.15", "bandit==1.9.4", "safety==2.3.4",
-  "responses==0.26.3", "ty==0.0.78"
-]
-lint = ["ruff==0.16.5"]
-test = [
-  "pytest==9.1.1", "coverage==7.10.6", "pytest-cov==7.1.0", "nox>=2024.4.15",
-  "responses==0.26.3"
+  "pytest>=8",
+  "ty>=0.0.80",
+  "hypothesis>=6.100",
+  "ruff>=0.16",
+  "pytest-benchmark>=5",
 ]
 security-test = ["bandit==1.9.4", "safety==2.3.4", "setuptools<81"]
 
 [build-system]
-requires = ["uv_build>=0.12.10,<0.13.0"]
+requires = ["uv_build>=0.8,<0.13"]
 build-backend = "uv_build"
 
+[tool.uv.build-backend]
+module-name = "amzn_selling_partner"
+
 [tool.ruff]
-line-length = 99
+line-length = 140
 target-version = "py310"
-exclude = [
-  "build", "configs", "*.egg-info", ".github", ".githooks", ".vscode", ".nox"
-]
+exclude = ["build", ".venv", ".nox", "spec", "codegen"]
 
 [tool.ruff.lint]
-select = [
-  # flake8-bugbear
-  "B",
-  # flake8-comprehensions and mccabe
-  "C",
-  # pycodestyle
-  "E", "W",
-  # pyflakes
-  "F",
-  # isort
-  "I",
-  # bandit
-  "S",
-  # flake8-quotes
-  "Q",
-  # pylint
-  "PLE", "PLR", "PLW"
-]
+select = ["B", "C4", "E", "W", "F", "I", "Q", "UP"]
 ignore = ["E501", "B904", "B008"]
-
-[tool.ruff.lint.pydocstyle]
-convention = "google"
 
 [tool.ruff.lint.per-file-ignores]
 "tests/*.py" = ["S101", "S106"]
-
-[tool.ruff.lint.pylint]
-max-args = 10
 
 [tool.ruff.format]
 quote-style = "double"
 indent-style = "space"
 
-[tool.ty.rules]
-deprecated = "ignore"
+[tool.ty.environment]
+python = ".venv"
+python-version = "3.10"
+root = ["src", "tests"]
+
+[tool.ty.src]
+include = ["src/amzn_selling_partner", "tests/petstore_sdk"]
 
 [tool.pytest.ini_options]
-minversion = "6.0"
+minversion = "8.0"
 addopts = "-ra -q"
 testpaths = ["tests"]
-
-[tool.coverage.run]
-branch = true
-source = ["amzn_selling_partner"]
-omit = ["src/amzn_selling_partner/client/auth.py"]
-
-[tool.coverage.report]
-fail_under = 90
+filterwarnings = ["error::DeprecationWarning:amzn_selling_partner.*"]

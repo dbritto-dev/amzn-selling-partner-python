@@ -1,82 +1,35 @@
-# Built-in packages
-import typing as t
+"""nox sessions: ``uv run nox -s lint|type_check|test|security_test``."""
 
-# Third-party packages
 import nox
 
 nox.options.default_venv_backend = "uv"
 nox.options.sessions = ["lint", "type_check", "test", "security_test"]
 
 
-def get_test_files(session: nox.Session) -> t.List[str]:
-    test_files = session.posargs or ["."]
-    return test_files
-
-
-def get_lint_files(session: nox.Session) -> t.List[str]:
-    lint_files = session.posargs or ["."]
-    return lint_files
-
-
-def get_lint_staged_files(session: nox.Session) -> t.List[str]:
-    git_command_output: str = session.run(
-        "git",
-        "diff",
-        "--name-only",
-        "--cached",
-        "--",
-        "*.py",
-        "**/*.py",
-        external=True,
-        silent=True,
-    ).strip()  # type: ignore
-    lint_staged_files = git_command_output.split("\n") if git_command_output else []
-    return lint_staged_files
-
-
 @nox.session
 def test(session: nox.Session) -> None:
-    test_files = get_test_files(session)
-
-    session.install(".[test]")
-    session.run("pytest", *test_files)
-
-
-@nox.session
-def coverage(session: nox.Session) -> None:
-    session.install(".[test]")
-    session.run("pytest", "--cov", "--cov-report=html")
+    session.install("-e", ".[dev,aiohttp]")
+    session.run("pytest", *(session.posargs or ["-q"]))
 
 
 @nox.session
 def lint(session: nox.Session) -> None:
-    lint_files = get_lint_files(session)
-
-    session.install(".[lint]")
-    session.run("ruff", "check", *lint_files)
-    session.run("ruff", "format", "--check", *lint_files)
-
-
-@nox.session
-def lint_staged(session: nox.Session) -> None:
-    lint_staged_files = get_lint_staged_files(session)
-
-    if lint_staged_files:
-        session.install(".[lint]")
-        session.run("ruff", "check", *lint_staged_files)
-        session.run("ruff", "format", "--check", *lint_staged_files)
+    session.install("ruff")
+    session.run("ruff", "check", "src", "tests", "benchmarks")
+    session.run("ruff", "format", "--check", "src", "tests", "benchmarks")
 
 
 @nox.session
 def type_check(session: nox.Session) -> None:
-    session.install(".[dev]")
-    session.run("ty", "check", "src/amzn_selling_partner")
+    session.install("-e", ".[dev,aiohttp]")
+    session.run("ty", "check")
 
 
 @nox.session
 def security_test(session: nox.Session) -> None:
+    """bandit over the package (generated code included) and safety over the locked dependencies."""
     session.install(".[security-test]")
-    session.run("bandit", "-r", "src/amzn_selling_partner/")
+    session.run("bandit", "-q", "-r", "src/amzn_selling_partner/")
     # SFTY-20260721-58460 flags every setuptools release below 83.0.0, but 83+ removed
     # `pkg_resources`, which safety==2.3.4 itself still requires to run. setuptools is a
     # dev-only build tool here (not a runtime dependency of the published package), so the

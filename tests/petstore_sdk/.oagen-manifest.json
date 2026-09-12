@@ -1,0 +1,19 @@
+{
+  "version": 2,
+  "language": "python",
+  "files": [
+    "__init__.py",
+    "_http.py",
+    "client.py",
+    "errors.py",
+    "models/__init__.py",
+    "models/_base.py",
+    "models/petstore_v2/__init__.py",
+    "models/petstore_v2/enums.py",
+    "models/petstore_v3/__init__.py",
+    "models/petstore_v3/enums.py",
+    "resources/__init__.py",
+    "resources/petstore_v2.py",
+    "resources/petstore_v3.py"
+  ]
+}

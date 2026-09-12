@@ -3,6 +3,7 @@ name: Release
 on:
   push:
     branches: [main]
+  workflow_dispatch:
 
 jobs:
   release:
@@ -26,15 +27,23 @@ jobs:
       - name: Set up uv
         uses: astral-sh/setup-uv@v7
 
-      - name: Bump patch version
+      # Minor unless the branch committed the component (major, minor or
+      # patch) to `.github/release-bump`; the release commit removes the file.
+      - name: Bump version
         id: bump
         run: |
           set -euo pipefail
-          uv version --bump patch --no-sync
+          bump=minor
+          if [ -s .github/release-bump ]; then
+            bump="$(tr -d '[:space:]' < .github/release-bump)"
+          fi
+          echo "bumping $bump"
+          uv version --bump "$bump" --no-sync
           echo "version=$(uv version --short)" >> "$GITHUB_OUTPUT"
 
       - name: Commit version bump
         run: |
+          git rm -q --ignore-unmatch .github/release-bump
           git add pyproject.toml uv.lock
           git commit -m "chore(release): v${{ steps.bump.outputs.version }} [skip ci]"
           git push origin HEAD:main
@@ -60,11 +69,12 @@ jobs:
       - uses: actions/checkout@v4
         with:
           ref: "v${{ needs.release.outputs.version }}"
+          submodules: true
 
       - name: Set up uv
         uses: astral-sh/setup-uv@v7
         with:
-          python-version: "3.10"
+          python-version: "3.12"
 
       - name: Build package
         run: uv build --no-sources

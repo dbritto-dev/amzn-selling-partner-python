@@ -1,9 +1,10 @@
-# Built-in packages
-import enum
-import typing
+"""Enum values kept from the 0.1.x hand-written models plus access to the
+spec-generated pydantic models of the Reports API."""
 
-# Third-party packages
-import pydantic
+from __future__ import annotations
+
+import enum
+from typing import Any
 
 
 class ReportType(str, enum.Enum):
@@ -93,82 +94,21 @@ class SellingProgram(str, enum.Enum):
     FRESH = "FRESH"
 
 
-class ReportOptions(pydantic.BaseModel):
-    reportPeriod: typing.Optional[ReportPeriod] = None
-    distributorView: typing.Optional[DistributorView] = None
-    sellingProgram: typing.Optional[SellingProgram] = None
+def namespace() -> Any:
+    """The generated models module for ``reports``."""
+    import importlib
 
-    class Config:
-        extra = "forbid"
+    return importlib.import_module("amzn_selling_partner.sdk.models.reports_v2021_06_30")
 
 
-class CreateReportSpecification(pydantic.BaseModel):
-    reportType: ReportType
-    marketplaceIds: typing.List[MarketPlaceId]
-    reportOptions: typing.Optional[ReportOptions] = None
-    dataStartTime: typing.Optional[str] = None
-    dataEndTime: typing.Optional[str] = None
+def model(name: str) -> Any:
+    ns = namespace()
+    if name not in ns.__all__:
+        raise AttributeError(f"module 'amzn_selling_partner.reports' has no attribute {name!r}")
+    return getattr(ns, name)
 
 
-class CreateReportResponse(pydantic.BaseModel):
-    reportId: str
-
-
-class CreateReportScheduleSpecification(pydantic.BaseModel):
-    reportType: ReportType
-    marketplaceIds: typing.List[MarketPlaceId]
-    period: SchedulePeriod
-    reportOptions: typing.Optional[ReportOptions] = None
-    nextReportCreationTime: typing.Optional[str] = None
-
-
-class CreateReportScheduleResponse(pydantic.BaseModel):
-    reportScheduleId: str
-
-
-class GetReportsQuery(pydantic.BaseModel):
-    reportTypes: typing.Optional[typing.List[ReportType]] = None
-    processingStatuses: typing.Optional[typing.List[ProcessingStatus]] = None
-    marketplaceIds: typing.Optional[typing.List[MarketPlaceId]] = None
-    pageSize: typing.Optional[int] = None
-    createdSince: typing.Optional[str] = None
-    createdUntil: typing.Optional[str] = None
-    nextToken: typing.Optional[str] = None
-
-
-class Report(pydantic.BaseModel):
-    reportId: str
-    reportType: ReportType
-    createdTime: str
-    processingStatus: ProcessingStatus
-    marketplaceIds: typing.Optional[typing.List[MarketPlaceId]] = None
-    dataStartTime: typing.Optional[str] = None
-    dataEndTime: typing.Optional[str] = None
-    reportScheduleId: typing.Optional[str] = None
-    processingStartTime: typing.Optional[str] = None
-    processingEndTime: typing.Optional[str] = None
-    reportDocumentId: typing.Optional[str] = None
-
-
-class GetReportsResponse(pydantic.BaseModel):
-    reports: typing.List[Report]
-    nextToken: typing.Optional[str] = None
-
-
-class ReportSchedule(pydantic.BaseModel):
-    reportScheduleId: str
-    reportType: ReportType
-    period: str
-    marketplaceIds: typing.Optional[typing.List[MarketPlaceId]] = None
-    reportOptions: typing.Optional[ReportOptions] = None
-    nextReportCreationTime: typing.Optional[str] = None
-
-
-class ReportScheduleList(pydantic.BaseModel):
-    reportSchedules: typing.List[ReportSchedule]
-
-
-class ReportDocument(pydantic.BaseModel):
-    reportDocumentId: str
-    url: str
-    compressionAlgorithm: typing.Optional[CompressionAlgorithm] = None
+def __getattr__(name: str) -> Any:
+    if name.startswith("_"):
+        raise AttributeError(name)
+    return model(name)

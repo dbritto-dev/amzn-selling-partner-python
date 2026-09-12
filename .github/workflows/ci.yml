@@ -5,6 +5,7 @@ on:
     branches: [main]
   pull_request:
     branches: [main]
+  workflow_dispatch:
 
 concurrency:
   group: ci-${{ github.workflow }}-${{ github.ref }}
@@ -14,23 +15,46 @@ permissions:
   contents: read
 
 jobs:
-  lint:
-    name: Lint (Python ${{ matrix.python-version }})
+  codegen:
+    name: Generated code is up to date (oagen)
     runs-on: ubuntu-latest
-    strategy:
-      fail-fast: false
-      matrix:
-        python-version: ["3.10", "3.11", "3.12", "3.13"]
     steps:
       - uses: actions/checkout@v4
+        with:
+          submodules: true
 
-      - name: Set up uv
+      - name: Set up Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: "24"
+          cache: npm
+          cache-dependency-path: codegen/package-lock.json
+
+      - name: Set up uv (ruff formats the generated files)
         uses: astral-sh/setup-uv@v7
         with:
-          python-version: ${{ matrix.python-version }}
+          python-version: "3.12"
+          enable-cache: true
 
-      - name: Run lint
-        run: uvx nox -s lint
+      - name: Install
+        run: |
+          uv sync --extra dev
+          cd codegen && npm ci --ignore-scripts
+
+      - name: Build, type-check and test the emitter
+        run: |
+          cd codegen
+          npm run build
+          npm run typecheck
+          npm test
+
+      - name: Regenerate (spec build + oagen generate, ruff through the emitter's formatCommand)
+        run: cd codegen && npm run generate
+
+      - name: No drift between the pinned specs, the committed spec and the generated code
+        run: |
+          git status --porcelain
+          git diff --stat --exit-code -- src tests/petstore_sdk codegen/spec
 
   test:
     name: Test (Python ${{ matrix.python-version }})
@@ -41,14 +65,36 @@ jobs:
         python-version: ["3.10", "3.11", "3.12", "3.13"]
     steps:
       - uses: actions/checkout@v4
+        with:
+          submodules: true
 
       - name: Set up uv
         uses: astral-sh/setup-uv@v7
         with:
           python-version: ${{ matrix.python-version }}
+          enable-cache: true
 
-      - name: Run tests
-        run: uvx nox -s test
+      - name: Install
+        run: uv sync --extra dev --extra aiohttp
+
+      - name: Lint
+        run: |
+          uv run ruff check src tests benchmarks
+          uv run ruff format --check src tests benchmarks
+
+      - name: Type check (ty, generated code included)
+        run: uv run ty check
+
+      - name: Tests
+        run: uv run pytest -q
+
+      - name: Benchmarks (pytest-benchmark; generated method within 15% of hand-written)
+        run: uv run pytest benchmarks -q -p no:cacheprovider --benchmark-min-rounds=20 --benchmark-columns=min,mean,ops
+
+      - name: Wheel contains the generated APIs
+        run: |
+          uv build --wheel
+          uv run python -c "import glob, zipfile; n = [x for x in zipfile.ZipFile(glob.glob('dist/*.whl')[0]).namelist() if x.startswith('amzn_selling_partner/sdk/resources/') and x.endswith('.py')]; assert len(n) > 60, n; print(len(n), 'resource modules in wheel')"
 
   security:
     name: Security checks (Python ${{ matrix.python-version }})
@@ -65,5 +111,5 @@ jobs:
         with:
           python-version: ${{ matrix.python-version }}
 
-      - name: Run security checks
+      - name: Run security checks (bandit + safety)
         run: uvx nox -s security_test

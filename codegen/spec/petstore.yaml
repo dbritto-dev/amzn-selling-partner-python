@@ -1,0 +1,732 @@
+openapi: 3.0.3
+info:
+  title: Petstore
+  version: 1.0.0
+servers:
+  - url: https://petstore.example.com
+tags:
+  - name: PetstoreV3
+  - name: PetstoreV2
+paths:
+  /v3/pets:
+    get:
+      operationId: listPets
+      tags:
+        - PetstoreV3
+      summary: List pets
+      description: |
+        Paginated list.
+
+        | Rate (requests per second) | Burst |
+        | ---- | ---- |
+        | 2 | 10 |
+      parameters:
+        - name: limit
+          in: query
+          schema:
+            type: integer
+            format: int32
+            maximum: 100
+        - name: tags
+          in: query
+          schema:
+            type: array
+            items:
+              type: string
+          style: form
+          explode: true
+        - name: status
+          in: query
+          schema:
+            $ref: "#/components/schemas/petstore_v3:Status"
+        - name: nextToken
+          in: query
+          schema:
+            type: string
+        - name: X-Request-Id
+          in: header
+          schema:
+            type: string
+      responses:
+        "200":
+          description: ok
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/petstore_v3:PetList"
+        default:
+          description: error
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/petstore_v3:Error"
+    post:
+      operationId: createPet
+      tags:
+        - PetstoreV3
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/petstore_v3:NewPet"
+      responses:
+        "201":
+          description: created
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/petstore_v3:Pet"
+        "400":
+          description: bad
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/petstore_v3:Error"
+  /v3/pets/{petId}:
+    parameters:
+      - name: petId
+        in: path
+        required: true
+        schema:
+          type: integer
+          format: int64
+    get:
+      operationId: getPet
+      tags:
+        - PetstoreV3
+      parameters:
+        - name: include
+          in: query
+          schema:
+            type: array
+            items:
+              type: string
+          style: form
+          explode: false
+      responses:
+        "200":
+          description: ok
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/petstore_v3:Pet"
+        "404":
+          description: missing
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/petstore_v3:Error"
+    delete:
+      operationId: deletePet
+      tags:
+        - PetstoreV3
+      responses:
+        "204":
+          description: gone
+  /v3/pets/{petId}/photo:
+    put:
+      operationId: uploadPhoto
+      tags:
+        - PetstoreV3
+      parameters:
+        - name: petId
+          in: path
+          required: true
+          schema:
+            type: integer
+      requestBody:
+        required: true
+        content:
+          application/octet-stream:
+            schema:
+              type: string
+              format: binary
+      responses:
+        "200":
+          description: ok
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/petstore_v3:Pet"
+  /v3/animals:
+    get:
+      operationId: listAnimals
+      tags:
+        - PetstoreV3
+      parameters:
+        - name: ids
+          in: query
+          schema:
+            type: array
+            items:
+              type: integer
+          style: pipeDelimited
+        - name: since
+          in: query
+          schema:
+            type: string
+            format: date-time
+      responses:
+        "200":
+          description: ok
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/petstore_v3:Animal"
+  /v3/tree:
+    get:
+      operationId: getTree
+      tags:
+        - PetstoreV3
+      responses:
+        "200":
+          description: ok
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/petstore_v3:Node"
+  /v3/audit:
+    get:
+      operationId: listAudit
+      tags:
+        - PetstoreV3
+      parameters:
+        - name: nextToken
+          in: query
+          schema:
+            type: string
+      responses:
+        "200":
+          description: "ambiguous: two arrays"
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/petstore_v3:AuditPage"
+  /v3/events:
+    get:
+      operationId: streamEvents
+      tags:
+        - PetstoreV3
+      responses:
+        "200":
+          description: sse
+          content:
+            text/event-stream:
+              schema:
+                type: string
+  /v3/labels/{label}:
+    get:
+      operationId: getByLabel
+      tags:
+        - PetstoreV3
+      parameters:
+        - name: label
+          in: path
+          required: true
+          style: label
+          schema:
+            type: string
+        - name: filter
+          in: query
+          style: deepObject
+          explode: true
+          schema:
+            type: object
+            additionalProperties:
+              type: string
+      responses:
+        "200":
+          description: ok
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/petstore_v3:Pet"
+  /v2/pets:
+    get:
+      operationId: listPets
+      tags:
+        - PetstoreV2
+      description: |
+        List pets.
+
+        **Usage Plan:**
+
+        | Rate (requests per second) | Burst |
+        | ---- | ---- |
+        | 0.5 | 5 |
+      parameters:
+        - name: limit
+          in: query
+          schema:
+            type: integer
+            format: int32
+        - name: Tags
+          in: query
+          style: form
+          explode: false
+          schema:
+            type: array
+            items:
+              type: string
+        - name: Ids
+          in: query
+          explode: true
+          schema:
+            type: array
+            items:
+              type: integer
+        - name: Codes
+          in: query
+          style: pipeDelimited
+          schema:
+            type: array
+            items:
+              type: string
+        - name: NextToken
+          in: query
+          schema:
+            type: string
+      responses:
+        "200":
+          description: ok
+          headers:
+            x-request-id:
+              schema:
+                type: string
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/petstore_v2:GetPetsResponse"
+        "400":
+          description: bad
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/petstore_v2:ErrorList"
+    post:
+      operationId: createPet
+      tags:
+        - PetstoreV2
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/petstore_v2:NewPet"
+        required: true
+      responses:
+        "201":
+          description: created
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/petstore_v2:Pet"
+        "400":
+          description: bad
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/petstore_v2:ErrorList"
+  /v2/pets/{petId}:
+    get:
+      operationId: getPet
+      tags:
+        - PetstoreV2
+      parameters:
+        - $ref: "#/components/parameters/petstore_v2:petId"
+      responses:
+        "200":
+          description: ok
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/petstore_v2:Pet"
+        "404":
+          $ref: "#/components/responses/petstore_v2:NotFound"
+    delete:
+      operationId: deletePet
+      tags:
+        - PetstoreV2
+      parameters:
+        - $ref: "#/components/parameters/petstore_v2:petId"
+      responses:
+        "204":
+          description: gone
+  /v2/pets/{petId}/photo:
+    post:
+      operationId: uploadPhoto
+      tags:
+        - PetstoreV2
+      parameters:
+        - $ref: "#/components/parameters/petstore_v2:petId"
+      requestBody:
+        content:
+          multipart/form-data:
+            schema:
+              type: object
+              properties:
+                file:
+                  type: string
+                  format: binary
+                caption:
+                  type: string
+              required:
+                - file
+        required: true
+      responses:
+        "200":
+          description: ok
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/petstore_v2:Pet"
+  /v2/orders:
+    get:
+      operationId: getOrders
+      tags:
+        - PetstoreV2
+      parameters:
+        - name: NextToken
+          in: query
+          schema:
+            type: string
+        - name: CreatedAfter
+          in: query
+          required: true
+          schema:
+            type: string
+      responses:
+        "200":
+          description: ok
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/petstore_v2:GetOrdersResponse"
+  /v2/report:
+    get:
+      operationId: getReport
+      tags:
+        - PetstoreV2
+      responses:
+        "200":
+          description: text
+          content:
+            text/plain:
+              schema:
+                type: string
+components:
+  schemas:
+    petstore_v3:Status:
+      type: string
+      enum:
+        - available
+        - pending
+        - sold
+    petstore_v3:Pet:
+      type: object
+      required:
+        - id
+        - name
+      properties:
+        id:
+          type: integer
+          format: int64
+        name:
+          type: string
+        tag:
+          type:
+            - string
+            - "null"
+        status:
+          $ref: "#/components/schemas/petstore_v3:Status"
+        tags:
+          type: array
+          items:
+            type: string
+        createdAt:
+          type: string
+          format: date-time
+        birthday:
+          type: string
+          format: date
+        photo:
+          type: string
+          format: byte
+        metadata:
+          type: object
+          additionalProperties:
+            type: string
+        owner:
+          oneOf:
+            - $ref: "#/components/schemas/petstore_v3:Owner"
+            - type: "null"
+        category:
+          $ref: "#/components/schemas/petstore_v3:Category"
+        weight:
+          type: number
+          format: double
+        schema:
+          type: string
+          description: collides with BaseModel attribute
+    petstore_v3:NewPet:
+      type: object
+      required:
+        - name
+      properties:
+        name:
+          type: string
+        tag:
+          type: string
+        status:
+          $ref: "#/components/schemas/petstore_v3:Status"
+    petstore_v3:Owner:
+      type: object
+      required:
+        - name
+      properties:
+        name:
+          type: string
+        email:
+          type: string
+          format: email
+    petstore_v3:Category:
+      type: object
+      properties:
+        name:
+          type: string
+        parent:
+          $ref: "#/components/schemas/petstore_v3:Category"
+    petstore_v3:Node:
+      type: object
+      required:
+        - value
+      properties:
+        value:
+          type: string
+        children:
+          type: array
+          items:
+            $ref: "#/components/schemas/petstore_v3:Node"
+    petstore_v3:PetList:
+      type: object
+      required:
+        - items
+      properties:
+        items:
+          type: array
+          items:
+            $ref: "#/components/schemas/petstore_v3:Pet"
+        nextToken:
+          type: string
+        total:
+          type: integer
+    petstore_v3:AuditPage:
+      type: object
+      properties:
+        events:
+          type: array
+          items:
+            type: string
+        warnings:
+          type: array
+          items:
+            type: string
+        nextToken:
+          type: string
+    petstore_v3:Animal:
+      oneOf:
+        - $ref: "#/components/schemas/petstore_v3:Dog"
+        - $ref: "#/components/schemas/petstore_v3:Cat"
+      discriminator:
+        propertyName: kind
+        mapping:
+          dog: "#/components/schemas/petstore_v3:Dog"
+          cat: "#/components/schemas/petstore_v3:Cat"
+    petstore_v3:Dog:
+      type: object
+      required:
+        - kind
+        - barks
+      properties:
+        kind:
+          type: string
+          const: dog
+        barks:
+          type: boolean
+    petstore_v3:Cat:
+      type: object
+      required:
+        - kind
+        - lives
+      properties:
+        kind:
+          type: string
+          const: cat
+        lives:
+          type: integer
+    petstore_v3:Base:
+      type: object
+      properties:
+        id:
+          type: string
+    petstore_v3:Derived:
+      allOf:
+        - $ref: "#/components/schemas/petstore_v3:Base"
+        - type: object
+          required:
+            - extra
+          properties:
+            extra:
+              type: string
+    petstore_v3:Error:
+      type: object
+      required:
+        - code
+        - message
+      properties:
+        code:
+          type: string
+        message:
+          type: string
+        details:
+          type: object
+    petstore_v2:Pet:
+      type: object
+      required:
+        - Id
+        - Name
+      properties:
+        Id:
+          type: integer
+          format: int64
+        Name:
+          type: string
+        Tag:
+          type: string
+          nullable: true
+        Status:
+          type: string
+          enum:
+            - available
+            - pending
+            - sold
+        CreatedAt:
+          type: string
+          format: date-time
+        Price:
+          $ref: "#/components/schemas/petstore_v2:Decimal"
+        Parent:
+          $ref: "#/components/schemas/petstore_v2:Pet"
+        Attributes:
+          type: object
+          additionalProperties: true
+        Photo:
+          type: string
+          format: byte
+    petstore_v2:Decimal:
+      type: string
+      description: A decimal as string
+    petstore_v2:NewPet:
+      type: object
+      required:
+        - Name
+      properties:
+        Name:
+          type: string
+        Tag:
+          type: string
+    petstore_v2:PetList:
+      type: array
+      items:
+        $ref: "#/components/schemas/petstore_v2:Pet"
+    petstore_v2:GetPetsResponse:
+      type: object
+      properties:
+        payload:
+          $ref: "#/components/schemas/petstore_v2:PetsPayload"
+        errors:
+          $ref: "#/components/schemas/petstore_v2:ErrorList"
+    petstore_v2:PetsPayload:
+      type: object
+      required:
+        - Pets
+      properties:
+        Pets:
+          $ref: "#/components/schemas/petstore_v2:PetList"
+        NextToken:
+          type: string
+    petstore_v2:GetOrdersResponse:
+      type: object
+      properties:
+        payload:
+          $ref: "#/components/schemas/petstore_v2:OrdersPayload"
+        errors:
+          $ref: "#/components/schemas/petstore_v2:ErrorList"
+    petstore_v2:OrdersPayload:
+      type: object
+      properties:
+        pagination:
+          $ref: "#/components/schemas/petstore_v2:Pagination"
+        orders:
+          type: array
+          items:
+            $ref: "#/components/schemas/petstore_v2:Order"
+    petstore_v2:Pagination:
+      type: object
+      properties:
+        nextToken:
+          type: string
+    petstore_v2:Order:
+      type: object
+      required:
+        - orderId
+      properties:
+        orderId:
+          type: string
+        total:
+          $ref: "#/components/schemas/petstore_v2:Money"
+    petstore_v2:Money:
+      type: object
+      properties:
+        currencyCode:
+          type: string
+        amount:
+          $ref: "#/components/schemas/petstore_v2:Decimal"
+    petstore_v2:Error:
+      type: object
+      required:
+        - code
+        - message
+      properties:
+        code:
+          type: string
+        message:
+          type: string
+        details:
+          type: string
+    petstore_v2:ErrorList:
+      type: object
+      required:
+        - errors
+      properties:
+        errors:
+          type: array
+          items:
+            $ref: "#/components/schemas/petstore_v2:Error"
+  parameters:
+    petstore_v2:petId:
+      name: petId
+      in: path
+      required: true
+      schema:
+        type: integer
+        format: int64
+  responses:
+    petstore_v2:NotFound:
+      description: missing
+      content:
+        application/json:
+          schema:
+            $ref: "#/components/schemas/petstore_v2:ErrorList"

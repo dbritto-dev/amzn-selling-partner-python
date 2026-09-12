@@ -1,169 +1,301 @@
-# Amazon Selling Partner Python Library
+# Amazon Selling Partner API for Python
 
-The Amazon Selling Partner Python library provides convenient access to the Amazon Selling Partner
-API from applications written in the Python language. It includes a pre-defined set of classes for
-API resources and it is compatible with the latest versions of the Amazon Selling Partner API.
+A client for the [Amazon Selling Partner API](https://developer-docs.amazon.com/sp-api)
+generated from Amazon's API models by an [oagen](https://github.com/workos/oagen)
+emitter (`codegen/`), the way the WorkOS tutorial
+[How to build a custom SDK generator with oagen](https://workos.com/blog/build-a-custom-sdk-generator-with-oagen)
+describes: the spec is the source of truth, `amzn_selling_partner/sdk/` is the
+generated SDK (pydantic v2 models, one resource class per API version, an
+async client and a sync one with the same surface, the HTTP layer with its
+retry and throttling policy, the exceptions), committed to the repository so
+installing the package pulls in no generator. The examples below use the
+async client, `AsyncSellingPartner`; `SellingPartner` is the synchronous
+twin with identical resources and methods (see [Sync client](#sync-client)). Everything Amazon-specific that is not in the specs
+(regions, Login-with-Amazon auth with Restricted Data Tokens, document helpers,
+notification models) lives in `amzn_selling_partner.plugins.amazon_spapi`.
 
-- **Discussions:** https://github.com/dbritto-dev/amzn-selling-partner-python/discussions
 - **Bug reports:** https://github.com/dbritto-dev/amzn-selling-partner-python/issues
-- **Source code:** https://github.com/dbritto-dev/amzn-selling-partner-python
-
-# Documentation
-
-- Tutorial: https://developer-docs.amazon.com/sp-api/docs/tutorial-create-a-private-selling-partner-api-application
-- AWS Lambda Demo: https://github.com/aws-quickstart/quickstart-amazon-selling-partner-api/blob/main/functions/source/ExampleLambda/lambda_function.py
-- Get AWS secret keys: https://docs.aws.amazon.com/powershell/latest/userguide/pstools-appendix-sign-up.html
-- Reports Tutorial: https://developer-docs.amazon.com/sp-api/docs/reports-api-v2021-06-30-tutorial-request-a-report
-- Report Types for Vendor: https://developer-docs.amazon.com/sp-api/docs/report-type-values-analytics#vendor-retail-analytics-reports
-- Market Place Ids: https://developer-docs.amazon.com/sp-api/docs/marketplace-ids
-- API Endpoints and Regions: https://developer-docs.amazon.com/sp-api/docs/sp-api-endpoints
-- API Endpoints and Regions (Sandbox): https://developer-docs.amazon.com/sp-api/docs/the-selling-partner-api-sandbox
+- **Migration from 0.1.x:** [MIGRATION.md](MIGRATION.md)
+- **Updating the bundled specs:** [docs/UPDATING_SPECS.md](docs/UPDATING_SPECS.md)
+- **Design notes:** [docs/PLAN.md](docs/PLAN.md)
 
 ## Installation
 
-### Install with uv
-
 ```sh
-uv sync
+pip install amzn-selling-partner
+pip install "amzn-selling-partner[aiohttp]"
 ```
 
-Install the development tools with:
+The package depends on `httpx2` and `pydantic` only; the `aiohttp` extra adds
+the aiohttp transport for `DefaultAioHttpClient`. Python 3.10 or later.
 
-```sh
-uv sync --extra dev
-```
+## Authentication
 
-### Install from a GitHub private repo
-
-```sh
-TOKEN="<token>" pip install git+https://dbritto-dev:$TOKEN@github.com/dbritto-dev/amzn-selling-partner-python.git
-```
-
-### Install from source
-
-```sh
-uv pip install .
-```
-
-## Requirements
-
-- Python 3.10 or later (PyPy supported)
-
-## Usage
-
-This library needs to be configure with your account's secret keys: Selling Partner Keys and AWS
-Keys.
-
-Set up the next environment variables. We can use [dotenv](https://pypi.org/project/python-dotenv/)
-to load them locally.
-
-```
-# Fetch "client id" and "client secret" from your application in Seller Central
-# by clicking on "View" in front of your application ID.
-SELLING_PARTNER_APP_CLIENT_ID=
-SELLING_PARTNER_APP_CLIENT_SECRET=
-# In order to call an API for a seller, you will need to paste the
-# refresh_token for that particular seller below. You can get refresh token for
-# a seller using OAuth flow. Otherwise, you can self-authorize your application
-# by clicking on "Authorize" from the dropdown menu in front of your
-# application ID in seller central. Once you click on "Generate Refresh Token",
-# you would be able to receive a refresh token and paste it below.
-SELLING_PARTNER_APP_REFRESH_TOKEN=
-# Pull out "access key ID" and "secret access key" from IAM console by cliking on
-# "Users" navigation menu option and opening "Security Credentials" tab.
-AWS_ACCESS_KEY_ID=
-AWS_SECRET_ACCESS_KEY=
-# This role is necessary to create temporary credentials to the call Selling Partner API, to read
-# more about which policies and resources are needed for this role, here's the link (click on ->
-# `Select to expand the manual steps to create and configure IAM policies.` to read more about that)
-# https://developer-docs.amazon.com/sp-api/docs/tutorial-create-a-private-selling-partner-api-application#step-3-create-and-configure-iam-resources
-# The role session name is just the label that we set up for those temporary credentials
-AWS_SELLING_PARTNER_ROLE=
-AWS_SELLING_PARTNER_ROLE_SESSION_NAME=
-```
+Create an application in Seller Central and authorize it for the seller; the
+client needs the LWA client id, client secret and the seller's refresh token.
+They can be passed explicitly or read from the environment
+(`AMZN_SELLING_PARTNER_CLIENT_ID`, `AMZN_SELLING_PARTNER_CLIENT_SECRET`, `AMZN_SELLING_PARTNER_REFRESH_TOKEN`, or the old
+`SELLING_PARTNER_APP_*` names).
 
 ```python
-import amzn_selling_partner.vendor as sp
+from amzn_selling_partner import AsyncSellingPartner
 
-sp_vendor_orders_client = sp.vendor.orders.Client()
-
-purchase_orders = sp_vendor_orders_client.get_purchase_orders()
-print(purchase_orders)
-
-purchase_order = sp_vendor_orders_client.get_purchase_order("<purchase-order-number>")
-print(purchase_order)
-```
-
-### Handling exceptions
-
-Unsuccessful requests raise exceptions. The errors should handled as `Requests` library exceptions.
-To read more about that: https://requests.readthedocs.io/en/latest/user/quickstart/#errors-and-exceptions
-
-### Per-client configuration
-
-Configure individual clients with keyword arguments. For instance, you can make a request with a
-specific [selling partner region](https://developer-docs.amazon.com/sp-api/docs/sp-api-endpoints) or
-use sandbox.
-
-```python
-import amzn_selling_partner.vendor as sp
-
-na_sp_vendor_orders_client = sp.vendor.orders.Client(
-    selling_partner_region=client.SellingPartnerRegion.NORTH_AMERICA
-)
-
-eu_sp_vendor_orders_client = sp.vendor.orders.Client(
-    selling_partner_region=client.SellingPartnerRegion.EUROPE
-)
-
-fe_sp_vendor_orders_client = sp.vendor.orders.Client(
-    selling_partner_region=client.SellingPartnerRegion.FAR_EAST
+client = AsyncSellingPartner(
+    client_id="amzn1.application-oa2-client....",
+    client_secret="...",
+    refresh_token="Atzr|...",
 )
 ```
 
-### Enable Sandbox
+Access tokens are cached and refreshed once per process (single-flight);
+grantless operations use the `client_credentials` grant with the right scope,
+and operations that require a Restricted Data Token obtain one through the
+Tokens API automatically. Operations that return PII only on request take an
+explicit opt-in:
 
 ```python
-import amzn_selling_partner.vendor as sp
+from amzn_selling_partner import Marketplace
+from amzn_selling_partner.plugins.amazon_spapi import with_rdt
 
-sp_vendor_orders_client = sp.vendor.orders.Client(sandbox=True)
+orders = await client.orders_v0.list_orders(
+    marketplace_ids=[Marketplace.US],
+    created_after="2024-01-01T00:00:00Z",
+    request_options=with_rdt("buyerInfo", "shippingAddress"),
+)
 ```
 
-> **Note:** some endpoints are not available on sandbox. To read more about that: https://developer-docs.amazon.com/sp-api/docs/the-selling-partner-api-sandbox
+A custom token store (for example Redis) is any object with `get(key)` and
+`set(key, token)`: `AsyncSellingPartner(token_store=MyStore())`.
+
+## Region, marketplace and sandbox
+
+```python
+from amzn_selling_partner import AsyncSellingPartner, Marketplace, Region
+
+AsyncSellingPartner(region=Region.EU)
+AsyncSellingPartner(marketplace=Marketplace.DE)
+AsyncSellingPartner(region=Region.NA, sandbox=True)
+```
+
+`Region` is `NA` (the default), `EU` or `FE`; a `marketplace` implies its
+region; `sandbox=True` selects the sandbox endpoint of the region.
+
+`Marketplace` is a `str` enum of marketplace ids (`Marketplace.US == "ATVPDKIKX0DER"`)
+with `.region` and `.country_code`; pass its members wherever an operation
+takes marketplace ids (`marketplace_ids=[Marketplace.US, Marketplace.CA]`).
+
+## Calling operations
+
+Every API version is a resource on the client (`client.orders_v0`,
+`client.orders_v2026_01_01`); `client.orders` is the newest version. Every
+method is a coroutine named after the operation as oagen derives it
+(`list_orders`, `get_order`, `create_feed`); path parameters, the request body
+and required parameters are positional (keywords work too), optional
+parameters are keyword-only, all named after the spec's parameters in
+snake_case; request bodies are a model from `amzn_selling_partner.sdk.models`
+(a plain dict with the wire names is accepted too). Every enumerated value in
+the specs is a `str` enum in the same package (`OrderOrderStatus.SHIPPED`,
+`FeedProcessingStatus.DONE`), usable as arguments and returned in responses;
+`Marketplace` covers the marketplace ids. `amzn_selling_partner.sdk.resources.OPERATIONS`
+maps Amazon's operationIds (`getOrders`) to the method names.
+
+```python
+import asyncio
+from amzn_selling_partner import AsyncSellingPartner, Marketplace
+from amzn_selling_partner.sdk.models.feeds_v2021_06_30 import CreateFeedSpecification
+from amzn_selling_partner.sdk.models.orders_v0 import OrderOrderStatus
+
+
+async def main() -> None:
+    async with AsyncSellingPartner() as client:
+        order = await client.orders_v0.get_order("123-1234567-1234567")
+        if order.payload.order_status is OrderOrderStatus.SHIPPED:
+            print("shipped")
+
+        item = await client.listings_items.get_listings_item(
+            seller_id="A1SELLER", sku="MY-SKU", marketplace_ids=[Marketplace.US]
+        )
+
+        await client.feeds.create_feed(
+            CreateFeedSpecification(
+                feed_type="POST_PRODUCT_DATA",
+                marketplace_ids=[Marketplace.US],
+                input_feed_document_id="...",
+            )
+        )
+
+
+asyncio.run(main())
+```
+
+The async client runs on httpx2's own transport; aiohttp is opted into by
+passing a client on its transport (the `aiohttp` extra):
+`AsyncSellingPartner(http_client=DefaultAioHttpClient())`. `async with` closes
+the connection pool, `await client.aclose()` does the same by hand.
+
+Responses are frozen pydantic models generated from the spec
+(`amzn_selling_partner.sdk.models.orders_v0.Order`); enums are `str` enums.
+Errors raise `amzn_selling_partner.APIStatusError` subclasses
+(`RateLimitExceededError`, `NotFoundError`, `AuthenticationError`, ...) with
+`.status_code`, `.body` (the decoded error list), `.request_id` and `.response`.
+
+### Sync client
+
+`SellingPartner` is the synchronous client: the same resources, method names,
+arguments, models and errors, without `await`; `iter_<method>` returns a plain
+iterator and `with` / `close()` release the pool. Both are generated from the
+same plan per operation, so they never drift apart.
+
+```python
+from amzn_selling_partner import Marketplace, SellingPartner
+
+with SellingPartner() as client:
+    order = client.orders_v0.get_order("123-1234567-1234567")
+    for order in client.orders_v0.iter_list_orders(marketplace_ids=[Marketplace.US]):
+        ...
+```
+
+Every option below applies to both clients.
+
+### Pagination
+
+Every paginated operation has an `iter_<method>` twin that yields the items
+of every page, following the API's `nextToken` (and dropping the other
+parameters on the next page where Amazon requires it):
+
+```python
+from amzn_selling_partner import Marketplace
+from amzn_selling_partner.sdk.models.orders_v0 import OrderOrderStatus
+
+page = await client.orders_v0.list_orders(
+    marketplace_ids=[Marketplace.US], created_after="2024-01-01T00:00:00Z", order_statuses=[OrderOrderStatus.UNSHIPPED]
+)
+page.payload.orders
+page.payload.next_token
+
+async for order in client.orders_v0.iter_list_orders(
+    marketplace_ids=[Marketplace.US], created_after="2024-01-01T00:00:00Z", order_statuses=[OrderOrderStatus.UNSHIPPED]
+):
+    ...
+```
+
+Every page fetch goes through the normal request path (auth, retries,
+throttling).
+
+### Raw mode
+
+`RequestOptions(raw=True)` returns the decoded JSON (`dict`/`list`) without building models:
+
+```python
+from amzn_selling_partner import RequestOptions
+
+data = await client.orders_v0.get_order("...", request_options=RequestOptions(raw=True))
+data["payload"]["OrderStatus"]
+```
+
+### Throttling and retries
+
+The HTTP layer is httpx2: connection pooling, timeouts, proxies, TLS, URL and
+query encoding and connection retries are its own (`httpx2.HTTPTransport(retries=...)`).
+On top, each operation has a token bucket seeded from the rate/burst table in
+the Amazon documentation, and 408, 429 and 5xx responses are retried with
+`Retry-After` (or Amazon's `x-amzn-RateLimit-Limit` hint) or exponential
+backoff. That policy is generated into `sdk/_http.py` from
+`sdkBehavior` in `codegen/oagen.config.ts`. Tune with
+`AsyncSellingPartner(max_retries=..., throttle=False, timeout=httpx2.Timeout(...))`
+or per call with `request_options=RequestOptions(timeout=5.0, max_retries=0)`;
+`client.with_options(max_retries=0)` derives a client with some options changed
+that shares the connection pool; `AMZN_SELLING_PARTNER_TIMEOUT` overrides the
+default timeout.
+
+### Documents and notifications
+
+```python
+content = await client.documents.download_report("amzn1.tortuga.4...")
+await client.documents.download_report("amzn1.tortuga.4...", path="report.tsv")
+feed = await client.documents.create_feed("POST_PRODUCT_DATA", [Marketplace.US], xml, content_type="text/xml; charset=UTF-8")
+
+message = client.notifications_models.parse(sqs_body)
+```
+
+`download_report` returns the decompressed bytes, or streams to `path` when
+given; `create_feed` uploads the document and creates the feed in one call;
+`parse` turns an SQS message body into the typed notification model without
+any I/O.
+
+### Injecting a custom HTTP client or transport
+
+The SDK builds its httpx2 client through three factories, exported from the
+package: `DefaultHttpxClient` and `DefaultAsyncHttpxClient` (httpx2's own
+transport, the default) and `DefaultAioHttpClient` (the aiohttp transport, with
+the `aiohttp` extra). Build one with your options, or any httpx2 client, and
+pass it as `http_client=`; it is used as is (its transport, proxies, event
+hooks, auth, default headers and cookies apply; the base URL, timeout and
+retries are the SDK's) and is yours to close.
+
+```python
+import httpx2
+from amzn_selling_partner import AsyncSellingPartner, DefaultAioHttpClient, DefaultAsyncHttpxClient, DefaultHttpxClient, SellingPartner
+
+client = AsyncSellingPartner(http_client=DefaultAsyncHttpxClient(proxy="http://proxy:3128", retries=0))
+client = AsyncSellingPartner(http_client=DefaultAioHttpClient(proxy="http://proxy:3128"))
+client = AsyncSellingPartner(http_client=httpx2.AsyncClient(event_hooks=hooks))
+client = AsyncSellingPartner(transport=httpx2.MockTransport(handler))
+client = SellingPartner(http_client=DefaultHttpxClient(limits=httpx2.Limits(max_connections=100), http2=True))
+```
+
+`transport=` is the short form for a transport alone (a `MockTransport` is how
+the tests run without a network), and any httpx2 transport option (`limits`,
+`verify`, `proxy`, `http2`, ...) passed to the client constructor reaches the
+default factory.
+
+## Using other APIs
+
+The emitter is not tied to Amazon: pointed at any OpenAPI 3 document it
+produces the same kind of standalone SDK (models, resources, HTTP client,
+errors). `tests/petstore_sdk` is generated from the petstore fixtures and
+`tests/fixtures/tasks-api.yml` is the spec from the oagen tutorial:
+
+```sh
+cd codegen && npm ci --ignore-scripts && npm run build
+npx oagen generate --lang python --spec ../tests/fixtures/tasks-api.yml --namespace TasksClient --output ../tasks_sdk
+```
+
+`tasks_sdk/client.py` then has `AsyncTasksClient` / `TasksClient`. Amazon's
+Swagger 2.0 files go through `npm run spec:build` first, which writes the one
+OpenAPI 3 document the generator runs against, `codegen/spec/open-api-spec.yaml`
+(committed, like `spec/open-api-spec.yaml` in
+[workos/openapi-spec](https://github.com/workos/openapi-spec)). See
+[docs/UPDATING_SPECS.md](docs/UPDATING_SPECS.md) for the generator.
 
 ## Development
 
-### Install from source
-
 ```sh
-uv sync --extra dev
+git clone --recurse-submodules https://github.com/dbritto-dev/amzn-selling-partner-python
+uv sync --extra dev --extra aiohttp
+uv run pytest
+uv run ty check
+uv run pytest benchmarks
+uvx nox -s security_test
+uv run python -m amzn_selling_partner.sandbox_tests
+
+cd codegen && npm ci --ignore-scripts && npm run generate
+cd codegen && npm test && npm run typecheck
 ```
 
-### Type checking
+ruff is the only linter and formatter, ty the only type checker. Every push
+to `main` releases a minor version unless the branch committed `major`,
+`minor` or `patch` to `.github/release-bump`; the release commit removes the
+file again.
 
-```sh
-uv run ty check src/amzn_selling_partner
-```
+ty type-checks the generated code too; the benchmarks assert the
+generated method stays within 15 % of an equivalent hand-written `httpx2` call; the security
+session runs bandit and safety as in CI; the sandbox runner sends every
+operation its embedded examples. The last two lines regenerate the SDK after a
+spec bump (Node 24) and run the generator's own vitest suite and type check.
 
-### Lint and format
-
-```sh
-uv run nox -s lint
-```
-
-### Test
-
-```sh
-uv run nox -s test
-```
-
-### Security checks
-
-```sh
-uv run nox -s security_test
-```
-
-### CI
-
-Lint, tests, type checking, and security checks run automatically on every push and pull request
-via [GitHub Actions](.github/workflows/ci.yml), across Python 3.10 through 3.13.
+`codegen/spec/*.yaml`, `src/amzn_selling_partner/sdk` and `tests/petstore_sdk`
+are generated; edit the generator (`codegen/src/python`), the policy
+(`codegen/src/policy`) or the spec build (`codegen/src/spec`) instead and commit
+the regenerated files (CI fails on drift). See
+[docs/UPDATING_SPECS.md](docs/UPDATING_SPECS.md).

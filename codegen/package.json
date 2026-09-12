@@ -1,0 +1,31 @@
+{
+  "name": "amzn-selling-partner-codegen",
+  "version": "0.0.0",
+  "private": true,
+  "description": "oagen-based generator for the amzn_selling_partner Python package",
+  "type": "module",
+  "scripts": {
+    "build": "tsup",
+    "typecheck": "tsc --noEmit",
+    "test": "vitest run",
+    "test:watch": "vitest",
+    "spec:build": "tsx src/spec/build.ts",
+    "sdk:parse": "oagen parse --spec spec/open-api-spec.yaml",
+    "sdk:resolve": "oagen resolve --spec spec/open-api-spec.yaml",
+    "sdk:diff": "oagen diff --new spec/open-api-spec.yaml",
+    "sdk:generate": "rm -rf ../src/amzn_selling_partner/sdk && oagen generate --lang python --spec spec/open-api-spec.yaml --namespace Client --output ../src/amzn_selling_partner/sdk",
+    "generate": "npm run spec:build && npm run sdk:generate && npm run spec:build -- --petstore && rm -rf ../tests/petstore_sdk && oagen generate --lang python --spec spec/petstore.yaml --namespace Client --output ../tests/petstore_sdk"
+  },
+  "dependencies": {
+    "@workos/oagen": "0.30.2",
+    "swagger2openapi": "7.0.8",
+    "tsx": "^4.20.0",
+    "typescript": "^5.9.0",
+    "yaml": "^2.9.0"
+  },
+  "devDependencies": {
+    "@types/node": "^22.20.2",
+    "tsup": "^8.5.1",
+    "vitest": "^3.2.7"
+  }
+}
