@@ -3,7 +3,7 @@
  * `schemaNameTransform` and `operationIdTransform`.
  *
  * `transformSpec` is the pre-IR overlay that keeps oagen's parser from losing
- * information present in the Amazon files (docs/PLAN.md):
+ * information present in the Amazon files:
  *
  * 1. Named schemas that are not objects (`OrderList: array of Order`,
  *    `MarketplaceId: string`, bare `oneOf` unions) are inlined at every

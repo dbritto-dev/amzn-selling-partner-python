@@ -12,7 +12,7 @@ The raw model files are read from the git submodule (or
 (``sdk.resources.OPERATIONS``) maps Amazon's operationIds to the methods.
 Usage (CLI)::
 
-    python -m amzn_selling_partner.sandbox_tests orders listings_items   # or no args = all APIs
+    uv run python -m tests.sandbox orders listings_items   # or no args = all APIs
 """
 
 from __future__ import annotations
@@ -21,6 +21,7 @@ import argparse
 import asyncio
 import inspect
 import json
+import keyword
 import logging
 import pathlib
 import sys
@@ -31,16 +32,26 @@ from typing import Any, cast
 import httpx2
 from pydantic import ValidationError
 
-from ._examples import example_from_schema, resolve
-from ._naming import api_version_of, param_name
-from .plugins._amazon.sandbox import sandbox_examples
-from .plugins._amazon.specs import api_naming, default_spec_dir, spec_files
-from .sdk.errors import APIStatusError
-from .sdk.resources import OPERATIONS
+from amzn_selling_partner._naming import api_version_of, snake_case
+from amzn_selling_partner.sdk.errors import APIStatusError
+from amzn_selling_partner.sdk.resources import OPERATIONS
 
-log = logging.getLogger("amzn_selling_partner.sandbox_tests")
+from ._examples import example_from_schema, resolve
+from ._sandbox_examples import sandbox_examples
+from ._specs import api_naming, default_spec_dir, spec_files
+
+log = logging.getLogger("tests.sandbox")
 
 _METHODS = ("get", "put", "post", "delete", "patch", "head", "options")
+_RESERVED = set(keyword.kwlist) | {"match", "case", "type", "self", "request_options", "body", "params", "headers"}
+
+
+def param_name(wire_name: str) -> str:
+    """Keyword argument name of an operation parameter (mirrors ``paramName`` in ``codegen/src/python/naming.ts``)."""
+    s = snake_case(wire_name)
+    if s[:1].isdigit():
+        s = "p" + s
+    return s + "_" if s in _RESERVED else s
 
 
 @dataclass(slots=True, kw_only=True)
@@ -307,7 +318,7 @@ def main(argv: list[str] | None = None) -> int:
     parser.add_argument("-v", "--verbose", action="store_true")
     args = parser.parse_args(argv)
     logging.basicConfig(level=logging.DEBUG if args.verbose else logging.WARNING)
-    from .plugins.amazon_spapi import AsyncSellingPartner, SellingPartner
+    from amzn_selling_partner.plugins.amazon_spapi import AsyncSellingPartner, SellingPartner
 
     def sync_factory(transport: httpx2.MockTransport | None) -> Any:
         return SellingPartner(transport=transport, sandbox=True, throttle=False, max_retries=0, credentials=None)

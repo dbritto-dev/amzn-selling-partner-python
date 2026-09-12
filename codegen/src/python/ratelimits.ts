@@ -1,4 +1,4 @@
-/** Parse the "Rate (requests per second) | Burst" usage-plan tables (docs/PLAN.md §8). */
+/** Parse the "Rate (requests per second) | Burst" usage-plan tables of the operation descriptions. */
 
 export interface RateLimit {
   rate: number;

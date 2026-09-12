@@ -17,7 +17,6 @@ notification models) lives in `amzn_selling_partner.plugins.amazon_spapi`.
 - **Bug reports:** https://github.com/dbritto-dev/amzn-selling-partner-python/issues
 - **Migration from 0.1.x:** [MIGRATION.md](MIGRATION.md)
 - **Updating the bundled specs:** [docs/UPDATING_SPECS.md](docs/UPDATING_SPECS.md)
-- **Design notes:** [docs/PLAN.md](docs/PLAN.md)
 
 ## Installation
 
@@ -277,7 +276,7 @@ uv run pytest
 uv run ty check
 uv run pytest benchmarks
 uvx nox -s security_test
-uv run python -m amzn_selling_partner.sandbox_tests
+uv run python -m tests.sandbox
 
 cd codegen && npm ci --ignore-scripts && npm run generate
 cd codegen && npm test && npm run typecheck

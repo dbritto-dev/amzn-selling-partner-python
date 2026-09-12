@@ -23,20 +23,18 @@ from amzn_selling_partner.plugins.amazon_spapi import (
     Marketplace,
     Region,
     SellingPartner,
-    default_schema_dir,
-    default_spec_dir,
-    is_dynamic_sandbox,
     restricted_for,
-    sandbox_examples,
     unparsed_rate_limits,
     with_rdt,
 )
-from amzn_selling_partner.sandbox_tests import load_documents, raw_operations
 from amzn_selling_partner.sdk._http import REQUEST_ID_HEADER, RequestContext, TokenBucket
 from amzn_selling_partner.sdk.resources import OPERATIONS, SERVICES
 
 from ._amazon_mock import AmazonMock
+from ._sandbox_examples import is_dynamic_sandbox, sandbox_examples
+from ._specs import default_schema_dir, default_spec_dir
 from .conftest import requires_amazon
+from .sandbox import load_documents, raw_operations
 
 pytestmark = requires_amazon
 
@@ -448,7 +446,7 @@ def test_notification_models() -> None:
     assert type(parsed).__name__ == "OrderChangeNotification"
     assert parsed.payload.order_change_notification.amazon_order_id == payload["Payload"]["OrderChangeNotification"]["AmazonOrderId"]
     assert models.model("ListingsItemIssuesChangeNotification_2023-12-13").__name__ == "ListingsItemIssuesChangeNotification_2023_12_13"
-    # Known irregularities in the pinned schemas (see docs/PLAN.md):
+    # Known irregularities in the pinned schemas:
     # - ListingsItemStatusChangeNotification.json's own example says LISTINGS_ITEM_STATUS_CHANGE
     #   while the schema enum says LISTINGS_ITEM_STATUS_CHANGED
     # - ShipmentTrackingMilestoneChangedNotification.json is a dangling "$ref": "#/definitions/Notification";
@@ -486,7 +484,7 @@ def test_sandbox_examples_exposed() -> None:
 
 @pytest.mark.parametrize("api", ["orders", "listings_items"])
 def test_sandbox_runner(api: str) -> None:
-    from amzn_selling_partner import sandbox_tests
+    from . import sandbox
 
     def sync_factory(transport: httpx2.MockTransport | None) -> Any:
         return SellingPartner(transport=transport, sandbox=True, throttle=False, max_retries=0, credentials=None)
@@ -494,7 +492,7 @@ def test_sandbox_runner(api: str) -> None:
     def async_factory(transport: httpx2.MockTransport | None) -> Any:
         return AsyncSellingPartner(transport=transport, sandbox=True, throttle=False, max_retries=0, credentials=None)
 
-    outcomes = sandbox_tests.run(sync_factory, async_factory, [api])
+    outcomes = sandbox.run(sync_factory, async_factory, [api])
     failures = [f"{o.mode} {o.case.module}.{o.case.operation_id}[{o.case.status}]: {o.error}" for o in outcomes if not o.ok]
     ops = {o.case.operation_id for o in outcomes}
     expected = {op_id for (a, _v), doc in load_documents().items() if a == api for op_id in raw_operations(doc)}

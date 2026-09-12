@@ -15,8 +15,7 @@ from petstore_sdk.client import AsyncClient, Client
 from petstore_sdk.models import petstore_v3 as m
 from petstore_sdk.resources import OPERATIONS, SERVICES
 
-from amzn_selling_partner import sandbox_tests
-
+from . import sandbox
 from .conftest import OAS31, SWAGGER2
 
 BASE = "https://api.example.com"
@@ -38,10 +37,10 @@ def test_every_operation(key: str, mode: str) -> None:
     module, _, operation_id = key.partition(".")
     method, http_method, *_rest = OPERATIONS[key]
     document = DOCS[module]
-    raw_op = sandbox_tests.raw_operations(document)[operation_id]
+    raw_op = sandbox.raw_operations(document)[operation_id]
     probe = Client(base_url=BASE)
     fn = getattr(getattr(probe, module), method)
-    cases = sandbox_tests.cases_for(fn, raw_op, document, module, operation_id, method)
+    cases = sandbox.cases_for(fn, raw_op, document, module, operation_id, method)
     assert cases, "no example could be derived"
 
     def factory(transport: httpx2.MockTransport | None) -> Any:
@@ -49,7 +48,7 @@ def test_every_operation(key: str, mode: str) -> None:
         return cls(base_url=BASE, transport=transport, max_retries=0)
 
     for case in cases:
-        outcome = sandbox_tests.run_case(factory, case, http_method, mode=mode)
+        outcome = sandbox.run_case(factory, case, http_method, mode=mode)
         assert outcome.ok, outcome.error
 
 

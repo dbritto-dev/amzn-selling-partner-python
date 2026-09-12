@@ -1,7 +1,7 @@
 """Minimal example values derived from raw (Swagger 2.0 / OpenAPI 3) schemas.
 
-Used by the sandbox runner for operations that ship no example, and by the
-test-suite to synthesise request arguments and response bodies.
+Used by the sandbox runner (``tests/sandbox.py``) for operations that ship no
+example.
 """
 
 from __future__ import annotations

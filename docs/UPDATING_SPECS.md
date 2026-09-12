@@ -5,7 +5,7 @@ The Amazon models are a git submodule at `spec/selling-partner-api-models`
 package ships the Python that `codegen/` (an [oagen](https://github.com/workos/oagen)
 emitter) generates from them, committed under `src/amzn_selling_partner/sdk`.
 
-All commands run in `codegen/` after `npm ci --ignore-scripts` (Node 22;
+All commands run in `codegen/` after `npm ci --ignore-scripts` (Node 24;
 `--ignore-scripts` skips the native builds of tree-sitter grammars oagen lists
 for its compat extractors, which this project never loads).
 
@@ -58,8 +58,7 @@ Look at:
 
 - **New API files or versions** – the naming rule lives in
   `codegen/src/amazon.ts` (`apiNaming`, `UNVERSIONED`, `ALIASES`) and is
-  mirrored for the sandbox runner in
-  `src/amzn_selling_partner/plugins/_amazon/specs.py`. A file whose stem
+  mirrored for the sandbox runner in `tests/_specs.py`. A file whose stem
   carries no version suffix needs an `UNVERSIONED` entry in both. The
   latest-version alias (`client.orders`) moves automatically.
 - **Rate-limit tables** – `test_rate_limit_counts_across_pinned_specs` pins the
@@ -89,7 +88,7 @@ uv run ruff check src tests benchmarks && uv run ruff format --check src tests b
 uv run ty check
 uv run pytest
 uvx nox -s security_test                              # bandit over the package (generated code included) + safety
-uv run python -m amzn_selling_partner.sandbox_tests   # every operation against its embedded examples
+uv run python -m tests.sandbox                       # every operation against its embedded examples
 ```
 
 bandit runs over the generated code too: the emitter marks the three kinds of
@@ -108,8 +107,8 @@ python`, built the way the WorkOS tutorial
 describes and organised like
 [workos/openapi-spec](https://github.com/workos/openapi-spec): the spec in
 `spec/`, the resolution policy in `src/policy/` (operation hints, mount rules,
-transforms, consumed by a thin `oagen.config.ts`), the `sdk:*` scripts wrapping
-the `oagen` CLI (`scripts/`), the emitter in `src/python/`. The tutorial's own
+transforms, consumed by a thin `oagen.config.ts`), the `sdk:*` npm scripts
+wrapping the `oagen` CLI, the emitter in `src/python/`. The tutorial's own
 spec is checked in as `tests/fixtures/tasks-api.yml`, so every step can be
 reproduced here:
 

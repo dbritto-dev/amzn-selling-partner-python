@@ -30,7 +30,7 @@ function collectRefs(node: unknown, out: Set<string>): void {
 }
 
 /**
- * Repair the two irregularities found in the pinned models (docs/PLAN.md §10):
+ * Repair the two irregularities found in the pinned models:
  * `#ref` instead of `$ref`, and references to definitions that do not exist
  * (replaced by an empty schema, with a warning).
  */

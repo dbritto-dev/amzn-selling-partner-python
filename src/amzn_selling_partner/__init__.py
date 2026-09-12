@@ -9,9 +9,7 @@ expose one resource per API version (``await client.orders_v0.list_orders(...)``
 
 ``AsyncSellingPartner`` / ``SellingPartner`` (``plugins.amazon_spapi``) add the
 Amazon specifics on top: regions, Login-with-Amazon auth with Restricted Data
-Tokens and grantless scopes, document helpers and notification models. The
-``client``, ``reports``, ``vendor`` and ``utils`` subpackages keep the 0.1.x
-entry points working (see ``MIGRATION.md``).
+Tokens and grantless scopes, document helpers and notification models.
 """
 
 from __future__ import annotations
@@ -24,7 +22,6 @@ try:
 except PackageNotFoundError:  # pragma: no cover - source checkout without install
     __version__ = "0.0.0"
 
-from . import client, reports, utils, vendor  # noqa: E402  (0.1.x compatibility subpackages)
 from .sdk._http import DefaultAioHttpClient, DefaultAsyncHttpxClient, DefaultHttpxClient, RateLimit, RequestOptions
 from .sdk.errors import (
     APIConnectionError,
@@ -46,10 +43,6 @@ if TYPE_CHECKING:
     from .plugins.amazon_spapi import AsyncSellingPartner, Marketplace, Region, SellingPartner
     from .sdk.client import AsyncClient, Client
 
-#: 0.2.0 names of the status errors.
-RateLimitError = RateLimitExceededError
-InternalServerError = ServerError
-
 __all__ = [
     "APIConnectionError",
     "APIError",
@@ -66,11 +59,9 @@ __all__ = [
     "DefaultAioHttpClient",
     "DefaultAsyncHttpxClient",
     "DefaultHttpxClient",
-    "InternalServerError",
     "Marketplace",
     "NotFoundError",
     "RateLimit",
-    "RateLimitError",
     "RateLimitExceededError",
     "Region",
     "RequestOptions",
@@ -78,10 +69,6 @@ __all__ = [
     "ServerError",
     "UnprocessableEntityError",
     "__version__",
-    "client",
-    "reports",
-    "utils",
-    "vendor",
 ]
 
 _LAZY = {
