@@ -1,5 +1,5 @@
-"""Locating and naming the pinned Amazon model files (generator inputs; used
-at run time only by the sandbox runner and the tests)."""
+"""Locating and naming the pinned Amazon model files (generator inputs, read
+by the sandbox runner and the tests)."""
 
 from __future__ import annotations
 
@@ -7,12 +7,12 @@ import os
 import pathlib
 import re
 
-from ..._naming import snake_case
+from amzn_selling_partner._naming import snake_case
 
 _HERE = pathlib.Path(__file__).resolve().parent
 _VERSION_SUFFIX = re.compile(r"(?:[_-]|(?<=[a-z])V)(?P<v>\d{4}-\d{2}-\d{2}|\d+)$")
 
-# stem -> version for files whose stem carries no version (mirrors codegen/src/amazon.ts)
+# stem -> version for files whose stem carries no version (mirrors UNVERSIONED in codegen/src/amazon.ts)
 UNVERSIONED = {
     "fbaInbound": "v1",
     "fbaInventory": "v1",
@@ -54,7 +54,7 @@ def default_spec_dir() -> pathlib.Path:
     """The submodule ``models`` directory (or ``AMZN_SELLING_PARTNER_MODELS``)."""
     env = os.environ.get("AMZN_SELLING_PARTNER_MODELS")
     candidates = [pathlib.Path(env)] if env else []
-    candidates.append(_HERE.parents[3] / "spec" / "selling-partner-api-models" / "models")
+    candidates.append(_HERE.parent / "spec" / "selling-partner-api-models" / "models")
     for c in candidates:
         if c.is_dir() and any(c.glob("*/*.json")):
             return c
@@ -67,7 +67,7 @@ def default_spec_dir() -> pathlib.Path:
 def default_schema_dir() -> pathlib.Path:
     env = os.environ.get("AMZN_SELLING_PARTNER_SCHEMAS")
     candidates = [pathlib.Path(env)] if env else []
-    candidates.append(_HERE.parents[3] / "spec" / "selling-partner-api-models" / "schemas")
+    candidates.append(_HERE.parent / "spec" / "selling-partner-api-models" / "schemas")
     for c in candidates:
         if (c / "notifications").is_dir():
             return c

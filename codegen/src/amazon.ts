@@ -1,7 +1,7 @@
 /**
- * Amazon-specific generation policy: API attribute names for the model files
- * (docs/PLAN.md §3), aliases, and the pagination overrides the heuristic cannot
- * settle (§9). Restricted-operation and grantless tables stay in Python
+ * Amazon-specific generation policy: API attribute names for the model files,
+ * aliases, and the pagination overrides the heuristic cannot settle.
+ * Restricted-operation and grantless tables stay in Python
  * (`plugins/_amazon/rdt.py`) because the auth hook reads them at run time.
  */
 import type { PaginationDescriptor } from './python/pagination.js';

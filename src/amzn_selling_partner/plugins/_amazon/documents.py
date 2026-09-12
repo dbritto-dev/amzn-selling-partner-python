@@ -11,11 +11,17 @@ from typing import Any, cast
 
 import httpx2
 
-from ..._compat import operation
 from ...sdk.errors import APIConnectionError, status_error_class
+from ...sdk.resources import OPERATIONS
 from .rdt import RESTRICTED_REPORT_TYPES
 
 CHUNK = 64 * 1024
+
+
+def operation(client: Any, module: str, operation_id: str) -> Any:
+    """The generated method of Amazon's ``operationId`` on ``client.<module>``."""
+    method, *_rest = OPERATIONS[f"{module}.{operation_id}"]
+    return getattr(getattr(client, module), method)
 
 
 def _check(response: httpx2.Response, what: str) -> None:

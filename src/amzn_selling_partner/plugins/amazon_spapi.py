@@ -2,7 +2,7 @@
 
 Everything Amazon-specific lives here and in ``amzn_selling_partner.plugins._amazon``:
 regional servers, LWA auth with Restricted Data Tokens and grantless scopes,
-document helpers, sandbox examples and notification models. Rate limits and
+document helpers and notification models. Rate limits and
 pagination helpers are generated into the resource modules by ``codegen/``.
 """
 
@@ -19,8 +19,6 @@ from ._amazon.documents import AsyncDocuments, Documents
 from ._amazon.notifications import Notifications
 from ._amazon.rdt import GRANTLESS, RESTRICTED, RESTRICTED_REPORT_TYPES, RestrictedOperation, restricted_for
 from ._amazon.regions import LWA_TOKEN_URL, Marketplace, Region
-from ._amazon.sandbox import SandboxExample, is_dynamic_sandbox, sandbox_examples
-from ._amazon.specs import api_naming, default_schema_dir, default_spec_dir, spec_files
 
 log = logging.getLogger("amzn_selling_partner.plugins.amazon")
 
@@ -182,17 +180,10 @@ __all__ = [
     "Notifications",
     "Region",
     "RestrictedOperation",
-    "SandboxExample",
     "SellingPartner",
     "Token",
     "TokenStore",
-    "api_naming",
-    "default_schema_dir",
-    "default_spec_dir",
-    "is_dynamic_sandbox",
     "restricted_for",
-    "sandbox_examples",
-    "spec_files",
     "unparsed_rate_limits",
     "with_rdt",
 ]
