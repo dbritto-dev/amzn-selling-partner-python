@@ -87,7 +87,7 @@ Look at:
 uv run ruff check src tests benchmarks && uv run ruff format --check src tests benchmarks
 uv run ty check
 uv run pytest
-uvx nox -s security_test                              # bandit over the package (generated code included) + safety
+uvx nox -s security_test                              # bandit over the package (generated code included) + uv audit
 uv run python -m tests.sandbox                       # every operation against its embedded examples
 ```
 
